@@ -9,6 +9,9 @@ on:
       rr:
         description: "Соотношение тейк/стоп"
         default: "1.8"
+      vol_min:
+        description: "Минимальный множитель объёма"
+        default: "3"
       ticks:
         description: "Вход: на сколько тиков выше POC"
         default: "5"
@@ -19,7 +22,7 @@ permissions:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,6 +34,7 @@ jobs:
           STOP_PCT: ${{ inputs.stop_pct }}
           RR: ${{ inputs.rr }}
           TICKS: ${{ inputs.ticks }}
+          VOL_MIN: ${{ inputs.vol_min }}
         run: python backtest.py
       - name: Save results
         run: |

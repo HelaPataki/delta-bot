@@ -35,7 +35,8 @@ OUT_DIR = os.environ.get("OUT_DIR", "results")
 STOP_PCT = float(os.environ.get("STOP_PCT", "4.3"))
 RR = float(os.environ.get("RR", "1.8"))
 TICKS = int(os.environ.get("TICKS", "5"))
-VOL_MIN = float(os.environ.get("VOL_MIN", "5"))
+VOL_MIN = float(os.environ.get("VOL_MIN", "3"))
+VOL_GROUPS = [3, 5, 10]
 POC_LOW_MAX = 30.0
 WAIT = {"1 свеча 4h": 4 * 60, "24 часа": 24 * 60, "10 дней": 10 * 24 * 60}   # минуты
 HOLD_MIN = 10 * 24 * 60
@@ -184,13 +185,16 @@ def main():
     be = STOP_PCT / (STOP_PCT + STOP_PCT * RR) * 100
     with open(f"{OUT_DIR}/backtest_summary.md", "w") as f:
         f.write("# Бэктест лонга: вход POC + 5 тиков\n\n")
-        f.write(f"Сигналы: объём ≥ x{VOL_MIN:g}, дельта ≤ −17%. Стоп −{STOP_PCT:g}%, тейк +{STOP_PCT * RR:.2f}% (1:{RR:g}).\n")
+        f.write(f"Сигналы: дельта ≤ −17%, объём ≥ x3 / x5 / x10 (отдельные таблицы). Стоп −{STOP_PCT:g}%, тейк +{STOP_PCT * RR:.2f}% (1:{RR:g}).\n")
         f.write(f"Безубыточный винрейт при 1:{RR:g} — {be:.1f}%. Комиссии не учтены.\n")
         f.write("Если в одной минутке задеты и стоп, и тейк — считается стоп.\n\n")
-        f.write(summary(s.assign(fill_wait_min=r.fill_wait_min)[s["условие"] == "да"],
-                        "Условие: POC в нижних 30% + закрытие выше POC"))
-        f.write(summary(s.assign(fill_wait_min=r.fill_wait_min)[s["условие"] == "нет"],
-                        "Для сравнения: остальные сигналы x5 с дельтой ≤ −17%"))
+        for m in VOL_GROUPS:
+            if m < VOL_MIN:
+                continue
+            g = s[s.vol_ratio >= m]
+            f.write(f"## Объём ≥ x{m}\n\n")
+            f.write(summary(g[g["условие"] == "да"], f"x{m}. Условие: POC в нижних 30% + закрытие выше POC"))
+            f.write(summary(g[g["условие"] == "нет"], f"x{m}. Для сравнения: остальные сигналы с дельтой ≤ −17%"))
     print(open(f"{OUT_DIR}/backtest_summary.md").read())
 
 
