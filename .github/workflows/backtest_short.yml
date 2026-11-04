@@ -1,0 +1,47 @@
+name: Backtest SHORT run
+
+on:
+  workflow_dispatch:
+    inputs:
+      stop_pct:
+        description: "Стоп, % от входа"
+        default: "4.3"
+      rr:
+        description: "Соотношение тейк/стоп"
+        default: "1.8"
+      vol_min:
+        description: "Минимальный множитель объёма"
+        default: "3"
+      ticks:
+        description: "Вход: на сколько тиков ниже POC"
+        default: "5"
+
+permissions:
+  contents: write
+
+jobs:
+  backtest_short:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Run backtest
+        env:
+          STOP_PCT: ${{ inputs.stop_pct }}
+          RR: ${{ inputs.rr }}
+          TICKS: ${{ inputs.ticks }}
+          VOL_MIN: ${{ inputs.vol_min }}
+          SIDE: short
+        run: python backtest.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results
+          git commit -m "Backtest SHORT run: stop ${{ inputs.stop_pct }}%, RR ${{ inputs.rr }}, ${{ inputs.ticks }} ticks" || echo "nothing to commit"
+          git pull --rebase
+          git push

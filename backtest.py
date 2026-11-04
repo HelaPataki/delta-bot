@@ -38,6 +38,8 @@ TICKS = int(os.environ.get("TICKS", "5"))
 VOL_MIN = float(os.environ.get("VOL_MIN", "3"))
 VOL_GROUPS = [3, 5, 10]
 POC_LOW_MAX = 30.0
+SIDE = os.environ.get("SIDE", "long")          # long или short
+SFX = "" if SIDE == "long" else "_short"
 WAIT = {"1 свеча 4h": 4 * 60, "24 часа": 24 * 60, "10 дней": 10 * 24 * 60}   # минуты
 HOLD_MIN = 10 * 24 * 60
 ARCHIVE = "https://data.binance.vision"
@@ -101,45 +103,56 @@ def run_one(row):
         return out
     tick = infer_tick(sig_day)
     out["tick"] = tick
-    entry = row["poc"] + TICKS * tick
-    stop = entry * (1 - STOP_PCT / 100)
-    take = entry * (1 + STOP_PCT * RR / 100)
+    sh = SIDE == "short"
+    tp_pct = STOP_PCT * RR
+
+    def levels(e):
+        if sh:
+            return e * (1 + STOP_PCT / 100), e * (1 - tp_pct / 100)
+        return e * (1 - STOP_PCT / 100), e * (1 + tp_pct / 100)
+
+    def pnl(e, price):
+        return (e / price - 1) * 100 if sh else (price / e - 1) * 100
+
+    entry = row["poc"] - TICKS * tick if sh else row["poc"] + TICKS * tick
+    stop, take = levels(entry)
     t0 = open_utc.timestamp() * 1000 + 4 * 3600 * 1000   # закрытие сигнальной свечи
 
     filled, fill_t = False, None
-    if row["close"] <= entry:                               # цена уже ниже лимитки
+    if (sh and row["close"] >= entry) or (not sh and row["close"] <= entry):   # цена уже за уровнем
         filled, fill_t, entry = True, t0, row["close"]
-        stop = entry * (1 - STOP_PCT / 100)
-        take = entry * (1 + STOP_PCT * RR / 100)
+        stop, take = levels(entry)
         out["filled_at_close"] = True
     out["entry"] = entry
     last_close = None
     for t, o, h, l, c in minute_stream(row["symbol"], t0):
         last_close = c
+        hit_stop = h >= stop if sh else l <= stop
+        hit_take = l <= take if sh else h >= take
         if not filled:
             if t - t0 >= WAIT["10 дней"] * MS_MIN:
                 out["result"] = "не налило"
                 return out
-            if l <= entry:
+            if (sh and h >= entry) or (not sh and l <= entry):
                 filled, fill_t = True, t
-                if l <= stop:
+                if hit_stop:
                     out.update(result="стоп", pnl_pct=-STOP_PCT, hours_in_trade=0)
                     break
             continue
         if t - fill_t >= HOLD_MIN * MS_MIN:
-            out.update(result="по времени", pnl_pct=(c / entry - 1) * 100, hours_in_trade=(t - fill_t) / 3.6e6)
+            out.update(result="по времени", pnl_pct=pnl(entry, c), hours_in_trade=(t - fill_t) / 3.6e6)
             break
-        if l <= stop:
+        if hit_stop:
             out.update(result="стоп", pnl_pct=-STOP_PCT, hours_in_trade=(t - fill_t) / 3.6e6)
             break
-        if h >= take:
-            out.update(result="тейк", pnl_pct=STOP_PCT * RR, hours_in_trade=(t - fill_t) / 3.6e6)
+        if hit_take:
+            out.update(result="тейк", pnl_pct=tp_pct, hours_in_trade=(t - fill_t) / 3.6e6)
             break
     else:
         if filled:
             out["result"] = "ещё открыта" if last_close is not None else "нет данных"
             if last_close is not None:
-                out["pnl_pct"] = (last_close / entry - 1) * 100
+                out["pnl_pct"] = pnl(entry, last_close)
         else:
             out["result"] = "не налило (данные кончились)"
     if filled:
@@ -167,8 +180,16 @@ def summary(df, name):
 
 def main():
     s = pd.read_csv(IN_FILE)
-    s = s[(s.delta_sign == "−") & (s.vol_ratio >= VOL_MIN) & s.poc.notna()].copy()
-    s["условие"] = np.where((s.poc_pos <= POC_LOW_MAX) & (s.close_below_poc == "нет"), "да", "нет")
+    if SIDE == "short":
+        s = s[(s.delta_sign == "+") & (s.vol_ratio >= VOL_MIN) & s.poc.notna()].copy()
+        s["условие"] = np.where((s.poc_pos >= 100 - POC_LOW_MAX) & (s.close_below_poc == "да"), "да", "нет")
+        cond_name, sig_name, entry_name = "POC в верхних 30% + закрытие ниже POC", "дельта ≥ +17%", "шорт, вход POC − 5 тиков"
+        stop_txt, take_txt = f"+{STOP_PCT:g}%", f"−{STOP_PCT * RR:.2f}%"
+    else:
+        s = s[(s.delta_sign == "−") & (s.vol_ratio >= VOL_MIN) & s.poc.notna()].copy()
+        s["условие"] = np.where((s.poc_pos <= POC_LOW_MAX) & (s.close_below_poc == "нет"), "да", "нет")
+        cond_name, sig_name, entry_name = "POC в нижних 30% + закрытие выше POC", "дельта ≤ −17%", "лонг, вход POC + 5 тиков"
+        stop_txt, take_txt = f"−{STOP_PCT:g}%", f"+{STOP_PCT * RR:.2f}%"
     print(f"сигналов: {len(s)}, из них по условию: {(s['условие'] == 'да').sum()}")
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(run_one, s.to_dict("records")))
@@ -180,12 +201,12 @@ def main():
     out["fill_wait_h"] = (out.pop("fill_wait_min") / 60).round(1)
     out["hours_in_trade"] = out.hours_in_trade.round(1)
     out["pnl_pct"] = out.pnl_pct.round(2)
-    out.to_csv(f"{OUT_DIR}/backtest_trades.csv", index=False)
+    out.to_csv(f"{OUT_DIR}/backtest_trades{SFX}.csv", index=False)
 
     be = STOP_PCT / (STOP_PCT + STOP_PCT * RR) * 100
-    with open(f"{OUT_DIR}/backtest_summary.md", "w") as f:
-        f.write("# Бэктест лонга: вход POC + 5 тиков\n\n")
-        f.write(f"Сигналы: дельта ≤ −17%, объём ≥ x3 / x5 / x10 (отдельные таблицы). Стоп −{STOP_PCT:g}%, тейк +{STOP_PCT * RR:.2f}% (1:{RR:g}).\n")
+    with open(f"{OUT_DIR}/backtest_summary{SFX}.md", "w") as f:
+        f.write(f"# Бэктест: {entry_name}\n\n")
+        f.write(f"Сигналы: {sig_name}, объём ≥ x3 / x5 / x10 (отдельные таблицы). Стоп {stop_txt}, тейк {take_txt} (1:{RR:g}).\n")
         f.write(f"Безубыточный винрейт при 1:{RR:g} — {be:.1f}%. Комиссии не учтены.\n")
         f.write("Если в одной минутке задеты и стоп, и тейк — считается стоп.\n\n")
         for m in VOL_GROUPS:
@@ -193,9 +214,21 @@ def main():
                 continue
             g = s[s.vol_ratio >= m]
             f.write(f"## Объём ≥ x{m}\n\n")
-            f.write(summary(g[g["условие"] == "да"], f"x{m}. Условие: POC в нижних 30% + закрытие выше POC"))
-            f.write(summary(g[g["условие"] == "нет"], f"x{m}. Для сравнения: остальные сигналы с дельтой ≤ −17%"))
-    print(open(f"{OUT_DIR}/backtest_summary.md").read())
+            f.write(summary(g[g["условие"] == "да"], f"x{m}. Условие: {cond_name}"))
+            f.write(summary(g[g["условие"] == "нет"], f"x{m}. Для сравнения: остальные сигналы, {sig_name}"))
+        f.write("## По диапазонам объёма (условие, ожидание 1 свеча 4h)\n\n")
+        c = s[(s["условие"] == "да") & s.fill_wait_min.notna() & (s.fill_wait_min < WAIT["1 свеча 4h"])
+              & s.result.isin(["тейк", "стоп", "по времени"])].copy()
+        c["объём"] = pd.cut(c.vol_ratio, [3, 4, 5, 6, 7, 10, 10 ** 6], right=False,
+                            labels=["x3–4", "x4–5", "x5–6", "x6–7", "x7–10", "x10+"])
+        rows = []
+        for b, g in c.groupby("объём", observed=True):
+            tk, st = (g.result == "тейк").sum(), (g.result == "стоп").sum()
+            rows.append({"объём": b, "сделок": len(g), "винрейт": f"{tk / max(tk + st, 1) * 100:.0f}%",
+                         "средний результат": f"{g.pnl_pct.mean():+.2f}%"})
+        if rows:
+            f.write(pd.DataFrame(rows).to_markdown(index=False) + "\n")
+    print(open(f"{OUT_DIR}/backtest_summary{SFX}.md").read())
 
 
 if __name__ == "__main__":
