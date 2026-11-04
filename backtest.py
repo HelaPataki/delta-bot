@@ -6,8 +6,9 @@
   Остальные x5 с дельтой <= -17% считаются для сравнения по тем же правилам.
 
 Сделка:
-  вход   — лимитный ордер на покупку по POC + 5 тиков, выставляется на закрытии сигнальной свечи
-           (если закрытие уже ниже этой цены — вход сразу по цене закрытия);
+  вход   — условный ордер на POC + 5 тиков (лонг) / POC − 5 тиков (шорт), выставляется после закрытия
+           сигнальной свечи и срабатывает, когда цена первый раз дошла до уровня с любой стороны;
+           вход всегда по цене уровня;
   стоп   — -STOP_PCT% от входа, тейк — +STOP_PCT * RR % от входа;
   если в одной минутке задеты и стоп, и тейк — считаем стоп (осторожный вариант);
   в минутку входа проверяется только стоп;
@@ -96,7 +97,7 @@ def minute_stream(sym, start_ms):
 
 def run_one(row):
     out = {"fill_wait_min": np.nan, "entry": np.nan, "tick": np.nan, "result": "нет данных",
-           "pnl_pct": np.nan, "hours_in_trade": np.nan, "filled_at_close": False}
+           "pnl_pct": np.nan, "hours_in_trade": np.nan}
     open_utc = kyiv_to_utc(row["candle_open_kyiv"])
     sig_day = day_minutes(row["symbol"], open_utc.date())
     if sig_day is None:
@@ -119,12 +120,9 @@ def run_one(row):
     t0 = open_utc.timestamp() * 1000 + 4 * 3600 * 1000   # закрытие сигнальной свечи
 
     filled, fill_t = False, None
-    if (sh and row["close"] >= entry) or (not sh and row["close"] <= entry):   # цена уже за уровнем
-        filled, fill_t, entry = True, t0, row["close"]
-        stop, take = levels(entry)
-        out["filled_at_close"] = True
     out["entry"] = entry
     last_close = None
+    prev_c = row["close"]                                   # цена на закрытии сигнальной свечи
     for t, o, h, l, c in minute_stream(row["symbol"], t0):
         last_close = c
         hit_stop = h >= stop if sh else l <= stop
@@ -133,7 +131,10 @@ def run_one(row):
             if t - t0 >= WAIT["10 дней"] * MS_MIN:
                 out["result"] = "не налило"
                 return out
-            if (sh and h >= entry) or (not sh and l <= entry):
+            # условный ордер срабатывает, когда цена дошла до уровня с любой стороны
+            touched = (l <= entry <= h) or (prev_c < entry < l) or (h < entry < prev_c)
+            prev_c = c
+            if touched:
                 filled, fill_t = True, t
                 if hit_stop:
                     out.update(result="стоп", pnl_pct=-STOP_PCT, hours_in_trade=0)
@@ -196,7 +197,7 @@ def main():
     r = pd.DataFrame(res, index=s.index)
     s = pd.concat([s, r], axis=1)
     keep = ["symbol", "candle_open_kyiv", "условие", "delta_pct", "vol_ratio", "poc", "poc_pos", "close",
-            "tick", "entry", "filled_at_close", "fill_wait_min", "result", "pnl_pct", "hours_in_trade"]
+            "tick", "entry", "fill_wait_min", "result", "pnl_pct", "hours_in_trade"]
     out = s[keep].copy()
     out["fill_wait_h"] = (out.pop("fill_wait_min") / 60).round(1)
     out["hours_in_trade"] = out.hours_in_trade.round(1)
