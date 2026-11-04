@@ -151,11 +151,14 @@ def main():
                 f.write("**Закрытие ниже / выше POC:**\n\n")
                 f.write(pd.DataFrame({"закрылась ниже POC": stats(g[g.close_below_poc == "да"]),
                                       "закрылась выше POC": stats(g[g.close_below_poc == "нет"])}).to_markdown() + "\n\n")
-                f.write("**POC вверху и закрытие ниже POC:**\n\n")
-                both = g[(g.poc_zone == "верх") & (g.close_below_poc == "да")]
-                rest = g[~((g.poc_zone == "верх") & (g.close_below_poc == "да"))]
-                f.write(pd.DataFrame({"POC вверху + закрытие ниже": stats(both),
-                                      "все остальные": stats(rest)}).to_markdown() + "\n\n")
+                f.write("**Все сочетания: зона POC + закрытие выше/ниже POC:**\n\n")
+                combos = {}
+                for z in ["верх", "середина", "низ"]:
+                    for cb, txt in (("да", "закрытие ниже"), ("нет", "закрытие выше")):
+                        part = g[(g.poc_zone == z) & (g.close_below_poc == cb)]
+                        if len(part[part.complete]):
+                            combos[f"POC {z} + {txt}"] = stats(part)
+                f.write(pd.DataFrame(combos).to_markdown() + "\n\n")
     print(open(f"{OUT_DIR}/poc_summary.md").read())
 
 
