@@ -9,6 +9,9 @@ on:
       min_turnover:
         description: "Минимальный оборот 4h-свечи, USDT"
         default: "50000"
+      vol_min:
+        description: "Минимальный множитель объёма для файла сигналов"
+        default: "3"
       start:
         description: "Начало периода"
         default: "2025-01-01"
@@ -31,6 +34,7 @@ jobs:
           DELTA_PCT: ${{ inputs.delta_pct }}
           MIN_TURNOVER: ${{ inputs.min_turnover }}
           START: ${{ inputs.start }}
+          VOL_MIN: ${{ inputs.vol_min }}
         run: python history.py
       - name: Save results
         run: |

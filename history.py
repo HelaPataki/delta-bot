@@ -37,6 +37,9 @@ MCAP_MIN = float(os.environ.get("MCAP_MIN", "10000000"))
 MCAP_MAX = float(os.environ.get("MCAP_MAX", "400000000"))
 HORIZON_CANDLES = 60                      # 10 дней * 6 свечей по 4h
 LEVELS = [4, 10, 20]                      # % от цены закрытия сигнальной свечи
+VOL_LOOKBACK = 12                         # сколько предыдущих 4h-свечей считаем «нормой» объёма
+VOL_MULTS = [3, 5, 10]                    # во сколько раз объём свечи выше нормы
+VOL_MIN = float(os.environ.get("VOL_MIN", "3"))  # минимальный множитель для файла сигналов
 LIMIT_SYMBOLS = int(os.environ.get("LIMIT_SYMBOLS", "0"))  # 0 = все (для теста можно 20)
 OUT_DIR = os.environ.get("OUT_DIR", "results")
 
@@ -180,7 +183,11 @@ def analyse(sym, df, mcap_now):
         delta_pct = (2 * tbv - v) / v * 100
     delta_usd = 2 * tbq - qv
     change_pct = (c / o - 1) * 100
-    mcap_est = mcap_now * c / c[-1]       # капитализация на момент свечи ≈ текущая * (цена тогда / цена сейчас)
+    mcap_est = mcap_now * c / c[-1]
+    # норма объёма = медиана оборота предыдущих 12 свечей (медиана, чтобы одна прошлая свеча-выброс не задирала норму)
+    norm = pd.Series(qv).shift(1).rolling(VOL_LOOKBACK, min_periods=VOL_LOOKBACK).median().to_numpy()
+    with np.errstate(divide="ignore", invalid="ignore"):
+        vol_ratio = np.where(norm > 0, qv / norm, np.nan)       # капитализация на момент свечи ≈ текущая * (цена тогда / цена сейчас)
 
     H, L = window(h, n), window(l, n)
     tracked = np.sum(~np.isnan(H), axis=1)
@@ -194,7 +201,7 @@ def analyse(sym, df, mcap_now):
         "open": o, "close": c,
         "change_pct": change_pct,
         "delta_pct": delta_pct, "delta_usd": delta_usd,
-        "turnover_usd": qv, "mcap_est": mcap_est,
+        "turnover_usd": qv, "vol_ratio": vol_ratio, "mcap_est": mcap_est,
         "days_tracked": tracked * 4 / 24,
         "complete": complete,
     }
@@ -226,27 +233,27 @@ def analyse(sym, df, mcap_now):
     return out
 
 
-def summarize(df, label):
-    rows = []
-    for name, part in (("дельта ≥ +%g%%" % DELTA_PCT, df[df.delta_pct >= DELTA_PCT]),
-                       ("дельта ≤ −%g%%" % DELTA_PCT, df[df.delta_pct <= -DELTA_PCT]),
-                       ("все свечи (baseline)", df)):
-        p = part[part.complete]
-        if len(p) == 0:
-            continue
-        r = {"группа": name, "свечей": len(part), "с полными 10 днями": len(p)}
-        for lev in LEVELS:
-            for d in ("up", "dn"):
-                col = f"{d}{lev}_day"
-                sign = "+" if d == "up" else "−"
-                r[f"{sign}{lev}% за 10д"] = f"{p[col].notna().mean() * 100:.0f}%"
-                r[f"{sign}{lev}% медиана дня"] = f"{p[col].median():.0f}" if p[col].notna().any() else "-"
-        fm = p.first_move.value_counts(normalize=True) * 100
-        r["сначала рост ±4%"] = f"{fm.get('рост', 0):.0f}%"
-        r["сначала падение ±4%"] = f"{fm.get('падение', 0):.0f}%"
-        r["медиана макс. роста"] = f"{p.max_up_pct.median():.1f}%"
-        r["медиана макс. падения"] = f"{p.max_dn_pct.median():.1f}%"
-        rows.append(r)
+def stats_row(name, part):
+    p = part[part.complete]
+    if len(p) == 0:
+        return None
+    r = {"группа": name, "свечей": len(part), "с полными 10 днями": len(p)}
+    for lev in LEVELS:
+        for d in ("up", "dn"):
+            col = f"{d}{lev}_day"
+            sign = "+" if d == "up" else "−"
+            r[f"{sign}{lev}% за 10д"] = f"{p[col].notna().mean() * 100:.0f}%"
+            r[f"{sign}{lev}% медиана дня"] = f"{p[col].median():.0f}" if p[col].notna().any() else "-"
+    fm = p.first_move.value_counts(normalize=True) * 100
+    r["сначала рост ±4%"] = f"{fm.get('рост', 0):.0f}%"
+    r["сначала падение ±4%"] = f"{fm.get('падение', 0):.0f}%"
+    r["медиана макс. роста"] = f"{p.max_up_pct.median():.1f}%"
+    r["медиана макс. падения"] = f"{p.max_dn_pct.median():.1f}%"
+    return r
+
+
+def summarize(df, groups):
+    rows = [r for r in (stats_row(n, df[m]) for n, m in groups) if r]
     return pd.DataFrame(rows).set_index("группа").T
 
 
@@ -281,7 +288,7 @@ def main():
                 print(f"обработано {i}/{len(with_cap)}")
     allc = pd.concat(parts, ignore_index=True)
 
-    sig = allc[allc.delta_pct.abs() >= DELTA_PCT].copy()
+    sig = allc[(allc.delta_pct.abs() >= DELTA_PCT) & (allc.vol_ratio >= VOL_MIN)].copy()
     t = pd.to_datetime(sig.open_time, unit="ms", utc=True).dt.tz_convert(KYIV)
     sig.insert(1, "candle_open_kyiv", t.dt.strftime("%Y-%m-%d %H:%M"))
     sig.insert(2, "candle_close_kyiv", (t + pd.Timedelta(hours=4)).dt.strftime("%Y-%m-%d %H:%M"))
@@ -289,29 +296,35 @@ def main():
     sig.insert(4, "delta_sign", np.where(sig.delta_pct > 0, "+", "−"))
     sig.insert(5, "candle_color", np.where(sig.close >= sig.open, "зелёная", "красная"))
     sig = sig.drop(columns=["open_time"]).sort_values("candle_close_kyiv")
-    for col in ("change_pct", "delta_pct", "max_up_pct", "max_dn_pct"):
+    for col in ("change_pct", "delta_pct", "vol_ratio", "max_up_pct", "max_dn_pct"):
         sig[col] = sig[col].round(2)
     for col in ("delta_usd", "turnover_usd", "mcap_est"):
         sig[col] = sig[col].round(0)
     sig.to_csv(f"{OUT_DIR}/history_signals.csv", index=False)
 
     days = (allc.open_time.max() - allc.open_time.min()) / 86_400_000 or 1
-    summ = summarize(allc, "")
+    pos, neg = allc.delta_pct >= DELTA_PCT, allc.delta_pct <= -DELTA_PCT
     with open(f"{OUT_DIR}/summary.md", "w") as f:
-        f.write(f"# Прогонка delta-bot\n\n")
+        f.write("# Прогонка delta-bot: всплеск объёма + дельта\n\n")
         f.write(f"Период: с {START}, 4h-свечи USDT-перпетуалов Binance.\n")
-        f.write(f"Фильтры: |дельта| ≥ {DELTA_PCT:g}%, оборот свечи ≥ ${MIN_TURNOVER:,.0f}, "
-                f"капитализация ${MCAP_MIN/1e6:g}M–${MCAP_MAX/1e6:g}M (оценка).\n\n")
+        f.write(f"Фильтры для всех групп: оборот свечи ≥ ${MIN_TURNOVER:,.0f}, "
+                f"капитализация ${MCAP_MIN/1e6:g}M–${MCAP_MAX/1e6:g}M (оценка).\n")
+        f.write(f"Всплеск объёма = оборот свечи / медиана оборота {VOL_LOOKBACK} предыдущих свечей.\n")
         f.write(f"Монет с капитализацией: {len(with_cap)}; без капитализации (пропущены): {len(no_cap)}.\n\n")
-        npos, nneg = (sig.delta_sign == "+").sum(), (sig.delta_sign == "−").sum()
-        f.write(f"Сигналов: {len(sig)} (плюс: {npos}, минус: {nneg}), "
-                f"в среднем {len(sig)/days:.1f} в день.\n\n")
         f.write("Уровни считаются от цены закрытия сигнальной свечи по high/low следующих 60 свечей (10 дней).\n\n")
-        f.write(summ.to_markdown() + "\n")
-        for thr in (17, 20, 25, 30, 40):
-            k = (allc.delta_pct.abs() >= thr).sum()
-            f.write(f"\n- порог {thr}%: {k} сигналов, {k/days:.1f} в день")
-        f.write("\n")
+        for m in VOL_MULTS:
+            spike = allc.vol_ratio >= m
+            groups = [(f"объём ≥ x{m}, дельта ≥ +{DELTA_PCT:g}%", spike & pos),
+                      (f"объём ≥ x{m}, дельта ≤ −{DELTA_PCT:g}%", spike & neg),
+                      (f"объём ≥ x{m}, любая дельта", spike)]
+            f.write(f"## Объём ≥ x{m}\n\n")
+            for name, mask in groups:
+                f.write(f"- {name}: {mask.sum()} сигналов, {mask.sum()/days:.2f} в день\n")
+            f.write("\n" + summarize(allc, groups).to_markdown() + "\n\n")
+        f.write("## Для сравнения\n\n")
+        f.write(summarize(allc, [(f"дельта ≥ +{DELTA_PCT:g}% без объёма", pos),
+                                 (f"дельта ≤ −{DELTA_PCT:g}% без объёма", neg),
+                                 ("все свечи", allc.delta_pct.notna())]).to_markdown() + "\n")
     print(open(f"{OUT_DIR}/summary.md").read())
 
 
