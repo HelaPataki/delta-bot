@@ -13,3 +13,9 @@ Actions → **History run** → **Run workflow**. Параметры: порог
 
 Данные: архив Binance (data.binance.vision), капитализация — CoinGecko
 (на момент свечи оценивается как текущая капитализация × цена тогда / цена сейчас).
+
+## POC сигнальной свечи
+
+Actions → **POC run** → **Run workflow** (после History run). Берёт `results/history_signals.csv`,
+по минутным свечам Binance находит POC (цену минутки с наибольшим объёмом) каждой сигнальной свечи
+и пишет `results/poc_signals.csv` и `results/poc_summary.md`.
