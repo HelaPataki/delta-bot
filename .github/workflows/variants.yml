@@ -1,0 +1,34 @@
+name: Delta variants run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  variants:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Find all volume spikes from x5 (any delta)
+        env:
+          DELTA_PCT: "0"
+          VOL_MIN: "5"
+          OUT_DIR: results/variants
+        run: python history.py
+      - name: POC + long/short backtest for three delta variants
+        run: python variants.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/variants
+          git commit -m "Delta variants run" || echo "nothing to commit"
+          git pull --rebase
+          git push
