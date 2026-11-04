@@ -40,7 +40,9 @@ VOL_MIN = float(os.environ.get("VOL_MIN", "3"))
 VOL_GROUPS = [3, 5, 10]
 POC_LOW_MAX = 30.0
 SIDE = os.environ.get("SIDE", "long")          # long или short
-SFX = "" if SIDE == "long" else "_short"
+ENTRY_MODE = os.environ.get("ENTRY_MODE", "poc")   # poc = от POC; extreme = от максимума (шорт) / минимума (лонг) свечи
+EXT_TICKS = int(os.environ.get("EXT_TICKS", "3"))
+SFX = ("" if SIDE == "long" else "_short") + ("_extreme" if ENTRY_MODE == "extreme" else "")
 WAIT = {"1 свеча 4h": 4 * 60, "24 часа": 24 * 60, "10 дней": 10 * 24 * 60}   # минуты
 HOLD_MIN = 10 * 24 * 60
 ARCHIVE = "https://data.binance.vision"
@@ -115,7 +117,14 @@ def run_one(row):
     def pnl(e, price):
         return (e / price - 1) * 100 if sh else (price / e - 1) * 100
 
-    entry = row["poc"] - TICKS * tick if sh else row["poc"] + TICKS * tick
+    if ENTRY_MODE == "extreme":
+        t_open = open_utc.timestamp() * 1000
+        w = sig_day[(sig_day[:, 0] >= t_open) & (sig_day[:, 0] < t_open + 4 * 3600 * 1000)]
+        if len(w) == 0:
+            return out
+        entry = w[:, 2].max() - EXT_TICKS * tick if sh else w[:, 3].min() + EXT_TICKS * tick
+    else:
+        entry = row["poc"] - TICKS * tick if sh else row["poc"] + TICKS * tick
     stop, take = levels(entry)
     t0 = open_utc.timestamp() * 1000 + 4 * 3600 * 1000   # закрытие сигнальной свечи
 
@@ -184,12 +193,16 @@ def main():
     if SIDE == "short":
         s = s[(s.delta_sign == "+") & (s.vol_ratio >= VOL_MIN) & s.poc.notna()].copy()
         s["условие"] = np.where((s.poc_pos >= 100 - POC_LOW_MAX) & (s.close_below_poc == "да"), "да", "нет")
-        cond_name, sig_name, entry_name = "POC в верхних 30% + закрытие ниже POC", "дельта ≥ +17%", "шорт, вход POC − 5 тиков"
+        cond_name, sig_name = "POC в верхних 30% + закрытие ниже POC", "дельта ≥ +17%"
+        entry_name = (f"шорт, вход максимум свечи − {EXT_TICKS} тика" if ENTRY_MODE == "extreme"
+                      else f"шорт, вход POC − {TICKS} тиков")
         stop_txt, take_txt = f"+{STOP_PCT:g}%", f"−{STOP_PCT * RR:.2f}%"
     else:
         s = s[(s.delta_sign == "−") & (s.vol_ratio >= VOL_MIN) & s.poc.notna()].copy()
         s["условие"] = np.where((s.poc_pos <= POC_LOW_MAX) & (s.close_below_poc == "нет"), "да", "нет")
-        cond_name, sig_name, entry_name = "POC в нижних 30% + закрытие выше POC", "дельта ≤ −17%", "лонг, вход POC + 5 тиков"
+        cond_name, sig_name = "POC в нижних 30% + закрытие выше POC", "дельта ≤ −17%"
+        entry_name = (f"лонг, вход минимум свечи + {EXT_TICKS} тика" if ENTRY_MODE == "extreme"
+                      else f"лонг, вход POC + {TICKS} тиков")
         stop_txt, take_txt = f"−{STOP_PCT:g}%", f"+{STOP_PCT * RR:.2f}%"
     print(f"сигналов: {len(s)}, из них по условию: {(s['условие'] == 'да').sum()}")
     with ThreadPoolExecutor(8) as ex:

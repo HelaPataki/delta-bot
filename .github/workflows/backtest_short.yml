@@ -12,8 +12,16 @@ on:
       vol_min:
         description: "Минимальный множитель объёма"
         default: "3"
+      entry_mode:
+        description: "Вход: poc = POC − тики, extreme = максимум свечи (с тенью) − тики"
+        type: choice
+        options: [extreme, poc]
+        default: extreme
+      ext_ticks:
+        description: "Для extreme: на сколько тиков ниже максимума свечи"
+        default: "3"
       ticks:
-        description: "Вход: на сколько тиков ниже POC"
+        description: "Для poc: на сколько тиков ниже POC"
         default: "5"
 
 permissions:
@@ -36,12 +44,14 @@ jobs:
           TICKS: ${{ inputs.ticks }}
           VOL_MIN: ${{ inputs.vol_min }}
           SIDE: short
+          ENTRY_MODE: ${{ inputs.entry_mode }}
+          EXT_TICKS: ${{ inputs.ext_ticks }}
         run: python backtest.py
       - name: Save results
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
           git add results
-          git commit -m "Backtest SHORT run: stop ${{ inputs.stop_pct }}%, RR ${{ inputs.rr }}, ${{ inputs.ticks }} ticks" || echo "nothing to commit"
+          git commit -m "Backtest SHORT run (${{ inputs.entry_mode }}): stop ${{ inputs.stop_pct }}%, RR ${{ inputs.rr }}, ${{ inputs.ticks }} ticks" || echo "nothing to commit"
           git pull --rebase
           git push
