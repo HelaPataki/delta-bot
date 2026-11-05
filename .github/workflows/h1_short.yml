@@ -2,6 +2,13 @@ name: 1h short run
 
 on:
   workflow_dispatch:
+    inputs:
+      stop_pct:
+        description: "Стоп, % от входа"
+        default: "4.3"
+      take_pct:
+        description: "Тейк, % от входа"
+        default: "7.74"
 
 permissions:
   contents: write
@@ -17,12 +24,14 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - name: 1h short
+        env:
+          STOP_PCT: ${{ inputs.stop_pct }}
+          TAKE_PCT: ${{ inputs.take_pct }}
         run: python h1_short.py
       - name: Save results
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          git add results/h1_short
-          git commit -m "1h short run" || echo "nothing to commit"
-          git pull --rebase
-          git push
+          git add results
+          git commit -m "1h short run: stop ${{ inputs.stop_pct }}%, take ${{ inputs.take_pct }}%" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done

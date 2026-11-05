@@ -26,11 +26,13 @@ import history as Hst
 import short_tests as ST
 from poc import kyiv_to_utc
 
-OUT_DIR = os.environ.get("OUT_DIR", "results/h1_short")
+STOP = float(os.environ.get("STOP_PCT", "4.3"))
+TAKE = float(os.environ.get("TAKE_PCT", "7.74"))
+OUT_DIR = os.environ.get("OUT_DIR", "results/h1_short" + ("" if (STOP, TAKE) == (4.3, 7.74) else f"_stop{STOP:g}_take{TAKE:g}"))
 H1 = 3600 * 1000
 HOR = 240                       # 10 дней по 1h
 MIN_TURN = 12_500
-STOP, RR, TICKS = 4.3, 1.8, 5
+TICKS = 5
 WAITS = {"1 час": H1, "4 часа": 4 * H1}
 THREADS = 16
 
@@ -41,6 +43,7 @@ class NoCache(dict):
 
 
 P._cache = NoCache()
+ST.RR = TAKE / STOP          # тейк в R для расчёта сделок
 
 
 def coin(sym, mcap_now):
@@ -94,7 +97,7 @@ def poc_and_trades(r):
     out["poc_pos"] = (poc - lo) / (hi - lo) * 100 if hi > lo else 50.0
     tick = B.infer_tick(mins.parts[0])
     stop_of = lambda e: e * (1 + STOP / 100)
-    take_of = lambda e: e * (1 - STOP * RR / 100)
+    take_of = lambda e: e * (1 - TAKE / 100)
     t0 = t_open + H1
     for code, lvl in (("E1", poc - TICKS * tick), ("E2", hi)):
         for wn, wv in WAITS.items():
@@ -162,7 +165,8 @@ def main():
         f.write("Сигнал: объём ≥ x3/x5/x10 к медиане 48 предыдущих 1h-свечей, дельта ≥ +17%. "
                 "«Теория»: POC в верхних 30% + закрытие ниже POC. «Остальные» — те же сигналы без условия по POC.\n\n")
         f.write("## Направление (10 дней, от закрытия свечи)\n\n" + pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
-        f.write("## Сделки: стоп +4,3%, тейк −7,74%. Безубыточный винрейт 35,7%, безубыточно = 0R\n\n")
+        f.write(f"## Сделки: стоп +{STOP:g}%, тейк −{TAKE:g}%. Безубыточный винрейт {STOP / (STOP + TAKE) * 100:.1f}%, "
+                f"безубыточно = 0R (тейк = +{TAKE / STOP:.2f}R, стоп = −1R)\n\n")
         f.write(pd.DataFrame(trows).to_markdown(index=False) + "\n")
     print(open(f"{OUT_DIR}/h1_short_summary.md").read())
 
