@@ -43,7 +43,7 @@ SIDE = os.environ.get("SIDE", "long")          # long или short
 ENTRY_MODE = os.environ.get("ENTRY_MODE", "poc")   # poc = от POC; extreme = от максимума (шорт) / минимума (лонг) свечи
 EXT_TICKS = int(os.environ.get("EXT_TICKS", "3"))
 EXT_PCT = float(os.environ.get("EXT_PCT", "0"))   # сдвиг входа за экстремум свечи в %, вместо тиков
-SFX = ("" if SIDE == "long" else "_short") + (
+SFX = ("" if SIDE == "long" else "_short") + ("" if RR == 1.8 else f"_rr{RR:g}") + (
     (f"_extreme_plus{EXT_PCT:g}pct" if EXT_PCT else ("_extreme" if EXT_TICKS == 3 else f"_extreme{EXT_TICKS}"))
     if ENTRY_MODE == "extreme" else "")
 WAIT = {"1 свеча 4h": 4 * 60, "24 часа": 24 * 60, "10 дней": 10 * 24 * 60}   # минуты

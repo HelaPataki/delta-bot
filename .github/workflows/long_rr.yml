@@ -1,0 +1,38 @@
+name: Long RR run
+
+on:
+  workflow_dispatch:
+    inputs:
+      rr_list:
+        description: "Соотношения тейк/стоп через пробел"
+        default: "2 2.5 3 4"
+      stop_pct:
+        description: "Стоп, % от входа"
+        default: "4.3"
+
+permissions:
+  contents: write
+
+jobs:
+  long_rr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Long backtest for each RR
+        env:
+          STOP_PCT: ${{ inputs.stop_pct }}
+          VOL_MIN: "5"
+        run: |
+          for r in ${{ inputs.rr_list }}; do RR=$r python backtest.py; done
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results
+          git commit -m "Long RR run: ${{ inputs.rr_list }}" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
