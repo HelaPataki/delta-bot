@@ -42,7 +42,7 @@ POC_LOW_MAX = 30.0
 SIDE = os.environ.get("SIDE", "long")          # long или short
 ENTRY_MODE = os.environ.get("ENTRY_MODE", "poc")   # poc = от POC; extreme = от максимума (шорт) / минимума (лонг) свечи
 EXT_TICKS = int(os.environ.get("EXT_TICKS", "3"))
-SFX = ("" if SIDE == "long" else "_short") + ("_extreme" if ENTRY_MODE == "extreme" else "")
+SFX = ("" if SIDE == "long" else "_short") + (("_extreme" if EXT_TICKS == 3 else f"_extreme{EXT_TICKS}") if ENTRY_MODE == "extreme" else "")
 WAIT = {"1 свеча 4h": 4 * 60, "24 часа": 24 * 60, "10 дней": 10 * 24 * 60}   # минуты
 HOLD_MIN = 10 * 24 * 60
 ARCHIVE = "https://data.binance.vision"
@@ -194,7 +194,7 @@ def main():
         s = s[(s.delta_sign == "+") & (s.vol_ratio >= VOL_MIN) & s.poc.notna()].copy()
         s["условие"] = np.where((s.poc_pos >= 100 - POC_LOW_MAX) & (s.close_below_poc == "да"), "да", "нет")
         cond_name, sig_name = "POC в верхних 30% + закрытие ниже POC", "дельта ≥ +17%"
-        entry_name = (f"шорт, вход максимум свечи − {EXT_TICKS} тика" if ENTRY_MODE == "extreme"
+        entry_name = ((f"шорт, вход максимум свечи − {EXT_TICKS} тика" if EXT_TICKS else "шорт, вход на максимуме свечи") if ENTRY_MODE == "extreme"
                       else f"шорт, вход POC − {TICKS} тиков")
         stop_txt, take_txt = f"+{STOP_PCT:g}%", f"−{STOP_PCT * RR:.2f}%"
     else:
