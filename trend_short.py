@@ -22,10 +22,12 @@ import history as Hst
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-OUT_DIR = os.environ.get("OUT_DIR", "results/trend_short")
-NS = [7, 14, 20, 30]
-WS = [3, 7]
-STOPS = [3.0, 4.3, 6.0]
+RR_LIST = [float(x) for x in os.environ.get("RR_LIST", "").split()]
+OUT_DIR = os.environ.get("OUT_DIR", "results/trend_short" + ("_rr" if RR_LIST else ""))
+NS = [14, 20, 30] if RR_LIST else [7, 14, 20, 30]
+WS = [7] if RR_LIST else [3, 7]
+STOPS = [4.3, 6.0] if RR_LIST else [3.0, 4.3, 6.0]
+RRS = RR_LIST or [1.8]
 RR = 1.8
 HOR = 60
 
@@ -42,8 +44,8 @@ def direction(h, l, c, i):
             "dn10": bool((dn <= -0.1).any()), "up10": bool((up >= 0.1).any())}
 
 
-def trade(h, l, c, j, entry, stop_pct):
-    stop, take = entry * (1 + stop_pct / 100), entry * (1 - stop_pct * RR / 100)
+def trade(h, l, c, j, entry, stop_pct, rr=RR):
+    stop, take = entry * (1 + stop_pct / 100), entry * (1 - stop_pct * rr / 100)
     if h[j] >= stop:
         return "стоп", -1.0
     hw, lw = h[j + 1:j + 1 + HOR], l[j + 1:j + 1 + HOR]
@@ -52,7 +54,7 @@ def trade(h, l, c, j, entry, stop_pct):
     s, t = first(hw >= stop), first(lw <= take)
     if s == t == 10 ** 6:
         return "по времени", (entry - c[j + HOR]) / (stop - entry)
-    return ("стоп", -1.0) if s <= t else ("тейк", RR)
+    return ("стоп", -1.0) if s <= t else ("тейк", rr)
 
 
 def coin(sym, mcap_now):
@@ -89,11 +91,13 @@ def coin(sym, mcap_now):
                 r[f"retest{W}"] = j_hit is not None
                 r[f"retest{W}_h"] = (j_hit - i) * 4 if j_hit is not None else np.nan
                 for sp in STOPS:
-                    if j_hit is None:
-                        r[f"res_{W}_{sp}"], r[f"R_{W}_{sp}"] = "не было ретеста", np.nan
-                    else:
-                        res, R = trade(h, l, c, j_hit, lvl, sp)
-                        r[f"res_{W}_{sp}"], r[f"R_{W}_{sp}"] = res, R
+                    for rr in RRS:
+                        sfx = f"{W}_{sp}" if not RR_LIST else f"{W}_{sp}_{rr:g}"
+                        if j_hit is None:
+                            r[f"res_{sfx}"], r[f"R_{sfx}"] = "не было ретеста", np.nan
+                        else:
+                            res, R = trade(h, l, c, j_hit, lvl, sp, rr)
+                            r[f"res_{sfx}"], r[f"R_{sfx}"] = res, R
             rows.append(r)
             busy = i + HOR                                         # следующий пробой по монете — не раньше чем через 10 дней
     return pd.DataFrame(rows), pd.DataFrame(base)
@@ -124,6 +128,29 @@ def main():
     b = pd.concat([r[1] for r in res if len(r[1])], ignore_index=True)
     months = (a.time.max() - a.time.min()) / 86_400_000 / 30.4
 
+    if RR_LIST:
+        rows = []
+        a["mo"] = pd.to_datetime(a.time, unit="ms").dt.strftime("%Y-%m")
+        for N in NS:
+            g = a[a.N == N]
+            for sp in STOPS:
+                for rr in RR_LIST:
+                    sfx = f"7_{sp}_{rr:g}"
+                    res, R = g[f"res_{sfx}"], g[f"R_{sfx}"]
+                    closed = res.isin(["тейк", "стоп", "по времени"])
+                    tk, st = (res == "тейк").sum(), (res == "стоп").sum()
+                    mo = g[closed].groupby("mo")[f"R_{sfx}"].mean()
+                    rows.append({"пробой": f"{N} дн.", "стоп / тейк": f"+{sp:g}% / −{sp * rr:.2f}% (1:{rr:g})",
+                                 "сделок": int(closed.sum()), "винрейт": f"{tk / max(tk + st, 1) * 100:.0f}%",
+                                 "безубыток": f"{1 / (1 + rr) * 100:.0f}%", "по времени": int((res == "по времени").sum()),
+                                 "в среднем R": f"{R[closed].mean():+.2f}", "в среднем %": f"{R[closed].mean() * sp:+.2f}%",
+                                 "месяцев в плюсе": f"{(mo > 0).sum()} из {len(mo)}", "худший месяц R": f"{mo.min():+.2f}"})
+        with open(f"{OUT_DIR}/trend_short_rr_summary.md", "w") as f:
+            f.write("# Шорт по тренду: разные соотношения тейк/стоп\n\nПробой минимума N дней, шорт на ретесте уровня (ждём 7 дней). "
+                    "По 4h-свечам; если стоп и тейк в одной свече — стоп; держим 10 дней, потом закрытие по рынку. Комиссии не учтены.\n\n")
+            f.write(pd.DataFrame(rows).to_markdown(index=False) + "\n")
+        print(open(f"{OUT_DIR}/trend_short_rr_summary.md").read())
+        return
     with open(f"{OUT_DIR}/trend_short_summary.md", "w") as f:
         f.write("# Шорт по нисходящему тренду: пробой минимума за N дней и ретест уровня\n\n")
         f.write(f"Сделка: шорт на уровне пробоя при возврате цены к нему снизу; тейк = {RR:g} × риск "

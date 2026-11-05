@@ -1,0 +1,33 @@
+name: Trend RR run
+
+on:
+  workflow_dispatch:
+    inputs:
+      rr_list:
+        description: "Соотношения тейк/стоп через пробел"
+        default: "1.8 2 2.5 3 4"
+
+permissions:
+  contents: write
+
+jobs:
+  trend_rr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Trend short with several ratios
+        env:
+          RR_LIST: ${{ inputs.rr_list }}
+        run: python trend_short.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/trend_short_rr
+          git commit -m "Trend RR run: ${{ inputs.rr_list }}" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
