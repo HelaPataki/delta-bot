@@ -25,7 +25,7 @@ IN_DIR = os.environ.get("IN_DIR", "results/oi_funding/parts")
 OUT_DIR = os.environ.get("OUT_DIR", "results/oi_delay")
 H4, DAY, MIN = 4 * 3600 * 1000, 24 * 3600 * 1000, 60_000
 STOP = 4.3
-RRS = [1.8, 2.5]
+RRS = [float(x) for x in os.environ.get("RR_LIST", "1.8 2.5").split()]
 DELAYS = [5, 15, 30]
 
 
@@ -93,18 +93,23 @@ def main():
 
     entries = ["на закрытии"] + [f"рынок +{d} мин" for d in DELAYS] + [f"ордер на закрытие +{d} мин" for d in DELAYS]
     rows = []
+    s["год"] = pd.to_datetime(s.open_time, unit="ms").dt.year.astype(str)
+    years = sorted(s["год"].unique()) + ["всё"] if s["год"].nunique() > 1 else ["всё"]
     for grp in ("G1", "G1b"):
-        g = s[s[grp]]
+      for yr in years:
+        g = s[s[grp] & ((s["год"] == yr) if yr != "всё" else True)]
         for rr in RRS:
             for e in entries:
+                if e.startswith("ордер") and yr != "всё":
+                    continue
                 R = g[f"{e}|{rr:g}"].dropna()
-                rows.append({"группа": grp, "соотношение": f"1:{rr:g}", "вход": e, "сделок": len(R),
+                rows.append({"группа": grp, "период": yr, "соотношение": f"1:{rr:g}", "вход": e, "сделок": len(R),
                              "налило": f"{len(R) / len(g) * 100:.0f}%",
                              "винрейт": f"{(R >= rr - 1e-9).sum() / max(((R >= rr - 1e-9) | (R <= -1 + 1e-9)).sum(), 1) * 100:.0f}%",
                              "в среднем R": f"{R.mean():+.2f}", "в среднем %": f"{R.mean() * STOP:+.2f}%"})
     shifts = {d: s[f"сдвиг цены через {d} мин, %"] for d in DELAYS}
     with open(f"{OUT_DIR}/oi_delay_summary.md", "w") as f:
-        f.write("# Шорт по фандингу и открытому интересу: вход с задержкой после алерта (с 2026)\n\n")
+        f.write(f"# Шорт по фандингу и открытому интересу: вход с задержкой после алерта (сигналы с {pd.to_datetime(s.open_time.min(), unit='ms'):%Y-%m-%d})\n\n")
         f.write("G1: фандинг ≤ −0,03% + OI за 24 ч ≥ +20% + цена стоит. G1b: то же, фандинг ≤ −0,1%. "
                 f"Стоп +{STOP:g}%, тейк = стоп × соотношение. По минуткам, комиссии не учтены.\n\n")
         f.write("Насколько цена успевает уйти от закрытия свечи (для шорта минус — цена ушла вниз, вход хуже):\n\n")

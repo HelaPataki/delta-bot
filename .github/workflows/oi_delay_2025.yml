@@ -1,0 +1,35 @@
+name: OI delay 2025 run
+
+on:
+  workflow_dispatch:
+    inputs:
+      rr_list:
+        description: "Соотношения тейк/стоп через пробел (стоп 4.3%)"
+        default: "1.8 2.5 3 4"
+
+permissions:
+  contents: write
+
+jobs:
+  oi_delay_2025:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Delayed entry test on signals from 2025
+        env:
+          IN_DIR: results/oi_funding_2025/parts
+          OUT_DIR: results/oi_delay_2025
+          RR_LIST: ${{ inputs.rr_list }}
+        run: python oi_delay.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/oi_delay_2025
+          git commit -m "OI delay 2025 run: ${{ inputs.rr_list }}" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
