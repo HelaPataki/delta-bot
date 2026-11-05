@@ -20,6 +20,9 @@ on:
       ext_ticks:
         description: "Для extreme: на сколько тиков ниже максимума свечи"
         default: "3"
+      ext_pct:
+        description: "Для extreme: вход на X% выше максимума свечи (0 = считать в тиках)"
+        default: "0"
       ticks:
         description: "Для poc: на сколько тиков ниже POC"
         default: "5"
@@ -46,6 +49,7 @@ jobs:
           SIDE: short
           ENTRY_MODE: ${{ inputs.entry_mode }}
           EXT_TICKS: ${{ inputs.ext_ticks }}
+          EXT_PCT: ${{ inputs.ext_pct }}
         run: python backtest.py
       - name: Save results
         run: |
@@ -53,5 +57,4 @@ jobs:
           git config user.email "delta-bot@users.noreply.github.com"
           git add results
           git commit -m "Backtest SHORT run (${{ inputs.entry_mode }}): stop ${{ inputs.stop_pct }}%, RR ${{ inputs.rr }}, ${{ inputs.ticks }} ticks" || echo "nothing to commit"
-          git pull --rebase
-          git push
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
