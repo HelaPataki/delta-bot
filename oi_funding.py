@@ -78,7 +78,8 @@ def open_interest(sym):
         df = get_zip_csv(f"{Hst.ARCHIVE}/data/futures/um/daily/metrics/{sym}/{sym}-metrics-{day:%Y-%m-%d}.zip")
         if df is None:
             return None
-        return pd.DataFrame({"t": pd.to_datetime(df.create_time, utc=True).astype("int64") // 10 ** 6,
+        ts = pd.to_datetime(df.create_time, utc=True).dt.tz_localize(None).to_numpy().astype("datetime64[ms]")
+        return pd.DataFrame({"t": ts.astype("int64").astype(float),
                              "oi": df.sum_open_interest.astype(float)})
 
     with ThreadPoolExecutor(8) as ex:
@@ -162,7 +163,9 @@ def run_shard():
                 parts.append(p)
             if i % 20 == 0:
                 print(f"{i}/{len(mine)}", flush=True)
-    pd.concat(parts).to_csv(f"{OUT_DIR}/parts/part{SHARD}.csv.gz", index=False)
+    allp = pd.concat(parts)
+    print("заполнено:", {c: f"{allp[c].notna().mean() * 100:.0f}%" for c in ("fund24", "oi_chg24", "oi_chg4", "px24")})
+    allp.to_csv(f"{OUT_DIR}/parts/part{SHARD}.csv.gz", index=False)
 
 
 def first_only(df, mask):
@@ -188,14 +191,17 @@ def combine():
     import glob
     a = pd.concat([pd.read_csv(p) for p in sorted(glob.glob(f"{OUT_DIR}/parts/part*.csv.gz"))], ignore_index=True)
     a = a.sort_values(["symbol", "open_time"]).reset_index(drop=True)
+    print("свечей:", len(a), "заполнено:", {c: f"{a[c].notna().mean() * 100:.0f}%" for c in ("fund24", "oi_chg24", "oi_chg4", "px24")})
     has = a.fund24.notna() & a.oi_chg24.notna() & a.px24.notna()
+    if not has.any():
+        raise SystemExit("нет свечей с фандингом и открытым интересом одновременно — см. проценты выше")
     a = a[has].reset_index(drop=True)
     months = (a.open_time.max() - a.open_time.min()) / 86_400_000 / 30.4
     out = []
     for side in ("шорт", "лонг"):
         sg = 1 if side == "шорт" else -1
         flat = (a.px24 <= 2) if side == "шорт" else (a.px24 >= -2)
-        rows = [{"условие": "все свечи (для сравнения)", **stats(a, side)}]
+        rows = [{"условие": "все свечи (для сравнения)", **(stats(a, side) or {})}]
         for F in (0.03, 0.05, 0.1):
             fm = (a.fund24 >= F) if side == "шорт" else (a.fund24 <= -F)
             rows.append({"условие": f"только фандинг {'≥' if sg > 0 else '≤ −'}{F:g}%", **(stats(a[first_only(a, fm)], side) or {})})
