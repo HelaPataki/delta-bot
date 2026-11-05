@@ -23,6 +23,8 @@ import short_tests as ST
 from oi_funding import first_only
 
 OUT_DIR = os.environ.get("OUT_DIR", "results/oi_backtest")
+IN_DIR = os.environ.get("IN_DIR", "results/oi_funding/parts")
+RR_LIST = [float(x) for x in os.environ.get("RR_LIST", "").split()]   # если задан — только вход по закрытию, стоп 4,3%
 H4, DAY = 4 * 3600 * 1000, 24 * 3600 * 1000
 STOP, TAKE = 4.3, 7.74
 ST.RR = TAKE / STOP
@@ -47,9 +49,91 @@ def run(r):
     return out
 
 
+def run_rr(r):
+    """Только вход по закрытию, стоп STOP, тейк = STOP x RR для каждого RR из RR_LIST."""
+    t_open = int(r["open_time"])
+    t0 = t_open + H4
+    mins = ST.Mins(r["symbol"], t_open)
+    if not list(mins.rows(t_open, t0)):
+        return {}
+    out = {}
+    for rr in RR_LIST:
+        res, R, _ = trade_rr(mins, t0, r["close"], rr)
+        out[f"{rr:g}|result"], out[f"{rr:g}|R"] = res, R
+    return out
+
+
+def trade_rr(mins, t0, entry, rr):
+    stop, take = entry * (1 + STOP / 100), entry * (1 - STOP * rr / 100)
+    first, last_c = True, None
+    for t, o, h, l, c in mins.rows(t0, t0 + 10 * DAY):
+        last_c = c
+        if h >= stop:
+            return "стоп", -1.0, 0
+        if not first and l <= take:
+            return "тейк", rr, 0
+        first = False
+    if last_c is None:
+        return "нет данных", np.nan, 0
+    return "по времени", (entry - last_c) / (stop - entry), 0
+
+
+def main_rr():
+    os.makedirs(OUT_DIR, exist_ok=True)
+    a = pd.concat([pd.read_csv(p) for p in sorted(glob.glob(f"{IN_DIR}/*.csv.gz"))])
+    a = a.sort_values(["symbol", "open_time"]).reset_index(drop=True)
+    a = a[a.fund24.notna() & a.oi_chg24.notna() & a.px24.notna()].reset_index(drop=True)
+    groups = group_masks(a)
+    any_sig = np.zeros(len(a), bool)
+    for m in groups.values():
+        any_sig |= m.to_numpy()
+    s = a[any_sig].reset_index(drop=True)
+    print(f"сигналов к расчёту: {len(s)}", flush=True)
+    with ThreadPoolExecutor(16) as ex:
+        res = pd.DataFrame(list(ex.map(run_rr, s.to_dict("records"))))
+    s = pd.concat([s, res], axis=1)
+    for name, m in groups.items():
+        s[name[:3].strip(":")] = m.to_numpy()[any_sig]
+    s["год"] = pd.to_datetime(s.open_time, unit="ms").dt.year.astype(str)
+    s.to_csv(f"{OUT_DIR}/oi_backtest_rr_trades.csv.gz", index=False)
+    rows = []
+    for name in groups:
+        code = name[:3].strip(":")
+        for rr in RR_LIST:
+            for yr in ("2025", "2026", "всё"):
+                g = s[s[code] & ((s["год"] == yr) if yr != "всё" else True)]
+                r_, R = g[f"{rr:g}|result"], g[f"{rr:g}|R"]
+                closed = r_.isin(["тейк", "стоп", "по времени"])
+                tk, st = (r_ == "тейк").sum(), (r_ == "стоп").sum()
+                mo = g[closed].groupby(pd.to_datetime(g[closed].open_time, unit="ms").dt.strftime("%Y-%m"))[f"{rr:g}|R"].mean()
+                rows.append({"группа": name, "стоп / тейк": f"+{STOP:g}% / −{STOP * rr:.2f}% (1:{rr:g})", "период": yr,
+                             "сделок": int(closed.sum()), "винрейт": f"{tk / max(tk + st, 1) * 100:.0f}%",
+                             "безубыток": f"{1 / (1 + rr) * 100:.0f}%",
+                             "по времени": int((r_ == "по времени").sum()),
+                             "в среднем R": f"{R[closed].mean():+.2f}" if closed.any() else "-",
+                             "в среднем %": f"{R[closed].mean() * STOP:+.2f}%" if closed.any() else "-",
+                             "месяцев в плюсе": f"{(mo > 0).sum()} из {len(mo)}"})
+    with open(f"{OUT_DIR}/oi_backtest_rr_summary.md", "w") as f:
+        f.write("# Шорт по фандингу и открытому интересу: разные тейки, 2025 и 2026\n\n")
+        f.write(f"Вход по закрытию сигнальной 4h-свечи, стоп +{STOP:g}%, тейк = стоп × соотношение. По минуткам, "
+                "держим до 10 дней (потом закрытие по рынку). Если стоп и тейк в одной минутке — стоп. Комиссии не учтены.\n\n")
+        f.write(pd.DataFrame(rows).to_markdown(index=False) + "\n")
+    print(open(f"{OUT_DIR}/oi_backtest_rr_summary.md").read())
+
+
+def group_masks(a):
+    return {
+        "G1: фандинг ≤ −0,03% + OI 24ч ≥ +20% + цена стоит": first_only(a, (a.fund24 <= -0.03) & (a.oi_chg24 >= 20) & (a.px24 >= -2)),
+        "G1b: то же, фандинг ≤ −0,1%": first_only(a, (a.fund24 <= -0.1) & (a.oi_chg24 >= 20) & (a.px24 >= -2)),
+        "G2: фандинг ≥ +0,05% + OI 24ч ≥ +20% + OI 4ч ≥ +5% + цена стоит":
+            first_only(a, (a.fund24 >= 0.05) & (a.oi_chg24 >= 20) & (a.oi_chg4 >= 5) & (a.px24 <= 2)),
+        "G3: только OI 24ч ≥ +20%": first_only(a, a.oi_chg24 >= 20),
+    }
+
+
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    a = pd.concat([pd.read_csv(p) for p in sorted(glob.glob("results/oi_funding/parts/*.csv.gz"))])
+    a = pd.concat([pd.read_csv(p) for p in sorted(glob.glob(f"{IN_DIR}/*.csv.gz"))])
     a = a.sort_values(["symbol", "open_time"]).reset_index(drop=True)
     a = a[a.fund24.notna() & a.oi_chg24.notna() & a.px24.notna()].reset_index(drop=True)
     groups = {
@@ -94,4 +178,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main_rr() if RR_LIST else main()

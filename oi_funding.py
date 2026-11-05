@@ -31,8 +31,10 @@ import history as Hst
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 OUT_DIR = os.environ.get("OUT_DIR", "results/oi_funding")
-SIG_START = pd.Timestamp("2026-01-01", tz="UTC").timestamp() * 1000
-Hst.START = "2025-12-01"            # декабрь — только для расчёта окон до первых сигналов
+SIG_FROM = os.environ.get("SIG_FROM", "2026-01-01")
+SIG_START = pd.Timestamp(SIG_FROM, tz="UTC").timestamp() * 1000
+HIST_FROM = (pd.Timestamp(SIG_FROM) - pd.Timedelta(days=31)).strftime("%Y-%m-01")
+Hst.START = HIST_FROM               # месяц до сигналов — только для расчёта окон
 SHARD, NSHARDS = int(os.environ.get("SHARD", "0")), int(os.environ.get("NSHARDS", "1"))
 HOR = 60
 H = 3600 * 1000
@@ -49,7 +51,7 @@ def get_zip_csv(url):
 
 def funding(sym):
     frames = []
-    for m in Hst.months(dt.date(2025, 12, 1), dt.datetime.now(dt.timezone.utc).date()):
+    for m in Hst.months(dt.date.fromisoformat(HIST_FROM), dt.datetime.now(dt.timezone.utc).date()):
         df = get_zip_csv(f"{Hst.ARCHIVE}/data/futures/um/monthly/fundingRate/{sym}/{sym}-fundingRate-{m:%Y-%m}.zip")
         if df is not None:
             frames.append(df)
@@ -68,7 +70,7 @@ def funding(sym):
 
 
 def open_interest(sym):
-    d, today = dt.date(2025, 12, 30), dt.datetime.now(dt.timezone.utc).date()
+    d, today = dt.date.fromisoformat(SIG_FROM) - dt.timedelta(days=2), dt.datetime.now(dt.timezone.utc).date()
     days = []
     while d < today:
         days.append(d)
@@ -221,7 +223,7 @@ def combine():
             rows.append({"условие": f"OI 24ч ≥ +{X}% + цена стоит", **(stats(a[first_only(a, (a.oi_chg24 >= X) & flat)], side) or {})})
         out.append((side, pd.DataFrame(rows)))
     with open(f"{OUT_DIR}/oi_funding_summary.md", "w") as f:
-        f.write("# Перегретые лонги / шорты: фандинг + открытый интерес (с 01.01.2026)\n\n")
+        f.write(f"# Перегретые лонги / шорты: фандинг + открытый интерес (с {SIG_FROM})\n\n")
         f.write("Всё на момент закрытия сигнальной 4h-свечи. Фандинг — средний начисленный за 24 ч (на 8 ч). "
                 "OI — последняя запись до закрытия свечи. «Цена стоит» — за 24 ч не больше +2% (для лонга не меньше −2%). "
                 "Направление от закрытия свечи, 10 дней. Только первая свеча серии.\n\n")

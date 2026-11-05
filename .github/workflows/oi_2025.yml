@@ -1,0 +1,72 @@
+name: OI 2025 run
+
+on:
+  workflow_dispatch:
+    inputs:
+      rr_list:
+        description: "Соотношения тейк/стоп через пробел (стоп 4.3%)"
+        default: "1.8 2 2.5 3 4"
+
+permissions:
+  contents: write
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Collect OI, funding and prices from 2025 (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "6"
+          SIG_FROM: "2025-01-01"
+          OUT_DIR: results/oi_funding_2025
+        run: python oi_funding.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: results/oi_funding_2025/parts/part${{ matrix.shard }}.csv.gz
+
+  combine_and_backtest:
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          path: results/oi_funding_2025/parts
+          merge-multiple: true
+      - name: Direction summary
+        env:
+          MODE: combine
+          SIG_FROM: "2025-01-01"
+          OUT_DIR: results/oi_funding_2025
+        run: python oi_funding.py
+      - name: Backtest with several take/stop ratios
+        env:
+          IN_DIR: results/oi_funding_2025/parts
+          OUT_DIR: results/oi_backtest_2025
+          RR_LIST: ${{ inputs.rr_list }}
+        run: python oi_backtest.py
+      - name: Save results
+        if: always()
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/oi_funding_2025 results/oi_backtest_2025 || true
+          git commit -m "OI 2025 run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
