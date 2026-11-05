@@ -136,21 +136,21 @@ def read_zip(content):
     return df.astype(float)
 
 
-def load_klines(sym):
+def load_klines(sym, interval="4h"):
     start = dt.date.fromisoformat(START)
     today = dt.datetime.now(dt.timezone.utc).date()
     this_month = dt.date(today.year, today.month, 1)
     frames = []
     for m in months(start, this_month):
         if m < this_month:
-            url = f"{ARCHIVE}/data/futures/um/monthly/klines/{sym}/4h/{sym}-4h-{m:%Y-%m}.zip"
+            url = f"{ARCHIVE}/data/futures/um/monthly/klines/{sym}/{interval}/{sym}-{interval}-{m:%Y-%m}.zip"
             r = get(url)
             if r is not None and r.status_code == 200:
                 frames.append(read_zip(r.content))
         else:  # текущий месяц — дневные файлы
             d = m
             while d < today:
-                url = f"{ARCHIVE}/data/futures/um/daily/klines/{sym}/4h/{sym}-4h-{d:%Y-%m-%d}.zip"
+                url = f"{ARCHIVE}/data/futures/um/daily/klines/{sym}/{interval}/{sym}-{interval}-{d:%Y-%m-%d}.zip"
                 r = get(url)
                 if r is not None and r.status_code == 200:
                     frames.append(read_zip(r.content))
