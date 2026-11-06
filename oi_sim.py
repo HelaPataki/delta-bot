@@ -61,12 +61,15 @@ def simulate(groups, lev, rng, log=False):
 
 def main():
     t = pd.read_csv(IN_FILE)
-    strategies = {
-        "G1b (фандинг ≤ −0,1% + OI 24ч ≥ +20%)": t[t.G1b],
-        "Фильтр (фандинг ≤ −0,2% + OI 24ч ≥ +60%)": t[t.G1 & (t.fund24 <= -0.2) & (t.oi_chg24 >= 60)],
-    }
-    if os.environ.get("ONLY_FILTER"):
-        strategies.pop("G1b (фандинг ≤ −0,1% + OI 24ч ≥ +20%)")
+    if "strategy" in t:
+        strategies = {name: t[t.strategy == name] for name in t.strategy.unique()}
+    else:
+        strategies = {
+            "G1b (фандинг ≤ −0,1% + OI 24ч ≥ +20%)": t[t.G1b],
+            "Фильтр (фандинг ≤ −0,2% + OI 24ч ≥ +60%)": t[t.G1 & (t.fund24 <= -0.2) & (t.oi_chg24 >= 60)],
+        }
+        if os.environ.get("ONLY_FILTER"):
+            strategies.pop("G1b (фандинг ≤ −0,1% + OI 24ч ≥ +20%)")
     rows, examples = [], []
     for sname, st in strategies.items():
         if "hold_h" not in t:
@@ -97,7 +100,7 @@ def main():
     with open(f"{OUT_DIR}/oi_sim_summary.md", "w") as f:
         f.write("# Симуляция: $100, 2 слота, одна случайная монета на сигнальную свечу\n\n")
         f.write(f"Период: {pd.to_datetime(t.open_time.min(), unit='ms'):%Y-%m-%d} – {pd.to_datetime(t.open_time.max(), unit='ms'):%Y-%m-%d} "
-                f"(~{span / 30.4:.0f} мес.). Вход по рынку через 15 мин после закрытия свечи, стоп +4,3%. "
+                f"(~{span / 30.4:.0f} мес.). Вход через 15 мин после закрытия свечи (шорт — по рынку, лонг — условный ордер на POC + 5 тиков), стоп 4,3%. "
                 f"Комиссия {FEE:g}% от позиции, фандинг за время сделки учтён. {N_RUNS} повторов со случайным выбором монет.\n\n")
         f.write(pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
         if examples:

@@ -1,0 +1,44 @@
+name: Long sim run
+
+on:
+  workflow_dispatch:
+    inputs:
+      rr_list:
+        description: "Соотношения тейк/стоп через пробел"
+        default: "1.5 1.8 2.5 3 4"
+      hold_list:
+        description: "Максимум часов в сделке через пробел (240 = 10 дней)"
+        default: "24 240"
+
+permissions:
+  contents: write
+
+jobs:
+  long_sim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      OUT_DIR: results/long_sim
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Long trades with exit time and funding
+        env:
+          RR_LIST: ${{ inputs.rr_list }}
+          HOLD_LIST: ${{ inputs.hold_list }}
+        run: python long_sim_data.py
+      - name: Simulation ($100, 2 slots)
+        env:
+          IN_FILE: results/long_sim/oi_sim_trades.csv.gz
+        run: python oi_sim.py
+      - name: Save results
+        if: always()
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/long_sim || true
+          git commit -m "Long sim run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
