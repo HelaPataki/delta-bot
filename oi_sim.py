@@ -65,28 +65,34 @@ def main():
         "G1b (фандинг ≤ −0,1% + OI 24ч ≥ +20%)": t[t.G1b],
         "Фильтр (фандинг ≤ −0,2% + OI 24ч ≥ +60%)": t[t.G1 & (t.fund24 <= -0.2) & (t.oi_chg24 >= 60)],
     }
+    if os.environ.get("ONLY_FILTER"):
+        strategies.pop("G1b (фандинг ≤ −0,1% + OI 24ч ≥ +20%)")
     rows, examples = [], []
     for sname, st in strategies.items():
-        for rr in sorted(t.rr.unique()):
-            tr = prepare(st[st.rr == rr])
+        if "hold_h" not in t:
+            t["hold_h"] = 240.0
+        for rr, hold in sorted(set(zip(t.rr, t.hold_h))):
+            tr = prepare(st[(st.rr == rr) & (st.hold_h == hold)])
             for lev in (1, 2):
                 res = [simulate(tr, lev, np.random.default_rng(i)) for i in range(N_RUNS)]
                 fin = np.array([r[0] for r in res]); dd = np.array([r[1] for r in res]); n = np.array([r[2] for r in res])
-                rows.append({"стратегия": sname, "соотношение": f"1:{rr:g}", "плечо": f"x{lev}",
+                rows.append({"стратегия": sname, "соотношение": f"1:{rr:g}",
+                             "макс. в сделке": "10 дней" if hold >= 240 else f"{hold:g} ч", "плечо": f"x{lev}",
                              "сделок за период": int(np.median(n)),
                              "итог: средний": f"${np.median(fin):,.0f}", "плохой (5%)": f"${np.percentile(fin, 5):,.0f}",
                              "хороший (95%)": f"${np.percentile(fin, 95):,.0f}",
                              "в минусе": f"{(fin < START).mean() * 100:.0f}%",
                              "просадка: обычная": f"{np.median(dd) * 100:.0f}%",
                              "тяжёлая (5%)": f"{np.percentile(dd, 5) * 100:.0f}%"})
-                if lev == 1 and rr == 3:
+                if lev == 1 and rr == 3 and hold >= 240:
                     _, _, _, j = simulate(tr, lev, np.random.default_rng(0), log=True)
                     ex = pd.DataFrame(j)
                     ex.insert(0, "стратегия", sname)
                     examples.append(ex)
                 print(sname, rr, lev, "готово", flush=True)
     os.makedirs(OUT_DIR, exist_ok=True)
-    pd.concat(examples).to_csv(f"{OUT_DIR}/oi_sim_example_1to3_x1.csv", index=False)
+    if examples:
+        pd.concat(examples).to_csv(f"{OUT_DIR}/oi_sim_example_1to3_x1.csv", index=False)
     span = (t.open_time.max() - t.open_time.min()) / 86_400_000
     with open(f"{OUT_DIR}/oi_sim_summary.md", "w") as f:
         f.write("# Симуляция: $100, 2 слота, одна случайная монета на сигнальную свечу\n\n")
@@ -94,7 +100,8 @@ def main():
                 f"(~{span / 30.4:.0f} мес.). Вход по рынку через 15 мин после закрытия свечи, стоп +4,3%. "
                 f"Комиссия {FEE:g}% от позиции, фандинг за время сделки учтён. {N_RUNS} повторов со случайным выбором монет.\n\n")
         f.write(pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
-        f.write("Пример одного прогона (1:3, без плеча) — в файле oi_sim_example_1to3_x1.csv.\n")
+        if examples:
+            f.write("Пример одного прогона (1:3, без плеча) — в файле oi_sim_example_1to3_x1.csv.\n")
     print(open(f"{OUT_DIR}/oi_sim_summary.md").read())
 
 

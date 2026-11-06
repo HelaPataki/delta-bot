@@ -26,6 +26,7 @@ IN_DIR = os.environ.get("IN_DIR", "results/oi_funding_2025/parts")
 OUT_DIR = os.environ.get("OUT_DIR", "results/oi_sim")
 DELAY = int(os.environ.get("DELAY", "15"))
 RRS = [float(x) for x in os.environ.get("RR_LIST", "1.8 2.5 3 4").split()]
+HOLDS = [float(x) for x in os.environ.get("HOLD_LIST", "240").split()]   # максимум часов в сделке
 STOP = 4.3
 H4, DAY, MIN = 4 * 3600 * 1000, 24 * 3600 * 1000, 60_000
 
@@ -64,9 +65,10 @@ def run(r):
     ft, fr = funding_series(r["symbol"])
     out = []
     for rr in RRS:
+      for hold in HOLDS:
         stop, take = entry * (1 + STOP / 100), entry * (1 - STOP * rr / 100)
         res, t_out, px, first = None, None, None, True
-        for t, o, h, l, c in mins.rows(t_in, t_in + 10 * DAY):
+        for t, o, h, l, c in mins.rows(t_in, t_in + int(hold * 3600 * 1000)):
             px, t_out = c, t + MIN
             if h >= stop:
                 res, px = "стоп", stop
@@ -80,7 +82,7 @@ def run(r):
         res = res or "по времени"
         sel = (ft > t_in) & (ft <= t_out)
         out.append({"symbol": r["symbol"], "open_time": t_open, "entry_time": t_in, "exit_time": t_out,
-                    "rr": rr, "result": res, "entry": entry, "exit": px,
+                    "rr": rr, "hold_h": hold, "result": res, "entry": entry, "exit": px,
                     "pnl_pct": (entry - px) / entry * 100,
                     "funding_pct": fr[sel].sum() * 100,
                     "fund24": r["fund24"], "oi_chg24": r["oi_chg24"], "G1": r["G1"], "G1b": r["G1b"]})
@@ -96,12 +98,14 @@ def main():
     g1b = first_only(a, (a.fund24 <= -0.1) & (a.oi_chg24 >= 20) & (a.px24 >= -2))
     s = a[g1 | g1b].copy()
     s["G1"], s["G1b"] = g1[g1 | g1b].to_numpy(), g1b[g1 | g1b].to_numpy()
+    if os.environ.get("ONLY_FILTER"):
+        s = s[s.G1 & (s.fund24 <= -0.2) & (s.oi_chg24 >= 60)]
     print(f"сигналов: {len(s)}", flush=True)
     with ThreadPoolExecutor(16) as ex:
         res = list(ex.map(run, s.to_dict("records")))
     t = pd.DataFrame([x for r in res for x in r])
     t.to_csv(f"{OUT_DIR}/oi_sim_trades.csv.gz", index=False)
-    print(t.groupby("rr").agg(n=("pnl_pct", "size"), pnl=("pnl_pct", "mean"), fund=("funding_pct", "mean"),
+    print(t.groupby(["rr", "hold_h"]).agg(n=("pnl_pct", "size"), pnl=("pnl_pct", "mean"), fund=("funding_pct", "mean"),
                               hours=("exit_time", lambda x: ((x - t.loc[x.index, "entry_time"]) / 3.6e6).median())))
 
 

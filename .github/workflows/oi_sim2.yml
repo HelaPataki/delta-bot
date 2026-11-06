@@ -1,0 +1,45 @@
+name: OI sim short takes run
+
+on:
+  workflow_dispatch:
+    inputs:
+      rr_list:
+        description: "Соотношения тейк/стоп через пробел"
+        default: "1.2 1.5 1.8 2.5"
+      hold_list:
+        description: "Максимум часов в сделке через пробел (240 = 10 дней)"
+        default: "4 8 24 240"
+
+permissions:
+  contents: write
+
+jobs:
+  oi_sim2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      ONLY_FILTER: "1"
+      OUT_DIR: results/oi_sim2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Trades with exit time and funding (filter only)
+        env:
+          RR_LIST: ${{ inputs.rr_list }}
+          HOLD_LIST: ${{ inputs.hold_list }}
+        run: python oi_sim_data.py
+      - name: Simulation ($100, 2 slots)
+        env:
+          IN_FILE: results/oi_sim2/oi_sim_trades.csv.gz
+        run: python oi_sim.py
+      - name: Save results
+        if: always()
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/oi_sim2 || true
+          git commit -m "OI sim short takes run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
