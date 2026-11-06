@@ -41,6 +41,7 @@ LONG_TAKE = 4.3 * 4               # 17,2%
 SHORT_HOLD_H, LONG_HOLD_H = 24, 240
 ENTRY_DELAY_MIN = 8               # в расчётах вход через ~8 мин после закрытия свечи
 TICKS = 5
+LATE_MIN = 15                     # алерт позже 15 мин после закрытия свечи помечается «С ОПОЗДАНИЕМ»
 
 # ---------------- техническое ----------------
 CZ = "https://api.coinalyze.net/v1"
@@ -541,6 +542,8 @@ def final(uni, T, long_wl, short_wl, test, late_note=""):
     for r in rows:
         r["свеча закрылась (Киев)"] = kyiv(T, "%Y-%m-%d %H:%M")
         r["выбрана"] = "да" if r["монета"] in (pick_s, pick_l) else "нет"
+    if time.time() - T > LATE_MIN * 60 and not test:
+        late_note = f"⚠️ С ОПОЗДАНИЕМ: свеча закрылась в {kyiv(T, '%H:%M')}, сейчас {kyiv(time.time(), '%H:%M')}\n"
     if pick_s:
         tg(late_note + short_text(pick_s, [x for x in shorts if x != pick_s], T, test))
     if pick_l:
@@ -588,8 +591,6 @@ def main():
 
     if not test:
         sleep_until(T + 70)
-        if time.time() - T > 20 * 60:
-            late_note = f"⚠️ С ОПОЗДАНИЕМ: свеча закрылась в {kyiv(T, '%H:%M')}\n"
     if short_wl is None:
         short_wl = [s for s, v in funding_now(uni).items() if v <= -0.005]
         prefetch_intervals([uni[s] for s in short_wl])
