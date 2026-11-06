@@ -1,0 +1,48 @@
+name: Combo delay run
+
+on:
+  workflow_dispatch:
+    inputs:
+      delay:
+        description: "Через сколько минут после закрытия свечи вход"
+        default: "8"
+
+permissions:
+  contents: write
+
+jobs:
+  combo_delay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      DELAY: ${{ inputs.delay }}
+      NEW_DIR: results/delay${{ inputs.delay }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Short trades (final filter, 1:1.8, 24h)
+        env:
+          ONLY_FILTER: "1"
+          RR_LIST: "1.8"
+          HOLD_LIST: "24"
+          OUT_DIR: results/delay${{ inputs.delay }}/short
+        run: mkdir -p $OUT_DIR && python oi_sim_data.py
+      - name: Long trades (1:4, 10 days)
+        env:
+          RR_LIST: "4"
+          HOLD_LIST: "240"
+          OUT_DIR: results/delay${{ inputs.delay }}/long
+        run: mkdir -p $OUT_DIR && python long_sim_data.py
+      - name: Combined simulation vs 15 min
+        run: python combo_delay.py
+      - name: Save results
+        if: always()
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/delay${{ inputs.delay }} || true
+          git commit -m "Combo delay ${{ inputs.delay }} min run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
