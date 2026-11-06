@@ -8,7 +8,7 @@
 Общие фильтры: оборот свечи ≥ $50k, капитализация $10M–$400M.
 
 Coinalyze даёт 40 монето-запросов в минуту, поэтому бот запускается заранее (~80 мин до закрытия свечи):
-  1) отбирает кандидатов в шорт (отрицательный фандинг) и в лонг (объём свечи уже большой);
+  1) за ~45 мин отбирает кандидатов в шорт (прогнозный фандинг < 0), за ~22 мин — в лонг (объём свечи уже большой);
   2) ждёт закрытия свечи и через минуту проверяет только кандидатов;
   3) шлёт алерты и напоминания (отменить ордер, закрыть шорт, закрыть лонг).
 MODE=test — сразу проверяет последнюю закрытую свечу, сообщения помечены «ТЕСТ», напоминания не ставятся.
@@ -232,7 +232,7 @@ def funding_interval(bsym):
                 break
         except Exception as e:  # noqa: BLE001
             log("интервал фандинга", bsym, e)
-    _intervals[bsym] = hours or 8.0
+    _intervals[bsym] = hours or 4.0      # новой монеты нет в прошлом месяце: чаще всего 4 ч
     return _intervals[bsym]
 
 
@@ -458,28 +458,32 @@ def sleep_until(ts):
 
 
 def prescan_short(uni, T, deadline):
-    """Кандидаты в шорт: текущий фандинг отрицательный → история фандинга и OI → мягкий отбор."""
-    fn = funding_now(uni)
-    cand = [s for s, v in fn.items() if v <= -0.005]
-    log(f"фандинг получен для {len(fn)}, отрицательный у {len(cand)}")
-    prefetch_intervals([uni[s] for s in cand])
-    wl, now = [], time.time()
+    """Кандидаты в шорт (за ~45 мин до закрытия): история фандинга по всем монетам →
+    прогнозная ставка < 0 или выплаченный фандинг 24ч ≤ −0,1% → OI за 24ч ≥ +30%."""
+    now = time.time()
+    fb = history("funding-rate-history", list(uni), "1hour", now - 30 * H, now)
+    neg = [s for s, b in fb.items() if b and any((x.get("c") or 0) < 0 for x in b[-25:])]
+    prefetch_intervals([uni[s] for s in neg])
+    X = int(now // 300 * 300)
+    cand = []
+    for s in neg:
+        hours = funding_interval(uni[s])
+        pred = fb[s][-1]["c"] * 8 / hours
+        if pred < 0 or fund24(fb[s], X, hours) <= -0.1:
+            cand.append(s)
+    log(f"фандинг получен для {len(fb)}, кандидатов по фандингу {len(cand)}")
+    wl = []
     for i in range(0, len(cand), 20):
         if time.time() > deadline:
-            log("не успел проверить всех кандидатов в шорт — остальные идут в список целиком")
+            log("не успел проверить OI у всех — остальные идут в список целиком")
             wl += cand[i:]
             break
         batch = cand[i:i + 20]
-        fb = history("funding-rate-history", batch, "1hour", now - 30 * H, now)
-        ob = history("open-interest-history", batch, "5min", now - 30 * H, now, convert_to_usd="false")
+        ob = history("open-interest-history", batch, "5min", now - 30 * H, time.time(), convert_to_usd="false")
         for s in batch:
-            hours = funding_interval(uni[s])
-            last = fb.get(s, [])[-1]["c"] * 8 / hours if fb.get(s) else 0
-            X = int(now // 300 * 300)
-            f24 = fund24(fb.get(s, []), X, hours)
             o0, o24 = oi_at(ob.get(s, []), X), oi_at(ob.get(s, []), X - 24 * H)
             oi = (o0 / o24 - 1) * 100
-            if (f24 <= -0.1 or last <= -0.1) and (oi >= 25 or np.isnan(oi)):
+            if oi >= 30 or np.isnan(oi):
                 wl.append(s)
     log(f"кандидатов в шорт: {len(wl)}")
     return wl
@@ -585,14 +589,15 @@ def main():
         log("запуск поздний: предварительный отбор пропускаю")
         short_wl, long_wl = None, list(uni)
     else:
-        short_wl = prescan_short(uni, T, deadline=T - 24 * 60)
+        sleep_until(T - 45 * 60)
+        short_wl = prescan_short(uni, T, deadline=T - 25 * 60)
         sleep_until(T - 22 * 60)
         long_wl = prescan_long(uni, T)
 
     if not test:
         sleep_until(T + 70)
     if short_wl is None:
-        short_wl = [s for s, v in funding_now(uni).items() if v <= -0.005]
+        short_wl = [s for s, v in funding_now(uni).items() if v < 0]
         prefetch_intervals([uni[s] for s in short_wl])
 
     rows, pick_s, pick_l, levels = final(uni, T, long_wl, short_wl, test, late_note)
