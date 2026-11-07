@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       what:
-        description: "extras — разбор лишних по архиву (быстро); full — полный прогон через Coinalyze"
+        description: "extras — разбор лишних по архиву; full — полный прогон; twap — прогноз в точке против среднего"
         default: extras
         type: choice
-        options: [extras, full]
+        options: [extras, full, twap]
 
 jobs:
   replay:
@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests numpy pandas
-      - run: python ${{ inputs.what == 'full' && 'replay_check.py' || 'replay_extras.py' }}
+      - run: python replay_${{ inputs.what == 'full' && 'check' || inputs.what }}.py
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
