@@ -1,93 +1,105 @@
 """
-ВРЕМЕННАЯ проверка (удалить после): находит ли живой бот по данным Coinalyze прошлые сигналы, которые точно были в архиве.
-Живой бот не меняется — отсюда только вызываются его функции (live.py).
-Старые даты: Coinalyze хранит 5-мин OI и минутки недолго, поэтому для них берутся часовой OI и 5-мин свечи для POC (приблизительно).
+ВРЕМЕННАЯ проверка (удалить после): как правильно читать фандинг из Coinalyze.
+Для 5 прошлых шортов сравнивает фандинг 24ч, посчитанный разными способами, с настоящими выплатами из архива Binance,
+и показывает детали правила «только первый сигнал подряд». Живой бот не меняется.
 """
 
-import os
-import time
+import io
+import zipfile
 import datetime as dt
 from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
+import requests
 
 import live as L
 
 KYIV = ZoneInfo("Europe/Kyiv")
 H, H4 = 3600, 4 * 3600
+SHORTS = [("BLURUSDT", "2026-10-29 06:00"), ("POLYXUSDT", "2026-10-25 14:00"), ("TUSDT", "2026-10-25 06:00"),
+          ("ORDERUSDT", "2026-10-24 15:00"), ("MEWUSDT", "2026-10-21 07:00")]
 
-SIGNALS = [  # (сторона, монета, свеча закрылась — Киев)
-    ("шорт", "BLURUSDT", "2026-10-29 06:00"), ("шорт", "POLYXUSDT", "2026-10-25 14:00"),
-    ("шорт", "TUSDT", "2026-10-25 06:00"), ("шорт", "ORDERUSDT", "2026-10-24 15:00"),
-    ("шорт", "MEWUSDT", "2026-10-21 07:00"),
-    ("лонг", "DOLOUSDT", "2026-11-03 02:00"), ("лонг", "SECZUSDT", "2026-11-02 22:00"),
-    ("лонг", "CLOUSDT", "2026-11-02 10:00"), ("лонг", "NOWUSDT", "2026-11-02 06:00"),
-]
+
+def archive_funding(sym):
+    r = requests.get(f"https://data.binance.vision/data/futures/um/monthly/fundingRate/{sym}/{sym}-fundingRate-2026-10.zip", timeout=60)
+    with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+        df = pd.read_csv(z.open(z.namelist()[0]))
+    df.columns = [c.strip().lower() for c in df.columns]
+    return [(int(t) // 1000, float(h), float(v) * 100) for t, h, v in
+            zip(df.calc_time, df.funding_interval_hours, df.last_funding_rate)]
+
+
+def by_t(bars):
+    return {b["t"]: b for b in bars}
 
 
 def oi_at(bars, X, step):
     best = None
     for b in bars:
-        end = b["t"] + step
-        if end <= X and X - end <= max(1800, step):
+        if b["t"] + step <= X and X - (b["t"] + step) <= max(1800, step):
             best = b
     return best["c"] if best else np.nan
 
 
 def main():
-    arch_s = pd.read_csv("results/delay8/short/oi_sim_trades.csv.gz").drop_duplicates(["symbol", "open_time"])
-    arch_l = pd.read_csv("results/delay8/long/oi_sim_trades.csv.gz").drop_duplicates(["symbol", "open_time"])
-    now = time.time()
-    lines, found = ["🧪 Проверка бота на прошлых сигналах (данные Coinalyze)"], 0
-    for side, sym, ts in SIGNALS:
+    for sym, ts in SHORTS:
         T = int(dt.datetime.strptime(ts, "%Y-%m-%d %H:%M").replace(tzinfo=KYIV).timestamp())
         cs = sym + "_PERP.A"
+        arch = archive_funding(sym)
+        win = [(t, h, v) for t, h, v in arch if T - 24 * H < t <= T + 59]
+        hours = win[-1][1] if win else L.funding_interval(sym)
+        settles = [t for t, _, _ in win]
+        a24 = np.mean([v * 8 / h for _, h, v in win]) if win else np.nan
+        h1 = by_t(L.history("funding-rate-history", [cs], "1hour", T - 30 * H, T + 2 * H).get(cs, []))
+        m15 = by_t(L.history("funding-rate-history", [cs], "15min", T - 26 * H, T + 2 * H).get(cs, []))
+        m5 = by_t(L.history("funding-rate-history", [cs], "5min", T - 25 * H, T + H).get(cs, []))
+
+        def mean(get):
+            vals = [get(s) for s in settles]
+            vals = [v for v in vals if v is not None]
+            return (np.mean(vals) * 8 / hours, len(vals)) if vals else (np.nan, 0)
+
+        def g(d, t, k):
+            b = d.get(t)
+            return b[k] if b and b.get(k) is not None else None
+
+        methods = {
+            "A сейчас: 1ч свеча до выплаты, close": mean(lambda s: g(h1, s - H, "c")),
+            "B 1ч свеча до выплаты, low": mean(lambda s: g(h1, s - H, "l")),
+            "C 15м свеча за 15 мин до выплаты, close": mean(lambda s: g(m15, s - 30 * 60, "c")),
+            "D 15м свеча до выплаты, close": mean(lambda s: g(m15, s - 15 * 60, "c")),
+            "E 5м свеча за 5 мин до выплаты, close": mean(lambda s: g(m5, s - 10 * 60, "c")),
+            "F 1ч свеча ПОСЛЕ выплаты, open": mean(lambda s: g(h1, s, "o")),
+        }
+        lines = [f"🔎 {sym} {ts[5:]} — фандинг 24ч (на 8ч), интервал {hours:g} ч, выплат {len(win)}",
+                 f"АРХИВ: {a24:.3f}%"]
+        for k, (v, n) in methods.items():
+            lines.append(f"{k}: {v:.3f}% ({n}/{len(win)})")
+        last = win[-1] if win else None
+        if last:
+            s = last[0]
+            lines.append(f"Последняя выплата {dt.datetime.fromtimestamp(s, KYIV):%d.%m %H:%M}: архив {last[2]:.4f}%")
+            for name, d, step in (("1ч", h1, H), ("15м", m15, 900), ("5м", m5, 300)):
+                row = []
+                for t in (s - 2 * step, s - step, s):
+                    b = d.get(t)
+                    row.append(f"{dt.datetime.fromtimestamp(t, KYIV):%H:%M} o{b['o']:.4f} c{b['c']:.4f}" if b else "—")
+                lines.append(f"  {name}: " + " | ".join(row))
+        # правило «первый подряд»
         bars = L.history("ohlcv-history", [cs], "4hour", T - 20 * H4, T + 60).get(cs, [])
         c = L.candle_feats(bars, T)
-        ms = (T - H4) * 1000
-        if side == "шорт":
-            step = 300 if now - T < 4 * 86400 else 3600
-            iv = "5min" if step == 300 else "1hour"
-            fb = L.history("funding-rate-history", [cs], "1hour", T - 30 * H, T + 60).get(cs, [])
-            ob = L.history("open-interest-history", [cs], iv, T - 30 * H, T + 60, convert_to_usd="false").get(cs, [])
-            hours = L.funding_interval(sym)
-            o0, o24, o4, o28 = (oi_at(ob, x, step) for x in (T, T - 24 * H, T - 4 * H, T - 28 * H))
-            sf = {"fund24": L.fund24(fb, T, hours), "oi_chg24": (o0 / o24 - 1) * 100,
-                  "fund24_prev": L.fund24(fb, T - 4 * H, hours), "oi_chg24_prev": (o4 / o28 - 1) * 100}
-            ok = L.is_short(c, sf)
-            a = arch_s[(arch_s.symbol == sym) & (arch_s.open_time == ms)]
-            av = f"архив: фандинг {a.fund24.iloc[0]:.2f}%, OI {a.oi_chg24.iloc[0]:+.0f}%" if len(a) else "архив: —"
-            bv = (f"бот: фандинг {sf['fund24']:.2f}%, OI {sf['oi_chg24']:+.0f}%, цена {c['px24']:+.1f}%" if c else "бот: нет свечей")
-            lines.append(f"{'✅' if ok else '❌'} 🔴 {sym} {ts[5:]}\n   {bv}\n   {av} (интервал фандинга {hours:g} ч, OI {iv})")
-        else:
-            p = None
-            if c:
-                mb = L.history("ohlcv-history", [cs], "1min", T - H4, T - 60).get(cs, [])
-                src = "1 мин"
-                if len(mb) < 60:
-                    mb = L.history("ohlcv-history", [cs], "5min", T - H4, T - 300).get(cs, [])
-                    src = "5 мин, приблизительно"
-                    mb = [dict(b) for b in mb]
-                    p = None
-                    w = [b for b in mb if T - H4 <= b["t"] < T]
-                    if len(w) >= 12:
-                        top = max(w, key=lambda b: b.get("v") or 0)
-                        poc = (top["h"] + top["l"]) / 2
-                        hi, lo = max(b["h"] for b in w), min(b["l"] for b in w)
-                        p = {"poc": poc, "poc_pos": (poc - lo) / (hi - lo) * 100 if hi > lo else 50, "tick": L.infer_tick(w)}
-                else:
-                    p = L.poc_info(mb, T)
-            ok = L.is_long(c, p)
-            a = arch_l[(arch_l.symbol == sym) & (arch_l.open_time == ms)]
-            av = f"архив: объём {a.vol_ratio.iloc[0]:.1f}x, дельта {a.delta_pct.iloc[0]:.1f}%" if len(a) else "архив: —"
-            bv = (f"бот: объём {c['vol_ratio']:.1f}x, дельта {c['delta_pct']:.1f}%, POC {p['poc_pos']:.0f}% снизу ({src})"
-                  if c and p else "бот: нет данных")
-            lines.append(f"{'✅' if ok else '❌'} 🟢 {sym} {ts[5:]}\n   {bv}\n   {av}")
-        found += ok
-        print(lines[-1], flush=True)
-    lines.insert(1, f"Найдено {found} из {len(SIGNALS)}")
-    L.tg("\n".join(lines))
+        ob = L.history("open-interest-history", [cs], "1hour", T - 30 * H, T + 60, convert_to_usd="false").get(cs, [])
+        o4, o28 = oi_at(ob, T - 4 * H, H), oi_at(ob, T - 28 * H, H)
+        prev_win = [(t, h, v) for t, h, v in arch if T - 28 * H < t <= T - 4 * H + 59]
+        a24p = np.mean([v * 8 / h for _, h, v in prev_win]) if prev_win else np.nan
+        if c:
+            lines.append(f"Прошлая свеча: оборот ${c['turnover_prev']:,.0f}, цена 24ч {c['px24_prev']:+.1f}%, "
+                         f"OI 24ч {(o4 / o28 - 1) * 100:+.0f}%, фандинг (архив) {a24p:.3f}% → "
+                         f"{'G1 (сигнал НЕ первый)' if c['turnover_prev'] >= 50000 and a24p <= -0.03 and (o4 / o28 - 1) * 100 >= 20 and c['px24_prev'] >= -2 else 'не G1 (сигнал первый)'}")
+        msg = "\n".join(lines)
+        print(msg, flush=True)
+        L.tg(msg)
 
 
 if __name__ == "__main__":
