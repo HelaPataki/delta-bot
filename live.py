@@ -491,16 +491,22 @@ def prescan_short(uni, T, deadline):
 
 
 def prescan_long(uni, T):
-    """Кандидаты в лонг: объём текущей (ещё не закрытой) свечи уже ≥ 2x к обычному."""
+    """Кандидаты в лонг: объём текущей (ещё не закрытой) свечи уже ≥ 2x к обычному.
+    Второй список — «близкие к порогу» (1,2–2x), от самых близких: их проверяет страховочный проход."""
     now = time.time()
     bars = history("ohlcv-history", list(uni), "4hour", T - 20 * H4, now)
-    wl = []
+    wl, near = [], []
     for s, b in bars.items():
         f = candle_feats(b, T)
-        if f and f["vol_ratio"] >= 2.0:
+        if not f:
+            continue
+        if f["vol_ratio"] >= 2.0:
             wl.append(s)
-    log(f"кандидатов в лонг: {len(wl)} (из {len(bars)} с данными)")
-    return wl
+        elif f["vol_ratio"] >= 1.2:
+            near.append((f["vol_ratio"], s))
+    near = [s for _, s in sorted(near, reverse=True)]
+    log(f"кандидатов в лонг: {len(wl)}, близких к порогу: {len(near)} (из {len(bars)} с данными)")
+    return wl, near
 
 
 def check(uni, T, long_wl, short_wl):
@@ -597,15 +603,15 @@ def main():
     if test:
         tg(f"🧪 Тест запущен: проверяю свечу, закрывшуюся в {kyiv(T, '%H:%M')}. Это займёт ~30–50 минут.")
         short_wl, fund_cand = prescan_short(uni, T, deadline=time.time() + 30 * 60)
-        long_wl = prescan_long(uni, T)
+        long_wl, long_near = prescan_long(uni, T)
     elif started_late:
         log("запуск поздний: предварительный отбор пропускаю")
-        short_wl, long_wl = None, list(uni)
+        short_wl, long_wl, long_near = None, list(uni), []
     else:
         sleep_until(T - 65 * 60)
         short_wl, fund_cand = prescan_short(uni, T, deadline=T - 44 * 60)
         sleep_until(T - 42 * 60)
-        long_wl = prescan_long(uni, T)
+        long_wl, long_near = prescan_long(uni, T)
 
     if not test:
         sleep_until(T + 70)
@@ -619,20 +625,23 @@ def main():
 
     # страховочный проход — то, что отсеял ранний отбор (только по стороне, где ещё нет сигнала)
     extra_short = [] if pick_s else [s for s in fund_cand if s not in set(short_wl)]
-    extra_long = [] if pick_l else [s for s in uni if s not in set(long_wl)]
+    extra_long = [] if pick_l else long_near
     if extra_short or extra_long:
-        log(f"дополнительная проверка: шорт {len(extra_short)}, лонг {len(extra_long)} монет")
+        log(f"дополнительная проверка: шорт {len(extra_short)}, лонг (близкие к порогу) {len(extra_long)} монет")
         if extra_short:
             r2, s2, _, _ = check(uni, T, [], extra_short)
             ps, cs, _ = send(T, r2, s2, [], {}, test, extra=True)
             rows += r2
             pick_s, close_s = pick_s or ps, close_s or cs
-        if extra_long:
-            r3, _, l3, lv3 = check(uni, T, extra_long, [])
-            _, _, pl = send(T, r3, [], l3, lv3, test, extra=True)
+        # лонг — пачками от самых близких к порогу, алерт сразу, как только найден
+        for i in range(0, len(extra_long), 20):
+            r3, _, l3, lv3 = check(uni, T, extra_long[i:i + 20], [])
             rows += r3
-            levels.update(lv3)
-            pick_l = pick_l or pl
+            if l3:
+                _, _, pl = send(T, r3, [], l3, lv3, test, extra=True)
+                levels.update(lv3)
+                pick_l = pl
+                break
     shorts_n = sum(r["сторона"] == "шорт" for r in rows)
     longs_n = sum(r["сторона"] == "лонг" for r in rows)
 
