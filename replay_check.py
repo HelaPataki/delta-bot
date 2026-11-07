@@ -31,6 +31,17 @@ def oi_at(bars, X, step=H):
     return best["c"] if best else np.nan
 
 
+def detect_interval(settled, X, fallback):
+    """Интервал фандинга по истории выплат за 48 ч до X: ставка меняется в момент выплаты."""
+    bars = [b for b in settled if X - 48 * H <= b["t"] and b["t"] + H <= X]
+    ch = [bars[i]["t"] for i in range(1, len(bars)) if abs(bars[i]["c"] - bars[i - 1]["c"]) > 1e-9]
+    gaps = np.diff(ch) / H if len(ch) >= 3 else []
+    if len(gaps) < 2:
+        return fallback, "архив"
+    g = float(np.median(gaps))
+    return (1.0 if g < 1.5 else 2.0 if g < 3 else 4.0 if g < 6 else 8.0), "по выплатам"
+
+
 def main():
     arch = pd.read_csv("results/delay8/short/oi_sim_trades.csv.gz").drop_duplicates(["symbol", "open_time"])
     lines, n_new, n_old = [], 0, 0
@@ -40,13 +51,15 @@ def main():
         c = L.candle_feats(L.history("ohlcv-history", [cs], "4hour", T - 20 * H4, T + 60).get(cs, []), T)
         ob = L.history("open-interest-history", [cs], "1hour", T - 30 * H, T + 60, convert_to_usd="false").get(cs, [])
         pr = L.history("predicted-funding-rate-history", [cs], "1hour", T - 30 * H, T + 60).get(cs, [])
-        st = L.history("funding-rate-history", [cs], "1hour", T - 30 * H, T + 60).get(cs, [])
-        hours = L.funding_interval(sym)
+        st = L.history("funding-rate-history", [cs], "1hour", T - 56 * H, T + 60).get(cs, [])
+        hours_old = L.funding_interval(sym)
+        hours, src = detect_interval(st, T, hours_old)
+        hours_p, _ = detect_interval(st, T - 4 * H, hours_old)
         o0, o24, o4, o28 = (oi_at(ob, x) for x in (T, T - 24 * H, T - 4 * H, T - 28 * H))
         res = {}
-        for name, fb in (("new", pr), ("old", st)):
-            sf = {"fund24": L.fund24(fb, T, hours), "oi_chg24": (o0 / o24 - 1) * 100,
-                  "fund24_prev": L.fund24(fb, T - 4 * H, hours), "oi_chg24_prev": (o4 / o28 - 1) * 100}
+        for name, fb, h, hp in (("new", pr, hours, hours_p), ("old", st, hours_old, hours_old)):
+            sf = {"fund24": L.fund24(fb, T, h), "oi_chg24": (o0 / o24 - 1) * 100,
+                  "fund24_prev": L.fund24(fb, T - 4 * H, hp), "oi_chg24_prev": (o4 / o28 - 1) * 100}
             res[name] = (L.is_short(c, sf), sf)
         a = arch[(arch.symbol == sym) & (arch.open_time == (T - H4) * 1000)]
         ok_new, sf = res["new"]
@@ -54,10 +67,10 @@ def main():
         n_old += res["old"][0]
         px = c["px24"] if c else np.nan
         lines.append(f"{'✅' if ok_new else '❌'} {sym} {ts[5:]}: фандинг {sf['fund24']:.2f}% (архив {a.fund24.iloc[0]:.2f}%), "
-                     f"OI {sf['oi_chg24']:+.0f}% (архив {a.oi_chg24.iloc[0]:+.0f}%), цена {px:+.1f}%"
+                     f"OI {sf['oi_chg24']:+.0f}% (архив {a.oi_chg24.iloc[0]:+.0f}%), цена {px:+.1f}%, интервал {hours:g} ч ({src})"
                      + ("" if ok_new else f" · прошлая свеча: фандинг {sf['fund24_prev']:.2f}%, OI {sf['oi_chg24_prev']:+.0f}%"))
         print(lines[-1], flush=True)
-    head = (f"🧪 Шорты с 20.09 по новой схеме фандинга\nНОВАЯ СХЕМА: найдено {n_new} из {len(SHORTS)} · "
+    head = (f"🧪 Шорты с 20.09: прогнозная ставка + интервал по последним выплатам\nНОВАЯ СХЕМА: найдено {n_new} из {len(SHORTS)} · "
             f"КАК СЕЙЧАС В БОТЕ: {n_old} из {len(SHORTS)}")
     L.tg(head + "\n" + "\n".join(lines))
 
