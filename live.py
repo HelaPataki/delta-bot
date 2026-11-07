@@ -558,13 +558,13 @@ def send(T, rows, shorts, longs, levels, test, extra=False):
     if pick_s:
         close_at = int(time.time()) + (SHORT_HOLD_H * 60 + 5) * 60
         note = "\n".join(x for x in (
-            "🔁 ДОП. ПРОВЕРКА (не первый алерт свечи)" if extra else "",
+            "🔁 ДОП. ПРОВЕРКА — сигнал найден позже" if extra else "",
             f"⏱ Свеча закрылась в {kyiv(T, '%H:%M')} — всё равно входи сейчас" if late else "") if x)
         tg(short_text(pick_s, [x for x in shorts if x != pick_s], T, test, close_at, note))
     if pick_l:
         lvl, tick = levels[pick_l]
         note = "\n".join(x for x in (
-            "🔁 ДОП. ПРОВЕРКА (не первый алерт свечи)" if extra else "",
+            "🔁 ДОП. ПРОВЕРКА — сигнал найден позже" if extra else "",
             f"⏱ Свеча закрылась в {kyiv(T, '%H:%M')} — ордер ставь как обычно" if late else "") if x)
         tg(long_text(pick_l, lvl, tick, [x for x in longs if x != pick_l], T, test, note))
     return pick_s, close_at, pick_l
