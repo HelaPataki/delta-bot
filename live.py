@@ -7,8 +7,8 @@
         условный ордер на POC + 5 тиков (живёт 4 ч), стоп −4,3%, тейк +17,2%, держать до 10 дней.
 Общие фильтры: оборот свечи ≥ $50k, капитализация $10M–$400M.
 
-Coinalyze даёт 40 монето-запросов в минуту, поэтому бот запускается заранее (~80 мин до закрытия свечи):
-  1) за ~45 мин отбирает кандидатов в шорт (прогнозный фандинг < 0), за ~22 мин — в лонг (объём свечи уже большой);
+Coinalyze даёт ~20–40 монето-запросов в минуту, поэтому бот запускается заранее (~2 ч 15 мин до закрытия свечи):
+  1) за ~65 мин отбирает кандидатов в шорт (прогнозный фандинг < 0), за ~42 мин — в лонг (объём свечи уже большой);
   2) ждёт закрытия свечи и через минуту проверяет только кандидатов;
   3) шлёт алерты и напоминания (отменить ордер, закрыть шорт, закрыть лонг).
 MODE=test — сразу проверяет последнюю закрытую свечу, сообщения помечены «ТЕСТ», напоминания не ставятся.
@@ -110,6 +110,7 @@ def cz(path, cost=1, **params):
             time.sleep(10)
             continue
         if r.status_code == 429:
+            log(f"Coinalyze просит подождать ({r.headers.get('Retry-After', '?')} с)")
             try:
                 wait = float(r.headers.get("Retry-After", "30"))
             except ValueError:
@@ -576,7 +577,7 @@ def main():
             log("эта свеча уже обработана")
             return
     late_note = ""
-    started_late = (T - now) < 30 * 60 and not test
+    started_late = (T - now) < 45 * 60 and not test
 
     uni = universe()
     uni_rev = {b: s for s, b in uni.items()}
@@ -589,9 +590,9 @@ def main():
         log("запуск поздний: предварительный отбор пропускаю")
         short_wl, long_wl = None, list(uni)
     else:
-        sleep_until(T - 45 * 60)
-        short_wl = prescan_short(uni, T, deadline=T - 25 * 60)
-        sleep_until(T - 22 * 60)
+        sleep_until(T - 65 * 60)
+        short_wl = prescan_short(uni, T, deadline=T - 44 * 60)
+        sleep_until(T - 42 * 60)
         long_wl = prescan_long(uni, T)
 
     if not test:

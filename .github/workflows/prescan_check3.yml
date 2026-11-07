@@ -1,0 +1,29 @@
+name: Prescan check 3 run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prescan_check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      START: "2024-11-01"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python prescan_check3.py
+      - name: Save results
+        if: always()
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/prescan_check3 || true
+          git commit -m "Prescan check 3 run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done

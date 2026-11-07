@@ -2,8 +2,8 @@ name: Live bot
 
 on:
   schedule:
-    # за ~80 минут до закрытия каждой 4ч-свечи (закрытия в 00, 04, 08, 12, 16, 20 UTC)
-    - cron: "40 2,6,10,14,18,22 * * *"
+    # за ~2 ч 15 мин до закрытия каждой 4ч-свечи (закрытия в 00, 04, 08, 12, 16, 20 UTC); GitHub часто опаздывает
+    - cron: "45 1,5,9,13,17,21 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -20,7 +20,7 @@ concurrency:
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 170
+    timeout-minutes: 220
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
