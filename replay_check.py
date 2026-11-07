@@ -68,40 +68,64 @@ def main():
                 rough.setdefault(s, []).append((T, c))
     L.log(f"монет {len(syms)}, грубых кандидатов: {sum(map(len, rough.values()))} свечей у {len(rough)} монет")
 
-    # шаг 2: точный расчёт по часовым данным, как в новой схеме
-    found = []
+    # шаг 2: точный расчёт по часовым данным. Фандинг = прогноз в моменты выплат по сетке интервала.
+    #   A «до закрытия»: выплаты в [T−24ч, T) — выплата ровно в момент закрытия идёт уже в следующую свечу
+    #   B «с закрытием»: выплаты в (T−24ч, T] — как в прошлой проверке
+    found = {"A": [], "B": []}
     cs = list(rough)
     oi1 = L.history("open-interest-history", cs, "1hour", START - 30 * H, END + 60, convert_to_usd="false")
-    pr = L.history("predicted-funding-rate-history", cs, "1hour", START - 30 * H, END + 60)
-    st = L.history("funding-rate-history", cs, "1hour", START - 30 * H, END + 60)
+    pr = L.history("predicted-funding-rate-history", cs, "1hour", START - 32 * H, END + 60)
     for s in cs:
+        pm = {x["t"] + H: x["c"] for x in pr.get(s, []) if x.get("c") is not None}
         for T, c in rough[s]:
             hours = interval_as_live(uni[s], T)
             o0, o24, o4, o28 = (oi_at(oi1.get(s, []), x) for x in (T, T - 24 * H, T - 4 * H, T - 28 * H))
-            sv = [b["c"] for b in st.get(s, []) if T - 28 * H <= b["t"] and b["t"] + H <= T - 4 * H and b.get("c") is not None]
-            sf = {"fund24": L.fund24(pr.get(s, []), T, hours), "oi_chg24": (o0 / o24 - 1) * 100,
-                  "fund24_prev": float(np.mean(sv)) * 8 / hours if sv else np.nan, "oi_chg24_prev": (o4 / o28 - 1) * 100}
-            if L.is_short(c, sf):
-                found.append((uni[s], T, sf, c))
+            for v in ("A", "B"):
+                sf = {"fund24": fgrid(pm, T, hours, v), "oi_chg24": (o0 / o24 - 1) * 100,
+                      "fund24_prev": fgrid(pm, T - 4 * H, hours, v), "oi_chg24_prev": (o4 / o28 - 1) * 100}
+                if L.is_short(c, sf):
+                    found[v].append((uni[s], T, sf, c))
 
-    got = {(b, T) for b, T, _, _ in found}
-    match = got & arch_set
-    extra = [f for f in found if (f[0], f[1]) not in arch_set]
-    miss = sorted(arch_set - got, key=lambda x: x[1])
-    lines = [f"🧪 Все монеты, свечи 20.09–31.10: новая схема против архива",
-             f"Совпали с архивом: {len(match)} из {len(arch_set)}",
-             f"ЛИШНИЕ (в архиве сигнала нет): {len(extra)}"]
+    lines = ["🧪 Все монеты, свечи 20.09–31.10, два способа счёта фандинга против архива"]
+    best = None
+    for v, name in (("A", "A — выплаты до закрытия свечи"), ("B", "B — включая выплату в момент закрытия")):
+        got = {(b, T) for b, T, _, _ in found[v]}
+        extra = [f for f in found[v] if (f[0], f[1]) not in arch_set]
+        miss = sorted(arch_set - got, key=lambda x: x[1])
+        lines.append(f"{name}: совпали {len(got & arch_set)} из {len(arch_set)}, лишних {len(extra)}, пропущено {len(miss)}")
+        score = len(got & arch_set) - len(extra)
+        if best is None or score > best[0]:
+            best = (score, v, extra, miss)
+    _, v, extra, miss = best
+    lines.append(f"Подробно по способу {v}:")
     for b, T, sf, c in sorted(extra, key=lambda x: x[1]):
         note = "" if b in arch_syms else " · монеты нет в архиве"
         lines.append(f"  ➕ {b} {kv(T)}: фандинг {sf['fund24']:.2f}%, OI {sf['oi_chg24']:+.0f}%, цена {c['px24']:+.1f}%, "
                      f"прошлая: фандинг {sf['fund24_prev']:.2f}%, OI {sf['oi_chg24_prev']:+.0f}%{note}")
-    lines.append(f"Пропущенные: {len(miss)}")
     for b, T in miss:
         why = "" if b in uni.values() else " · сейчас вне списка монет бота (капитализация)"
         lines.append(f"  ➖ {b} {kv(T)}{why}")
-    msg = "\n".join(lines)
-    print(msg, flush=True)
-    L.tg(msg)
+    print("\n".join(lines), flush=True)
+    chunk = ""
+    for ln in lines:
+        if len(chunk) + len(ln) > 3800:
+            L.tg(chunk)
+            chunk = ""
+        chunk += ln + "\n"
+    L.tg(chunk)
+
+
+def fgrid(pm, X, hours, v):
+    """Средний фандинг (% на 8 ч) по выплатам на сетке интервала: прогноз в момент выплаты."""
+    step = int(hours * H)
+    top = (X - 1) // step * step if v == "A" else X // step * step
+    lo = X - 24 * H
+    rates, t = [], top
+    while (t >= lo if v == "A" else t > lo):
+        if t in pm:
+            rates.append(pm[t] * 8 / hours)
+        t -= step
+    return float(np.mean(rates)) if rates else np.nan
 
 
 if __name__ == "__main__":
