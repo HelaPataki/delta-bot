@@ -460,7 +460,7 @@ def sleep_until(ts):
 
 def prescan_short(uni, T, deadline):
     """Кандидаты в шорт (за ~45 мин до закрытия): история фандинга по всем монетам →
-    прогнозная ставка < 0 или выплаченный фандинг 24ч ≤ −0,1% → OI за 24ч ≥ +30%."""
+    прогнозная ставка < 0 или выплаченный фандинг 24ч ≤ −0,1% → OI за 24ч ≥ +15%."""
     now = time.time()
     fb = history("funding-rate-history", list(uni), "1hour", now - 30 * H, now)
     neg = [s for s, b in fb.items() if b and any((x.get("c") or 0) < 0 for x in b[-25:])]
@@ -484,20 +484,20 @@ def prescan_short(uni, T, deadline):
         for s in batch:
             o0, o24 = oi_at(ob.get(s, []), X), oi_at(ob.get(s, []), X - 24 * H)
             oi = (o0 / o24 - 1) * 100
-            if oi >= 30 or np.isnan(oi):
+            if oi >= 15 or np.isnan(oi):
                 wl.append(s)
     log(f"кандидатов в шорт: {len(wl)}")
     return wl
 
 
 def prescan_long(uni, T):
-    """Кандидаты в лонг: объём текущей (ещё не закрытой) свечи уже ≥ 2,5x к обычному."""
+    """Кандидаты в лонг: объём текущей (ещё не закрытой) свечи уже ≥ 2x к обычному."""
     now = time.time()
     bars = history("ohlcv-history", list(uni), "4hour", T - 20 * H4, now)
     wl = []
     for s, b in bars.items():
         f = candle_feats(b, T)
-        if f and f["vol_ratio"] >= 2.5:
+        if f and f["vol_ratio"] >= 2.0:
             wl.append(s)
     log(f"кандидатов в лонг: {len(wl)} (из {len(bars)} с данными)")
     return wl
