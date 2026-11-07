@@ -267,6 +267,7 @@ def candle_feats(bars, T):
         "px24": (cur["c"] / bars[i - 6]["c"] - 1) * 100 if i >= 6 and idx.get(T - 7 * H4) == i - 6 else np.nan,
         "px24_prev": (bars[i - 1]["c"] / bars[i - 7]["c"] - 1) * 100 if i >= 7 and idx.get(T - 8 * H4) == i - 7 else np.nan,
         "turnover_prev": qv[i - 1] if idx.get(T - 2 * H4) == i - 1 else 0.0,
+        "pre24": qv[i - 6:i].sum() / qv[i - 12:i - 6].sum() if qv[i - 12:i - 6].sum() > 0 else np.nan,
     }
     return f
 
@@ -296,7 +297,7 @@ def oi_at(bars, X):
 
 def short_feats(fbars, obars, T, hours):
     o0, o24, o4, o28 = (oi_at(obars, x) for x in (T, T - 24 * H, T - 4 * H, T - 28 * H))
-    return {"fund24": fund24(fbars, T, hours), "oi_chg24": (o0 / o24 - 1) * 100,
+    return {"fund24": fund24(fbars, T, hours), "oi_chg24": (o0 / o24 - 1) * 100, "oi_chg4": (o0 / o4 - 1) * 100,
             "fund24_prev": fund24(fbars, T - 4 * H, hours), "oi_chg24_prev": (o4 / o28 - 1) * 100}
 
 
@@ -392,15 +393,25 @@ def save_state(st):
 
 
 SIG_COLS = ["свеча закрылась (Киев)", "сторона", "монета", "выбрана", "проход", "цена закрытия", "объём x", "дельта %",
-            "POC", "POC позиция %", "цена ордера", "фандинг 24ч %", "OI 24ч %", "цена 24ч %", "оборот $"]
+            "POC", "POC позиция %", "цена ордера", "фандинг 24ч %", "OI 24ч %", "цена 24ч %", "оборот $",
+            "OI 4ч %", "рост объёма заранее x"]
 
 
 def journal(rows):
-    new = not os.path.exists(SIGNALS_FILE)
-    with open(SIGNALS_FILE, "a", newline="") as f:
+    old = []
+    if os.path.exists(SIGNALS_FILE):
+        with open(SIGNALS_FILE, newline="") as f:
+            r = csv.DictReader(f)
+            if r.fieldnames != SIG_COLS:          # добавились колонки — переписываем старые строки в новом формате
+                old = list(r)
+            else:
+                old = None
+    with open(SIGNALS_FILE, "a" if old is None else "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=SIG_COLS)
-        if new:
+        if old is not None:
             w.writeheader()
+            for r in old:
+                w.writerow({k: r.get(k, "") for k in SIG_COLS})
         for r in rows:
             w.writerow({k: r.get(k, "") for k in SIG_COLS})
 
@@ -530,7 +541,8 @@ def check(uni, T, long_wl, short_wl):
                 shorts.append(uni[s])
                 rows.append({"сторона": "шорт", "монета": uni[s], "цена закрытия": c["close"], "фандинг 24ч %": rnd(sf["fund24"], 3),
                              "OI 24ч %": rnd(sf["oi_chg24"], 1), "цена 24ч %": rnd(c["px24"]), "оборот $": rnd(c["turnover"], 0),
-                             "объём x": rnd(c["vol_ratio"]), "дельта %": rnd(c["delta_pct"])})
+                             "объём x": rnd(c["vol_ratio"]), "дельта %": rnd(c["delta_pct"]),
+                             "OI 4ч %": rnd(sf["oi_chg4"], 1), "рост объёма заранее x": rnd(c["pre24"])})
 
     pre = [s for s in long_wl if feats.get(s) and feats[s]["vol_ratio"] >= 5 and feats[s]["delta_pct"] <= -17
            and feats[s]["turnover"] >= MIN_TURNOVER]
@@ -546,7 +558,7 @@ def check(uni, T, long_wl, short_wl):
                 rows.append({"сторона": "лонг", "монета": uni[s], "цена закрытия": c["close"], "объём x": rnd(c["vol_ratio"]),
                              "дельта %": rnd(c["delta_pct"]), "POC": p["poc"], "POC позиция %": rnd(p["poc_pos"], 1),
                              "цена ордера": fmt_price(lvl, p["tick"]), "оборот $": rnd(c["turnover"], 0),
-                             "цена 24ч %": rnd(c["px24"])})
+                             "цена 24ч %": rnd(c["px24"]), "рост объёма заранее x": rnd(c["pre24"])})
     log(f"сигналы: шорт {shorts}, лонг {longs}")
     return rows, shorts, longs, levels
 
