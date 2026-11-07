@@ -81,9 +81,12 @@ def main():
         src = "как у живого бота в тот день"
         o0, o24, o4, o28 = (oi_at(ob, x) for x in (T, T - 24 * H, T - 4 * H, T - 28 * H))
         res = {}
-        for name, fb, h, hp in (("new", pr, hours, hours_p), ("old", st, hours_old, hours_old)):
+        # прошлая свеча: средняя ФАКТИЧЕСКАЯ выплаченная ставка за (T−28ч, T−4ч] (история выплат, ступеньками), в пересчёте на 8 ч
+        sv = [b["c"] for b in st if T - 28 * H <= b["t"] and b["t"] + H <= T - 4 * H and b.get("c") is not None]
+        prev_settled = float(np.mean(sv)) * 8 / hours if sv else np.nan
+        for name, fb, h, fprev in (("new", pr, hours, prev_settled), ("old", st, hours_old, L.fund24(st, T - 4 * H, hours_old))):
             sf = {"fund24": L.fund24(fb, T, h), "oi_chg24": (o0 / o24 - 1) * 100,
-                  "fund24_prev": L.fund24(fb, T - 4 * H, hp), "oi_chg24_prev": (o4 / o28 - 1) * 100}
+                  "fund24_prev": fprev, "oi_chg24_prev": (o4 / o28 - 1) * 100}
             res[name] = (L.is_short(c, sf), sf)
         a = arch[(arch.symbol == sym) & (arch.open_time == (T - H4) * 1000)]
         ok_new, sf = res["new"]
@@ -94,7 +97,7 @@ def main():
                      f"OI {sf['oi_chg24']:+.0f}% (архив {a.oi_chg24.iloc[0]:+.0f}%), цена {px:+.1f}%, интервал {hours:g} ч ({src})"
                      + ("" if ok_new else f" · прошлая свеча: фандинг {sf['fund24_prev']:.2f}%, OI {sf['oi_chg24_prev']:+.0f}%"))
         print(lines[-1], flush=True)
-    head = (f"🧪 Шорты с 20.09: прогнозная ставка + интервал как у живого бота в тот день\nНОВАЯ СХЕМА: найдено {n_new} из {len(SHORTS)} · "
+    head = (f"🧪 Шорты с 20.09: сигнальная свеча — прогноз, прошлая — фактические выплаты\nНОВАЯ СХЕМА: найдено {n_new} из {len(SHORTS)} · "
             f"КАК СЕЙЧАС В БОТЕ: {n_old} из {len(SHORTS)}")
     L.tg(head + "\n" + "\n".join(lines))
 
