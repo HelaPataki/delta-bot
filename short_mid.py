@@ -204,7 +204,9 @@ def main():
                 else:
                     bv = p[(p.variant == v) & (p["size"] > BIG)]
                     if rule == "только ниже уровня":
-                        keys = bv[bv.side == "выше уровня"].set_index(["symbol", "open_time"]).index
+                        # сторону берём по ВСЕМ большим сигналам (и несработавшим), иначе в выборку попадает заглядывание в будущее
+                        allb = t[(t.period == period) & (t.variant == v) & (t["size"] > BIG)]
+                        keys = allb[allb.side == "выше уровня"].set_index(["symbol", "open_time"]).index
                         above = baseline[baseline.set_index(["symbol", "open_time"]).index.isin(keys)]
                         sh = pd.concat([small, bv[bv.side == "ниже уровня"], above])
                     else:
