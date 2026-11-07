@@ -134,7 +134,7 @@ def main():
         t = pd.DataFrame([x for r in ex.map(one, sig.to_dict("records")) for x in r])
     t.to_csv(f"{OUT}/short_exits_trades.csv.gz", index=False)
     t["net"] = t.pnl_pct + t.funding_pct - 0.1
-    long_file = "results/delay8/long/oi_sim_trades.csv.gz" if DELAY_MIN == 8 else "results/long_sim/oi_sim_trades.csv.gz"
+    long_file = "results/delay8/long/oi_sim_trades.csv.gz" if DELAY_MIN <= 10 else "results/long_sim/oi_sim_trades.csv.gz"
     lg = {"2025–26": pd.read_csv(long_file).query("rr == 4 and hold_h == 240"),
           "2021–24": pd.read_csv("results/y2021/long_trades_all.csv.gz").query("mcap >= 10e6 and mcap <= 400e6")}
     out = ["# Шорт: какой выход даёт больше прибыли\n",
