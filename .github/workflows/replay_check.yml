@@ -2,6 +2,12 @@ name: Replay check (temporary)
 
 on:
   workflow_dispatch:
+    inputs:
+      what:
+        description: "extras — разбор лишних по архиву (быстро); full — полный прогон через Coinalyze"
+        default: extras
+        type: choice
+        options: [extras, full]
 
 jobs:
   replay:
@@ -13,7 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests numpy pandas
-      - run: python replay_check.py
+      - run: python ${{ inputs.what == 'full' && 'replay_check.py' || 'replay_extras.py' }}
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
