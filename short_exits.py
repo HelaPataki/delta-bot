@@ -23,10 +23,11 @@ import short_tests as ST
 import combo_sim as CS
 from short_mid import funding_series
 
-OUT = "results/short_exits"
+DELAY_MIN = int(os.environ.get("DELAY_MIN", "8"))
+OUT = "results/short_exits" + ("" if DELAY_MIN == 8 else f"_d{DELAY_MIN}")
 H, MIN = 3600 * 1000, 60_000
 H4 = 4 * H
-DELAY = 8 * MIN
+DELAY = DELAY_MIN * MIN
 R = 4.3
 
 VARIANTS = {
@@ -133,10 +134,11 @@ def main():
         t = pd.DataFrame([x for r in ex.map(one, sig.to_dict("records")) for x in r])
     t.to_csv(f"{OUT}/short_exits_trades.csv.gz", index=False)
     t["net"] = t.pnl_pct + t.funding_pct - 0.1
-    lg = {"2025–26": pd.read_csv("results/delay8/long/oi_sim_trades.csv.gz").query("rr == 4 and hold_h == 240"),
+    long_file = "results/delay8/long/oi_sim_trades.csv.gz" if DELAY_MIN == 8 else "results/long_sim/oi_sim_trades.csv.gz"
+    lg = {"2025–26": pd.read_csv(long_file).query("rr == 4 and hold_h == 240"),
           "2021–24": pd.read_csv("results/y2021/long_trades_all.csv.gz").query("mcap >= 10e6 and mcap <= 400e6")}
     out = ["# Шорт: какой выход даёт больше прибыли\n",
-           "Вход по рынку через 8 мин, стоп +4,3%, выход через 24 ч, комиссия 0,1%, фандинг учтён. "
+           f"Вход по рынку через {DELAY_MIN} мин, стоп +4,3%, выход через 24 ч, комиссия 0,1%, фандинг учтён. "
            "«В плюсе» — доля сделок с итогом > 0 после комиссии и фандинга.\n"]
     for period in ("2025–26", "2021–24"):
         p = t[t.period == period]
