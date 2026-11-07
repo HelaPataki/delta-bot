@@ -341,14 +341,14 @@ def fmt_price(x, tick):
 
 
 # ---------------- тексты ----------------
-def short_text(sym, others, T, test):
+def short_text(sym, others, T, test, close_at=None, note=""):
     roi_sl, roi_tp = STOP * LEV, SHORT_TAKE * LEV
     lines = ["🧪 ТЕСТ — НЕ ТОРГОВАТЬ 🧪"] if test else []
-    lines += ["🔴🔴🔴 ШОРТ 🔴🔴🔴", sym, "━━━━━━━━━━━━━━",
+    lines += ["🔴🔴🔴 ШОРТ 🔴🔴🔴", sym] + ([note.strip()] if note else []) + ["━━━━━━━━━━━━━━",
               "1️⃣ Рыночный → Продать/Шорт 🔴",
               f"2️⃣ Стоп-лосс ROI:   {roi_sl:.1f} %",
               f"3️⃣ Тейк-профит ROI: {roi_tp:.1f} %",
-              f"4️⃣ Закрыть до: {kyiv(T + (SHORT_HOLD_H * 60 + ENTRY_DELAY_MIN) * 60)}",
+              f"4️⃣ Закрыть до: {kyiv(close_at or T + (SHORT_HOLD_H * 60 + ENTRY_DELAY_MIN) * 60)}",
               "━━━━━━━━━━━━━━",
               f"Плечо: {LEV}x | Весь свободный слот",
               "Оба слота заняты — пропустить"]
@@ -357,10 +357,10 @@ def short_text(sym, others, T, test):
     return "\n".join(lines)
 
 
-def long_text(sym, level, tick, others, T, test):
+def long_text(sym, level, tick, others, T, test, note=""):
     roi_sl, roi_tp = STOP * LEV, LONG_TAKE * LEV
     lines = ["🧪 ТЕСТ — НЕ ТОРГОВАТЬ 🧪"] if test else []
-    lines += ["🟢🟢🟢 ЛОНГ 🟢🟢🟢", sym, "━━━━━━━━━━━━━━",
+    lines += ["🟢🟢🟢 ЛОНГ 🟢🟢🟢", sym] + ([note.strip()] if note else []) + ["━━━━━━━━━━━━━━",
               "1️⃣ Условные → Стоп:",
               f"   {fmt_price(level, tick)}",
               "   Рыночная цена → Купить/Лонг 🟢",
@@ -391,7 +391,7 @@ def save_state(st):
         json.dump(st, f, indent=1, ensure_ascii=False)
 
 
-SIG_COLS = ["свеча закрылась (Киев)", "сторона", "монета", "выбрана", "цена закрытия", "объём x", "дельта %",
+SIG_COLS = ["свеча закрылась (Киев)", "сторона", "монета", "выбрана", "проход", "цена закрытия", "объём x", "дельта %",
             "POC", "POC позиция %", "цена ордера", "фандинг 24ч %", "OI 24ч %", "цена 24ч %", "оборот $"]
 
 
@@ -487,7 +487,7 @@ def prescan_short(uni, T, deadline):
             if oi >= 15 or np.isnan(oi):
                 wl.append(s)
     log(f"кандидатов в шорт: {len(wl)}")
-    return wl
+    return wl, cand
 
 
 def prescan_long(uni, T):
@@ -503,13 +503,14 @@ def prescan_long(uni, T):
     return wl
 
 
-def final(uni, T, long_wl, short_wl, test, late_note=""):
+def check(uni, T, long_wl, short_wl):
+    """Проверка закрытой свечи по спискам монет. Возвращает строки журнала, шорты, лонги и уровни ордеров."""
     syms = sorted(set(long_wl) | set(short_wl))
     log(f"проверка после закрытия: {len(syms)} монет")
     to = T + 60
     bars = history("ohlcv-history", syms, "4hour", T - 20 * H4, to)
     feats = {s: candle_feats(b, T) for s, b in bars.items()}
-    rows, shorts, longs = [], [], []
+    rows, shorts, longs, levels = [], [], [], {}
 
     if short_wl:
         fb = history("funding-rate-history", short_wl, "1hour", T - 30 * H, to)
@@ -527,7 +528,6 @@ def final(uni, T, long_wl, short_wl, test, late_note=""):
 
     pre = [s for s in long_wl if feats.get(s) and feats[s]["vol_ratio"] >= 5 and feats[s]["delta_pct"] <= -17
            and feats[s]["turnover"] >= MIN_TURNOVER]
-    levels = {}
     if pre:
         mb = history("ohlcv-history", pre, "1min", T - H4, T - 60)
         for s in pre:
@@ -541,21 +541,29 @@ def final(uni, T, long_wl, short_wl, test, late_note=""):
                              "дельта %": rnd(c["delta_pct"]), "POC": p["poc"], "POC позиция %": rnd(p["poc_pos"], 1),
                              "цена ордера": fmt_price(lvl, p["tick"]), "оборот $": rnd(c["turnover"], 0),
                              "цена 24ч %": rnd(c["px24"])})
+    log(f"сигналы: шорт {shorts}, лонг {longs}")
+    return rows, shorts, longs, levels
 
+
+def send(T, rows, shorts, longs, levels, test, extra=False):
+    """Выбирает одну монету на сторону, шлёт алерты. Возвращает выбранный шорт (с временем закрытия) и лонг."""
     pick_s = random.choice(shorts) if shorts else None
     pick_l = random.choice(longs) if longs else None
     for r in rows:
         r["свеча закрылась (Киев)"] = kyiv(T, "%Y-%m-%d %H:%M")
         r["выбрана"] = "да" if r["монета"] in (pick_s, pick_l) else "нет"
-    if time.time() - T > LATE_MIN * 60 and not test:
-        late_note = f"⚠️ С ОПОЗДАНИЕМ: свеча закрылась в {kyiv(T, '%H:%M')}, сейчас {kyiv(time.time(), '%H:%M')}\n"
+        r["проход"] = "дополнительный" if extra else "основной"
+    late = time.time() - T > LATE_MIN * 60 and not test
+    close_at = None
     if pick_s:
-        tg(late_note + short_text(pick_s, [x for x in shorts if x != pick_s], T, test))
+        close_at = int(time.time()) + (SHORT_HOLD_H * 60 + 5) * 60
+        note = f"⏱ Свеча закрылась в {kyiv(T, '%H:%M')} — всё равно входи сейчас" if late else ""
+        tg(short_text(pick_s, [x for x in shorts if x != pick_s], T, test, close_at, note))
     if pick_l:
         lvl, tick = levels[pick_l]
-        tg(late_note + long_text(pick_l, lvl, tick, [x for x in longs if x != pick_l], T, test))
-    log(f"сигналы: шорт {shorts}, лонг {longs}")
-    return rows, pick_s, pick_l, levels
+        note = f"⏱ Свеча закрылась в {kyiv(T, '%H:%M')} — ордер ставь как обычно" if late else ""
+        tg(long_text(pick_l, lvl, tick, [x for x in longs if x != pick_l], T, test, note))
+    return pick_s, close_at, pick_l
 
 
 def main():
@@ -576,22 +584,22 @@ def main():
         if st.get("last_T") == T:
             log("эта свеча уже обработана")
             return
-    late_note = ""
     started_late = (T - now) < 45 * 60 and not test
 
     uni = universe()
     uni_rev = {b: s for s, b in uni.items()}
+    fund_cand = []
 
     if test:
-        tg(f"🧪 Тест запущен: проверяю свечу, закрывшуюся в {kyiv(T, '%H:%M')}. Это займёт ~15–25 минут.")
-        short_wl = prescan_short(uni, T, deadline=time.time() + 30 * 60)
-        long_wl = list(uni)
+        tg(f"🧪 Тест запущен: проверяю свечу, закрывшуюся в {kyiv(T, '%H:%M')}. Это займёт ~30–50 минут.")
+        short_wl, fund_cand = prescan_short(uni, T, deadline=time.time() + 30 * 60)
+        long_wl = prescan_long(uni, T)
     elif started_late:
         log("запуск поздний: предварительный отбор пропускаю")
         short_wl, long_wl = None, list(uni)
     else:
         sleep_until(T - 65 * 60)
-        short_wl = prescan_short(uni, T, deadline=T - 44 * 60)
+        short_wl, fund_cand = prescan_short(uni, T, deadline=T - 44 * 60)
         sleep_until(T - 42 * 60)
         long_wl = prescan_long(uni, T)
 
@@ -601,7 +609,26 @@ def main():
         short_wl = [s for s, v in funding_now(uni).items() if v < 0]
         prefetch_intervals([uni[s] for s in short_wl])
 
-    rows, pick_s, pick_l, levels = final(uni, T, long_wl, short_wl, test, late_note)
+    # основной проход — только кандидаты
+    rows, shorts, longs, levels = check(uni, T, long_wl, short_wl)
+    pick_s, close_s, pick_l = send(T, rows, shorts, longs, levels, test)
+
+    # страховочный проход — то, что отсеял ранний отбор (только по стороне, где ещё нет сигнала)
+    extra_short = [] if pick_s else [s for s in fund_cand if s not in set(short_wl)]
+    extra_long = [] if pick_l else [s for s in uni if s not in set(long_wl)]
+    if extra_short or extra_long:
+        log(f"дополнительная проверка: шорт {len(extra_short)}, лонг {len(extra_long)} монет")
+        if extra_short:
+            r2, s2, _, _ = check(uni, T, [], extra_short)
+            ps, cs, _ = send(T, r2, s2, [], {}, test, extra=True)
+            rows += r2
+            pick_s, close_s = pick_s or ps, close_s or cs
+        if extra_long:
+            r3, _, l3, lv3 = check(uni, T, extra_long, [])
+            _, _, pl = send(T, r3, [], l3, lv3, test, extra=True)
+            rows += r3
+            levels.update(lv3)
+            pick_l = pick_l or pl
     shorts_n = sum(r["сторона"] == "шорт" for r in rows)
     longs_n = sum(r["сторона"] == "лонг" for r in rows)
 
@@ -612,7 +639,7 @@ def main():
 
     journal(rows)
     if pick_s:
-        st["shorts"].append({"sym": pick_s, "close_at": T + (SHORT_HOLD_H * 60 + ENTRY_DELAY_MIN) * 60})
+        st["shorts"].append({"sym": pick_s, "close_at": close_s})
     if pick_l:
         st["orders"].append({"sym": pick_l, "level": levels[pick_l][0], "from": T + 60, "expires": T + H4})
     reminders(st, time.time(), uni_rev)
