@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          for f in live_state.json live_signals.csv; do
+          for f in live_state.json live_signals.csv live_universe.csv; do
             if [ -f "$f" ]; then git add "$f"; fi
           done
           if git diff --cached --quiet; then exit 0; fi

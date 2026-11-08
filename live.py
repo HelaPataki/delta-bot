@@ -49,6 +49,7 @@ ARCHIVE = "https://data.binance.vision"
 KYIV = ZoneInfo("Europe/Kyiv")
 H, H4 = 3600, 4 * 3600
 STATE_FILE, SIGNALS_FILE = "live_state.json", "live_signals.csv"
+UNIVERSE_FILE = "live_universe.csv"
 MODE = os.environ.get("MODE", "live")
 CALLS_PER_MIN = 38
 
@@ -192,7 +193,7 @@ def coingecko_mcaps(pages=10):
 def universe():
     """{символ Coinalyze: символ Binance} для USDT-перпетуалов Binance с капитализацией $10M–$400M."""
     caps = coingecko_mcaps()
-    out = {}
+    out, listing = {}, []
     for m in cz("/future-markets"):
         s = m.get("symbol", "")
         if not s.endswith(".A") or not m.get("is_perpetual") or m.get("quote_asset") != "USDT":
@@ -201,10 +202,26 @@ def universe():
         if not b.endswith("USDT"):
             continue
         cap = caps.get(base_asset(b), 0)
-        if MCAP_MIN <= cap <= MCAP_MAX:
+        ok = MCAP_MIN <= cap <= MCAP_MAX
+        if ok:
             out[s] = b
+        listing.append((b, cap, ok))
+    save_universe(listing)
     log(f"монет в работе: {len(out)} (капитализация ${MCAP_MIN/1e6:g}M–${MCAP_MAX/1e6:g}M)")
     return out
+
+
+def save_universe(listing):
+    """Список монет последнего запуска: все USDT-перпетуалы Binance, их капитализация и в работе ли (live_universe.csv)."""
+    try:
+        with open(UNIVERSE_FILE, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["монета", "капитализация $M", "в работе", "запуск (Киев)"])
+            stamp = dt.datetime.now(KYIV).strftime("%d.%m.%Y %H:%M")
+            for b, cap, ok in sorted(set(listing)):
+                w.writerow([b, round(cap / 1e6, 1) if cap else "нет данных", "да" if ok else "нет", stamp])
+    except Exception as e:  # noqa: BLE001  — список для справки, бот не должен из-за него падать
+        log("не удалось сохранить список монет", e)
 
 
 # ---------------- интервал фандинга (из архива Binance) ----------------
