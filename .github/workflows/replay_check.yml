@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       what:
-        description: "extras — разбор лишних по архиву; full — полный прогон; twap — прогноз в точке против среднего"
-        default: extras
+        description: "extras — разбор лишних по архиву; full — полный прогон; twap — прогноз в точке против среднего; money — лишние и пропущенные по деньгам"
+        default: money
         type: choice
-        options: [extras, full, twap]
+        options: [money, extras, full, twap]
 
 jobs:
   replay:
