@@ -1,0 +1,84 @@
+name: Pre-pump research
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  START: "2024-07-01"      # свечи с запасом: признакам нужно до 90 дней истории
+  SIG_FROM: "2025-01-01"   # пампы и контроль — с этой даты
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Coins and market caps
+        env:
+          MODE: prep
+        run: python pre_pump.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universe
+          path: results/pre_pump/universe.json
+
+  shard:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe
+          path: results/pre_pump
+      - name: Features (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "8"
+        run: python pre_pump.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: results/pre_pump/parts/part${{ matrix.shard }}.csv.gz
+
+  combine:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: results/pre_pump/parts
+          merge-multiple: true
+      - name: Summary
+        env:
+          MODE: combine
+        run: python pre_pump.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/pre_pump/pre_pump_summary.md results/pre_pump/pre_pump_events.csv
+          git commit -m "Pre-pump research run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
