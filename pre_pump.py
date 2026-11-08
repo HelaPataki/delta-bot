@@ -1,7 +1,8 @@
 """
-Что было ДО пампа. Исследование событий с контрольной группой. 4h-свечи + архив Binance metrics + фандинг.
+Что было ДО пампа. Исследование событий с контрольной группой. 4h- или 1h-свечи (INTERVAL) + архив Binance metrics + фандинг.
 
-Памп: от закрытия 4h-свечи (точка отсчёта) high за следующие 72 ч (18 свечей) >= +30%.
+Памп: от закрытия свечи (точка отсчёта) high за следующие 72 ч >= +30%. Окна признаков заданы в часах;
+норма объёма — 12 предыдущих свечей (на 1h это 12 ч), как в ботах.
 Если так выходит у нескольких свечей подряд — это один памп. Стартом считается последняя свеча «базы»
 перед взлётом: самая поздняя свеча серии, чьё закрытие в пределах +3% от минимального закрытия серии.
 (Самая ранняя не годится: при пампе одной свечой она оказалась бы за 72 ч до него, посреди боковика.)
@@ -31,13 +32,22 @@ import oi_funding as OF
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-PP_OUT = "results/pre_pump"
+INTERVAL = os.environ.get("INTERVAL", "4h")          # 4h или 1h
+IH = {"4h": 4, "1h": 1}[INTERVAL]                       # часов в свече
+PP_OUT = "results/pre_pump" if INTERVAL == "4h" else f"results/pre_pump_{INTERVAL}"
+
+
+def C(hours):
+    """Сколько свечей в этом количестве часов."""
+    return max(int(hours // IH), 1)
+
+
 SIG_FROM = os.environ.get("SIG_FROM", "2025-01-01")
 SIG_START = pd.Timestamp(SIG_FROM, tz="UTC").timestamp() * 1000
 SHARD, NSHARDS = int(os.environ.get("SHARD", "0")), int(os.environ.get("NSHARDS", "1"))
 LIMIT = int(os.environ.get("LIMIT_SYMBOLS", "0"))
 PUMP = 0.30          # +30%
-WIN = 18             # 72 ч
+WIN = C(72)          # 72 ч
 DUMP = 0.20          # −20% за 72 ч — для сравнения
 BASE_BAND = 0.03     # старт = последняя свеча серии с закрытием в пределах +3% от минимума серии
 HELD = 0.15         # «удержался»: через 7 дней закрытие >= +15% от старта
@@ -81,7 +91,7 @@ def fwd(arr, n, w, fn):
 
 # ---------------- признаки по монете ----------------
 def coin(sym, mcap_now, btc):
-    k = Hst.load_klines(sym)
+    k = Hst.load_klines(sym, INTERVAL)
     if k is None or len(k) < 300:
         return None
     o, h, l, c = (k[x].to_numpy() for x in ("open", "high", "low", "close"))
@@ -102,36 +112,36 @@ def coin(sym, mcap_now, btc):
     f["vol_x"] = qv / norm
     dq = 2 * tbq - qv
     f["delta_pct"] = dq / qv * 100
-    f["volx_max3d"] = f.vol_x.rolling(18, min_periods=1).max()
-    f["cvd3d"] = S(dq).rolling(18).sum() / qs.rolling(18).sum() * 100
-    f["cvd7d"] = S(dq).rolling(42).sum() / qs.rolling(42).sum() * 100
-    f["vol_dry"] = qs.rolling(42).median() / qs.shift(42).rolling(138, min_periods=60).median()   # 7д к 30д до них
+    f["volx_max3d"] = f.vol_x.rolling(C(72), min_periods=1).max()
+    f["cvd3d"] = S(dq).rolling(C(72)).sum() / qs.rolling(C(72)).sum() * 100
+    f["cvd7d"] = S(dq).rolling(C(168)).sum() / qs.rolling(C(168)).sum() * 100
+    f["vol_dry"] = qs.rolling(C(168)).median() / qs.shift(C(168)).rolling(C(552), min_periods=C(240)).median()   # 7д к 30д до них
     ats = qs / S(cnt).replace(0, np.nan)
-    f["trade_size_x"] = ats.rolling(18).median() / ats.shift(18).rolling(162, min_periods=60).median()
+    f["trade_size_x"] = ats.rolling(C(72)).median() / ats.shift(C(72)).rolling(C(648), min_periods=C(240)).median()
 
     # --- цена и боковик (Вайкофф) ---
     cs = S(c)
-    for name, sh in (("px1d", 6), ("px3d", 18), ("px7d", 42), ("px30d", 180)):
+    for name, sh in (("px1d", C(24)), ("px3d", C(72)), ("px7d", C(168)), ("px30d", C(720))):
         f[name] = (cs / cs.shift(sh) - 1) * 100
-    hi7, lo7 = S(h).rolling(42).max(), S(l).rolling(42).min()
-    hi14, lo14 = S(h).rolling(84).max(), S(l).rolling(84).min()
+    hi7, lo7 = S(h).rolling(C(168)).max(), S(l).rolling(C(168)).min()
+    hi14, lo14 = S(h).rolling(C(336)).max(), S(l).rolling(C(336)).min()
     f["range7d"] = (hi7 / lo7 - 1) * 100
     f["range14d"] = (hi14 / lo14 - 1) * 100
-    f["range7d_rank"] = f.range7d.rolling(540, min_periods=180).rank(pct=True) * 100   # 0 = самый узкий за 90 дней
+    f["range7d_rank"] = f.range7d.rolling(C(2160), min_periods=C(720)).rank(pct=True) * 100   # 0 = самый узкий за 90 дней
     f["pos_in_range7d"] = (c - lo7) / (hi7 - lo7) * 100
     # спринг: прокол минимума прошлых 14 дней, закрытие обратно выше, объём >= x2
-    prior_lo = S(l).shift(1).rolling(84).min()
+    prior_lo = S(l).shift(1).rolling(C(336)).min()
     spring = (l < prior_lo) & (c > prior_lo) & (f.vol_x >= 2)
-    f["spring3d"] = spring.astype(int).rolling(18, min_periods=1).max().fillna(0).astype(bool)
+    f["spring3d"] = spring.astype(int).rolling(C(72), min_periods=1).max().fillna(0).astype(bool)
     # поглощение: объём >= x3, дельта <= −17%, а закрытие в верхней половине свечи
     absorb = (f.vol_x >= 3) & (f.delta_pct <= -17) & (c >= (h + l) / 2)
-    f["absorb7d"] = absorb.astype(int).rolling(42, min_periods=1).sum()
+    f["absorb7d"] = absorb.astype(int).rolling(C(168), min_periods=1).sum()
 
     # --- контекст BTC ---
     f["btc7d"] = pd.merge(f[["open_time"]], btc, on="open_time", how="left").btc7d.to_numpy()
 
     # --- OI, лонг/шорт, фандинг на момент закрытия ---
-    T = t + 4 * H
+    T = t + IH * H
     m = metrics(sym, t[elig].min())
     cols = ["oi_chg1d", "oi_chg3d", "oi_chg7d", "oi_mcap", "ls_acc", "ls_acc_chg3d", "ls_top"]
     if m is not None and len(m):
@@ -187,12 +197,12 @@ def coin(sym, mcap_now, btc):
         hw, lw = h[i + 1:i + 1 + WIN], l[i + 1:i + 1 + WIN]
         p = int(np.argmax(hw))
         det["peak_pct"][i] = (hw[p] / c[i] - 1) * 100
-        det["hours_to_peak"][i] = 4 * (p + 1)
+        det["hours_to_peak"][i] = IH * (p + 1)
         det["candles_to_30"][i] = int(np.argmax(hw >= c[i] * (1 + PUMP))) + 1
         det["dd_before_peak"][i] = (lw[:p + 1].min() / c[i] - 1) * 100
         after_pk = l[i + 1 + p + 1:i + 1 + p + 1 + WIN]
         det["retrace_after_peak"][i] = (after_pk.min() / hw[p] - 1) * 100 if len(after_pk) else np.nan
-        det["close_7d_pct"][i] = (c[i + 42] / c[i] - 1) * 100 if i + 42 < n else np.nan
+        det["close_7d_pct"][i] = (c[i + C(168)] / c[i] - 1) * 100 if i + C(168) < n else np.nan
     for x, v in det.items():
         f[x] = v
 
@@ -217,8 +227,8 @@ def run_shard():
     mine = [s for i, s in enumerate(sorted(uni)) if i % NSHARDS == SHARD]
     if LIMIT:
         mine = mine[:LIMIT]
-    b = Hst.load_klines("BTCUSDT")
-    btc = pd.DataFrame({"open_time": b.open_time, "btc7d": (b.close / b.close.shift(42) - 1) * 100})
+    b = Hst.load_klines("BTCUSDT", INTERVAL)
+    btc = pd.DataFrame({"open_time": b.open_time, "btc7d": (b.close / b.close.shift(C(168)) - 1) * 100})
     print(f"часть {SHARD}: монет {len(mine)}", flush=True)
 
     def work(sym):
@@ -300,12 +310,13 @@ def combine():
     base_p, base_d = a.pump.mean(), a.dump.mean()
     P = a[a.pump].copy()
     P["тип"] = np.where(P.close_7d_pct >= HELD * 100, "удержался", "пила")
-    P["форма"] = np.select([P.candles_to_30 == 1, P.candles_to_30 <= 3], ["1 свеча", "до 12 ч"], "дольше 12 ч")
+    h30 = P.candles_to_30 * IH                         # часов от старта до +30%
+    P["форма"] = np.select([h30 <= 4, h30 <= 12], ["до 4 ч", "4–12 ч"], "дольше 12 ч")
 
     out = open(f"{PP_OUT}/pre_pump_summary.md", "w")
     w = out.write
-    w("# Что было до пампа\n\n")
-    w(f"Памп: от закрытия 4h-свечи high за 72 ч ≥ +{PUMP * 100:.0f}%, старт — последняя свеча базы перед взлётом "
+    w(f"# Что было до пампа ({INTERVAL}-свечи)\n\n")
+    w(f"Памп: от закрытия {INTERVAL}-свечи high за 72 ч ≥ +{PUMP * 100:.0f}%, старт — последняя свеча базы перед взлётом "
       f"(закрытие в пределах +{BASE_BAND * 100:.0f}% от минимума серии). "
       f"Капа ${Hst.MCAP_MIN / 1e6:.0f}M–{Hst.MCAP_MAX / 1e6:.0f}M, оборот свечи ≥ ${Hst.MIN_TURNOVER / 1e3:.0f}K, "
       f"с {SIG_FROM}. Признаки — только то, что известно на закрытии свечи старта.\n\n")
@@ -320,7 +331,7 @@ def combine():
                                 часов_до_пика=("hours_to_peak", "median"),
                                 просадка_до_пика=("dd_before_peak", "median"),
                                 откат_после_пика=("retrace_after_peak", "median"),
-                                удержались=("тип", lambda s: f"{(s == 'удержался').mean() * 100:.0f}%"))
+                                удержались=("тип", lambda s: f"{(s == 'удержался').mean() * 100:.0f}%")).reindex(["до 4 ч", "4–12 ч", "дольше 12 ч"]).dropna(how="all")
     t1["доля"] = (t1.пампов / len(P) * 100).round(0).astype(int).astype(str) + "%"
     w(t1.round(1).to_markdown() + "\n\n")
     w("Просадка до пика — медиана худшей цены до вершины от закрытия старта (выбило бы стоп?). "
@@ -334,13 +345,13 @@ def combine():
     for col, name in FEATURES:
         rows.append({"признак": name, "контроль": a.loc[~a.pump, col].median(), "все пампы": P[col].median(),
                      "удержался": P.loc[P.тип == "удержался", col].median(), "пила": P.loc[P.тип == "пила", col].median(),
-                     "1 свеча": P.loc[P.форма == "1 свеча", col].median()})
+                     "до 4 ч": P.loc[P.форма == "до 4 ч", col].median()})
     for col, name in FLAGS:
         cc = col if col == "spring3d" else "absorb7d_flag"
         rows.append({"признак": name, "контроль": a.loc[~a.pump, cc].mean() * 100, "все пампы": P[cc].mean() * 100,
                      "удержался": P.loc[P.тип == "удержался", cc].mean() * 100,
                      "пила": P.loc[P.тип == "пила", cc].mean() * 100,
-                     "1 свеча": P.loc[P.форма == "1 свеча", cc].mean() * 100})
+                     "до 4 ч": P.loc[P.форма == "до 4 ч", cc].mean() * 100})
     w(pd.DataFrame(rows).to_markdown(index=False, floatfmt=".3g") + "\n\n")
     w("(для двух последних строк — % свечей, где признак был)\n\n")
 
@@ -392,11 +403,11 @@ def combine():
                      "перекос вверх": f"{(s.pump.mean() / base_p) / max(s.dump.mean() / base_d, 1e-9):.2f}",
                      "доля пампов, которых поймали": f"{s.pump.sum() / len(P) * 100:.0f}%"})
     w(pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
-    w("Свечей — сколько 4h-свечей подходило под условие (одна монета может подходить много свечей подряд).\n")
+    w(f"Свечей — сколько {INTERVAL}-свечей подходило под условие (одна монета может подходить много свечей подряд).\n")
     out.close()
 
     ev = P.copy()
-    ev.insert(1, "start_close_kyiv", pd.to_datetime(ev.open_time + 4 * H, unit="ms", utc=True)
+    ev.insert(1, "start_close_kyiv", pd.to_datetime(ev.open_time + IH * H, unit="ms", utc=True)
               .dt.tz_convert(Hst.KYIV).dt.strftime("%Y-%m-%d %H:%M"))
     ev["тип"], ev["форма"] = P["тип"], P["форма"]
     ev.drop(columns=["group", "complete", "pump"]).round(3).to_csv(f"{PP_OUT}/pre_pump_events.csv", index=False)

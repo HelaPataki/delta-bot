@@ -1,7 +1,14 @@
 name: Pre-pump research
+run-name: Pre-pump research ${{ inputs.interval }}
 
 on:
   workflow_dispatch:
+    inputs:
+      interval:
+        description: "Свечи: 4h или 1h"
+        type: choice
+        options: ["4h", "1h"]
+        default: "4h"
 
 permissions:
   contents: write
@@ -9,6 +16,8 @@ permissions:
 env:
   START: "2024-07-01"      # свечи с запасом: признакам нужно до 90 дней истории
   SIG_FROM: "2025-01-01"   # пампы и контроль — с этой даты
+  INTERVAL: ${{ inputs.interval }}
+  DIR: ${{ inputs.interval == '1h' && 'results/pre_pump_1h' || 'results/pre_pump' }}
 
 jobs:
   prep:
@@ -26,7 +35,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: universe
-          path: results/pre_pump/universe.json
+          path: ${{ env.DIR }}/universe.json
 
   shard:
     needs: prep
@@ -45,7 +54,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: universe
-          path: results/pre_pump
+          path: ${{ env.DIR }}
       - name: Features (part ${{ matrix.shard }})
         env:
           SHARD: ${{ matrix.shard }}
@@ -54,7 +63,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: part${{ matrix.shard }}
-          path: results/pre_pump/parts/part${{ matrix.shard }}.csv.gz
+          path: ${{ env.DIR }}/parts/part${{ matrix.shard }}.csv.gz
 
   combine:
     needs: shard
@@ -69,7 +78,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: part*
-          path: results/pre_pump/parts
+          path: ${{ env.DIR }}/parts
           merge-multiple: true
       - name: Summary
         env:
@@ -79,6 +88,6 @@ jobs:
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          git add results/pre_pump/pre_pump_summary.md results/pre_pump/pre_pump_events.csv
-          git commit -m "Pre-pump research run" || echo "nothing to commit"
+          git add $DIR/pre_pump_summary.md $DIR/pre_pump_events.csv
+          git commit -m "Pre-pump research run ($INTERVAL)" || echo "nothing to commit"
           for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
