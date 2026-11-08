@@ -273,7 +273,8 @@ def candle_feats(bars, T):
 
 
 def fund24(bars, X, hours):
-    """Средний расчётный фандинг за (X−24ч, X], в % на 8 ч. Ставка в момент расчёта = закрытие часового бара перед ним."""
+    """Средний фандинг выплат за (X−24ч, X], в % на 8 ч. Бары — прогнозная ставка Coinalyze:
+    ставка выплаты = закрытие часового бара перед ней. Выплаты — по сетке интервала монеты."""
     step = int(hours * H)
     s = (X // step) * step
     rates = []
@@ -470,10 +471,10 @@ def sleep_until(ts):
 
 
 def prescan_short(uni, T, deadline):
-    """Кандидаты в шорт (за ~45 мин до закрытия): история фандинга по всем монетам →
-    прогнозная ставка < 0 или выплаченный фандинг 24ч ≤ −0,1% → OI за 24ч ≥ +15%."""
+    """Кандидаты в шорт (за ~65 мин до закрытия): история прогнозной ставки по всем монетам →
+    текущий прогноз < 0 или фандинг 24ч ≤ −0,1% → OI за 24ч ≥ +15%."""
     now = time.time()
-    fb = history("funding-rate-history", list(uni), "1hour", now - 30 * H, now)
+    fb = history("predicted-funding-rate-history", list(uni), "1hour", now - 30 * H, now)
     neg = [s for s, b in fb.items() if b and any((x.get("c") or 0) < 0 for x in b[-25:])]
     prefetch_intervals([uni[s] for s in neg])
     X = int(now // 300 * 300)
@@ -530,7 +531,15 @@ def check(uni, T, long_wl, short_wl):
     rows, shorts, longs, levels = [], [], [], {}
 
     if short_wl:
-        fb = history("funding-rate-history", short_wl, "1hour", T - 30 * H, to)
+        # прогнозная ставка: закрытие часового бара перед выплатой = сама выплата (выплаченная история на Coinalyze
+        # запаздывает до часа и выплату в момент закрытия свечи ещё не содержит). Ждём, пока бар до T появится.
+        for attempt in range(5):
+            fb = history("predicted-funding-rate-history", short_wl, "1hour", T - 30 * H, T + 60)
+            late = [s for s in short_wl if s in fb and bar_at(fb[s], T - H) is None]
+            if not late or attempt == 4:
+                break
+            log(f"прогнозная ставка до закрытия ещё не у всех ({len(late)}) — жду 30 с")
+            time.sleep(30)
         ob = history("open-interest-history", short_wl, "5min", T - 30 * H, to, convert_to_usd="false")
         for s in short_wl:
             c = feats.get(s)
