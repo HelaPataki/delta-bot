@@ -284,13 +284,15 @@ def bucket_table(a, col, base_p, base_d):
         pr, dr = s.pump.mean(), s.dump.mean()
         rows.append({"диапазон": f"{iv.left:.3g} … {iv.right:.3g}", "свечей": len(s), "пампов": int(s.pump.sum()),
                      "доля пампов": f"{pr * 100:.2f}%", "подъём": f"{pr / base_p:.2f}×",
-                     "доля дампов −20%": f"{dr * 100:.2f}%", "подъём дампов": f"{dr / base_d:.2f}×"})
+                     "доля дампов −20%": f"{dr * 100:.2f}%", "подъём дампов": f"{dr / base_d:.2f}×",
+                     "перекос вверх": f"{(pr / base_p) / max(dr / base_d, 1e-9):.2f}"})
     return pd.DataFrame(rows)
 
 
 def combine():
     files = sorted(f for f in os.listdir(f"{PP_OUT}/parts") if f.endswith(".csv.gz"))
     a = pd.concat([pd.read_csv(f"{PP_OUT}/parts/{f}") for f in files], ignore_index=True)
+    a = a.replace([np.inf, -np.inf], np.nan)          # деление на 0 (нулевой объём / OI) — как «нет данных»
     a["pump"] = a.pump.astype(bool)
     a["dump"] = a.dump.astype(bool)
     a["absorb7d_flag"] = a.absorb7d > 0
@@ -303,12 +305,14 @@ def combine():
     out = open(f"{PP_OUT}/pre_pump_summary.md", "w")
     w = out.write
     w("# Что было до пампа\n\n")
-    w(f"Памп: от закрытия 4h-свечи high за 72 ч ≥ +{PUMP * 100:.0f}%, старт — самая ранняя такая свеча. "
+    w(f"Памп: от закрытия 4h-свечи high за 72 ч ≥ +{PUMP * 100:.0f}%, старт — последняя свеча базы перед взлётом "
+      f"(закрытие в пределах +{BASE_BAND * 100:.0f}% от минимума серии). "
       f"Капа ${Hst.MCAP_MIN / 1e6:.0f}M–{Hst.MCAP_MAX / 1e6:.0f}M, оборот свечи ≥ ${Hst.MIN_TURNOVER / 1e3:.0f}K, "
       f"с {SIG_FROM}. Признаки — только то, что известно на закрытии свечи старта.\n\n")
     w(f"Всего свечей: {len(a):,} | монет: {a.symbol.nunique()} | пампов: {len(P)} ({len(P) / months:.1f} в месяц)\n\n")
     w(f"**Базовая доля:** памп после {base_p * 100:.2f}% свечей; дамп −20% за 72 ч после {base_d * 100:.2f}%.\n"
-      "«Подъём» = доля в группе / базовая доля. 2× значит «в два раза чаще среднего».\n\n")
+      "«Подъём» = доля в группе / базовая доля. 2× значит «в два раза чаще среднего».\n"
+      "«Перекос вверх» = подъём пампов / подъём дампов: > 1 — признак тянет именно вверх, ≈ 1 — просто к сильному движению.\n\n")
 
     w("## Пампы: форма и что было потом\n\n")
     t1 = P.groupby("форма").agg(пампов=("pump", "size"),
@@ -368,6 +372,14 @@ def combine():
         "спринг за 3д + узкий диапазон 14д (≤ 30%)": a.spring3d & (a.range14d <= 30),
         "поглощение за 7д + цена 7д в ±5%": a.absorb7d_flag & (a.px7d.abs() <= 5),
         "лонг/шорт аккаунтов ≤ 1 (толпа в шортах) + OI 3д ≥ +10%": (a.ls_acc <= 1) & (a.oi_chg3d >= 10),
+        # из первого прогона: признаки, где пампы растут сильнее дампов
+        "аномалия объёма за 3д ≥ x10 + накопл. дельта 7д ≥ 0": (a.volx_max3d >= 10) & (a.cvd7d >= 0),
+        "аномалия объёма за 3д ≥ x10 + толпа в шортах (≤ 1)": (a.volx_max3d >= 10) & (a.ls_acc <= 1),
+        "толпа в шортах (≤ 0.82) + фандинг 1д ≤ −0.02%": (a.ls_acc <= 0.82) & (a.fund1d <= -0.02),
+        "толпа в шортах (≤ 1) + накопл. дельта 7д ≥ 0": (a.ls_acc <= 1) & (a.cvd7d >= 0),
+        "толпа в шортах (≤ 1) + OI 3д ≥ +10% + накопл. дельта 7д ≥ 0":
+            (a.ls_acc <= 1) & (a.oi_chg3d >= 10) & (a.cvd7d >= 0),
+        "размер сделки ≥ 1.22 + накопл. дельта 7д ≥ 0": (a.trade_size_x >= 1.22) & (a.cvd7d >= 0),
     }
     rows = []
     for name, m in combos.items():
@@ -377,6 +389,7 @@ def combine():
         rows.append({"условие": name, "свечей": len(s), "монет": s.symbol.nunique(),
                      "пампов": int(s.pump.sum()), "доля пампов": f"{s.pump.mean() * 100:.2f}%",
                      "подъём": f"{s.pump.mean() / base_p:.2f}×", "подъём дампов": f"{s.dump.mean() / base_d:.2f}×",
+                     "перекос вверх": f"{(s.pump.mean() / base_p) / max(s.dump.mean() / base_d, 1e-9):.2f}",
                      "доля пампов, которых поймали": f"{s.pump.sum() / len(P) * 100:.0f}%"})
     w(pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
     w("Свечей — сколько 4h-свечей подходило под условие (одна монета может подходить много свечей подряд).\n")
