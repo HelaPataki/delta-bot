@@ -90,7 +90,8 @@ def fwd(arr, n, w, fn):
 
 
 # ---------------- признаки по монете ----------------
-def coin(sym, mcap_now, btc):
+def coin(sym, mcap_now, btc, keep_all=False):
+    """keep_all=True — вернуть все свечи подряд (с high/low и флагом elig) для симуляции сделок."""
     k = Hst.load_klines(sym, INTERVAL)
     if k is None or len(k) < 300:
         return None
@@ -206,6 +207,9 @@ def coin(sym, mcap_now, btc):
     for x, v in det.items():
         f[x] = v
 
+    if keep_all:
+        f["open"], f["high"], f["low"], f["elig"] = o, h, l, elig
+        return f.reset_index(drop=True)
     f = f[elig & complete & (f.group != "skip")]
     return f
 
