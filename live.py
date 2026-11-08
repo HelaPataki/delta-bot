@@ -546,6 +546,7 @@ def check(uni, T, long_wl, short_wl):
     bars = history("ohlcv-history", syms, "4hour", T - 20 * H4, to)
     feats = {s: candle_feats(b, T) for s, b in bars.items()}
     rows, shorts, longs, levels = [], [], [], {}
+    near, pocs = [], {}
 
     if short_wl:
         # прогнозная ставка: закрытие часового бара перед выплатой = сама выплата (выплаченная история на Coinalyze
@@ -563,6 +564,7 @@ def check(uni, T, long_wl, short_wl):
             if c is None or s not in fb or s not in ob:
                 continue
             sf = short_feats(fb[s], ob[s], T, funding_interval(uni[s]))
+            near.append(near_short(uni[s], c, sf))
             if is_short(c, sf):
                 shorts.append(uni[s])
                 rows.append({"сторона": "шорт", "монета": uni[s], "цена закрытия": c["close"], "фандинг 24ч %": rnd(sf["fund24"], 3),
@@ -576,6 +578,7 @@ def check(uni, T, long_wl, short_wl):
         mb = history("ohlcv-history", pre, "1min", T - H4, T - 60)
         for s in pre:
             p = poc_info(mb.get(s, []), T)
+            pocs[s] = p
             if is_long(feats[s], p):
                 lvl = round((p["poc"] + TICKS * p["tick"]) / p["tick"]) * p["tick"]
                 levels[uni[s]] = (lvl, p["tick"])
@@ -586,7 +589,75 @@ def check(uni, T, long_wl, short_wl):
                              "цена ордера": fmt_price(lvl, p["tick"]), "оборот $": rnd(c["turnover"], 0),
                              "цена 24ч %": rnd(c["px24"]), "рост объёма заранее x": rnd(c["pre24"])})
     log(f"сигналы: шорт {shorts}, лонг {longs}")
+    near_l = [near_long(uni[s], feats[s], pocs.get(s), s in pocs) for s in long_wl if feats.get(s)]
+    for side, lst in (("шорт", near), ("лонг", near_l)):
+        top = sorted((x for x in lst if x and x[1]), key=lambda x: -x[0])[:3]
+        if top:
+            log(f"почти-{side}: " + " | ".join(x[2] for x in top))
     return rows, shorts, longs, levels
+
+
+def _part(v, need):
+    """Насколько значение дотянуло до порога (1 = дотянуло), с потолком — для сортировки «почти-сигналов»."""
+    if v is None or not np.isfinite(v):
+        return 0.0
+    return float(min(max(v / need, 0.0), 1.5))
+
+
+def _safe(fn):
+    """«Почти-сигналы» — только лог: любая ошибка в них не должна мешать боту."""
+    def wrap(*a):
+        try:
+            return fn(*a)
+        except Exception:  # noqa: BLE001
+            return None
+    return wrap
+
+
+@_safe
+def near_short(b, c, sf):
+    """(близость, чего не хватило, строка) — только для лога, на сигналы не влияет."""
+    if c is None or sf is None:
+        return None
+    miss = []
+    if not sf["fund24"] <= -0.2:
+        miss.append("фандинг")
+    if not sf["oi_chg24"] >= 60:
+        miss.append("OI")
+    if not c["px24"] >= -2:
+        miss.append("цена")
+    if not c["turnover"] >= MIN_TURNOVER:
+        miss.append("оборот")
+    if not miss and not is_short(c, sf):
+        miss.append("не первый подряд")
+    score = _part(sf["fund24"], -0.2) + _part(sf["oi_chg24"], 60) - 0.5 * len(miss)
+    return (score, miss, f"{b} фандинг {sf['fund24']:.2f}% OI {sf['oi_chg24']:+.0f}% цена {c['px24']:+.0f}% "
+                         f"→ мимо: {', '.join(miss)}")
+
+
+@_safe
+def near_long(b, c, p, poc_checked):
+    if c is None:
+        return None
+    miss = []
+    if not c["vol_ratio"] >= 5:
+        miss.append("объём")
+    if not c["delta_pct"] <= -17:
+        miss.append("дельта")
+    if not c["turnover"] >= MIN_TURNOVER:
+        miss.append("оборот")
+    extra = ""
+    if poc_checked:
+        if p is None:
+            miss.append("нет минуток для POC")
+        else:
+            extra = f" POC {p['poc_pos']:.0f}%"
+            if not p["poc_pos"] <= 30:
+                miss.append("POC не внизу")
+            if not c["close"] >= p["poc"]:
+                miss.append("закрытие ниже POC")
+    score = _part(c["vol_ratio"], 5) + _part(c["delta_pct"], -17) - 0.5 * len(miss)
+    return (score, miss, f"{b} объём x{c['vol_ratio']:.1f} дельта {c['delta_pct']:.0f}%{extra} → мимо: {', '.join(miss)}")
 
 
 def send(T, rows, shorts, longs, levels, test, extra=False):
