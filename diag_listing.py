@@ -1,25 +1,26 @@
-"""ВРЕМЕННО (удалить): месяц появления фьючерса на Binance — чтобы отличить TradFi (2026) от старых крипто-монет."""
-import re
-import requests
+"""ВРЕМЕННО (удалить): похоже ли на акцию — доля объёма в выходные и в часы биржи США (октябрь 2026, 1ч свечи)."""
+import io, zipfile
+import pandas as pd, requests
 from concurrent.futures import ThreadPoolExecutor
 
-SYMS = """BILL CRCL EWT F GPS META NOW NVDA ON O OPEN SPCX SPY US Q T C A CVX DIA EDU ARK AR CHIP BR B MET ME LA S W G H
-SPACE STAR POWER SAFE TAKE TA AT ACT ALT KAT YB EDGE ESP RE COW CAT HOME BIO GAS CAP SENT MEGA LIGHT SUN SUPER
-TEAM NET ARM APP MP BE CC DRAM EIDO EQT FLNC FWDI GPRO INTW INX KORU NOM PAYP QNTX SKDD SLX STM TBT TMF TWST USAR
-VKTX WET AAOI AGPU AIGENSYN BLUAI CRML BWET SNXX STXX SKUU MVLL MUU MSTU NVDL TSLL LITE BITO HIVE NOK SONY BYD
-HANA HANMI CBRS ALL AIA M MON TST TUT OPG SHELL STABLE""".split()
-URL = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/futures/um/monthly/klines/{}USDT/1d/"
+SYMS = "NOW NVDA META SPY EDGE ESP KAT MEGA BTC CAT O BILL RE CAP STAR CHIP SPACE OPG CRCL SPCX EWT".split()
 
 
-def first(sym):
-    try:
-        x = requests.get(URL.format(sym), timeout=30).text
-        months = sorted(re.findall(r"1d-(\d{4}-\d{2})\.zip<", x))
-        return sym, months[0] if months else "нет помесячных (новая)"
-    except Exception as e:  # noqa: BLE001
-        return sym, f"ошибка {e}"
+def stat(sym):
+    u = f"https://data.binance.vision/data/futures/um/monthly/klines/{sym}USDT/1h/{sym}USDT-1h-2026-10.zip"
+    r = requests.get(u, timeout=60)
+    if r.status_code != 200:
+        return sym, "нет файла"
+    with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+        d = pd.read_csv(z.open(z.namelist()[0]))
+    d.columns = [c.strip().lower() for c in d.columns]
+    t = pd.to_datetime(d.open_time, unit="ms", utc=True)
+    q = d.quote_volume.astype(float)
+    wk = q[t.dt.weekday >= 5].mean() / q[t.dt.weekday < 5].mean()
+    us = q[(t.dt.weekday < 5) & (t.dt.hour >= 14) & (t.dt.hour < 20)].sum() / q[t.dt.weekday < 5].sum()
+    return sym, f"выходные/будни {wk:.2f}, доля часов США {us:.0%}"
 
 
-with ThreadPoolExecutor(16) as ex:
-    for s, m in sorted(ex.map(first, SYMS), key=lambda r: r[1]):
+with ThreadPoolExecutor(8) as ex:
+    for s, m in ex.map(stat, SYMS):
         print(f"{s}: {m}")
