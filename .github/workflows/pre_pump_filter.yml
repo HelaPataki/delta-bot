@@ -70,6 +70,10 @@ jobs:
       - run: pip install -r requirements.txt
       - uses: actions/download-artifact@v4
         with:
+          name: universe
+          path: ${{ env.DIR }}
+      - uses: actions/download-artifact@v4
+        with:
           pattern: part*
           path: ${{ env.DIR }}/parts
           merge-multiple: true
