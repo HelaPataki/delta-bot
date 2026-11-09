@@ -3,7 +3,7 @@ name: Reconcile
 on:
   schedule:
     # каждый день в ~09:17 по Киеву (зимой): сверка вчерашних сигналов бота с архивом Binance
-    - cron: "17 7 * * *"
+    - cron: "17 10 * * *"
   workflow_dispatch:
 
 permissions:

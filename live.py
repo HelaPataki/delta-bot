@@ -530,16 +530,18 @@ def prescan_long(uni, T):
         if not f:
             continue
         if f["vol_ratio"] >= 2.0:
-            wl.append(s)
+            wl.append((f["vol_ratio"], s))
         elif f["vol_ratio"] >= 1.2:
             near.append((f["vol_ratio"], s))
     near = [s for _, s in sorted(near, reverse=True)]
+    wl = [s for _, s in sorted(wl, reverse=True)]       # от самого большого объёма: сигналы найдутся в первых пачках
     log(f"кандидатов в лонг: {len(wl)}, близких к порогу: {len(near)} (из {len(bars)} с данными)")
     return wl, near
 
 
-def check(uni, T, long_wl, short_wl):
-    """Проверка закрытой свечи по спискам монет. Возвращает строки журнала, шорты, лонги и уровни ордеров."""
+def check(uni, T, long_wl, short_wl, near_out=None):
+    """Проверка закрытой свечи по спискам монет. Возвращает строки журнала, шорты, лонги и уровни ордеров.
+    near_out — список, куда сложить «почти-сигналы» вместо записи в лог (для проверки пачками)."""
     syms = sorted(set(long_wl) | set(short_wl))
     log(f"проверка после закрытия: {len(syms)} монет")
     to = T + 60
@@ -590,11 +592,46 @@ def check(uni, T, long_wl, short_wl):
                              "цена 24ч %": rnd(c["px24"]), "рост объёма заранее x": rnd(c["pre24"])})
     log(f"сигналы: шорт {shorts}, лонг {longs}")
     near_l = [near_long(uni[s], feats[s], pocs.get(s), s in pocs) for s in long_wl if feats.get(s)]
-    for side, lst in (("шорт", near), ("лонг", near_l)):
+    if near_out is not None:
+        near_out.extend(near_l)
+    else:
+        log_near(near, near_l)
+    return rows, shorts, longs, levels
+
+
+def log_near(near_s, near_l):
+    for side, lst in (("шорт", near_s), ("лонг", near_l)):
         top = sorted((x for x in lst if x and x[1]), key=lambda x: -x[0])[:3]
         if top:
             log(f"почти-{side}: " + " | ".join(x[2] for x in top))
-    return rows, shorts, longs, levels
+
+
+def stamp(rows, T, picks, extra):
+    for r in rows:
+        r["свеча закрылась (Киев)"] = kyiv(T, "%Y-%m-%d %H:%M")
+        r["выбрана"] = "да" if r["монета"] in picks else "нет"
+        r["проход"] = "дополнительный" if extra else "основной"
+
+
+def check_longs_fast(uni, T, long_wl, test):
+    """Лонги — первыми и пачками по 20 от самого большого объёма: алерт уходит, как только найден первый сигнал,
+    не дожидаясь остальных монет (при общем обвале в списке бывает 300 монет — это 10+ минут).
+    Остальные найденные лонги этой свечи — отдельной строкой «не трогаем» после проверки всех пачек."""
+    rows, levels, near_l, pick, later = [], {}, [], None, []
+    for i in range(0, len(long_wl), 20):
+        r, _, ls, lv = check(uni, T, long_wl[i:i + 20], [], near_out=near_l)
+        rows += r
+        levels.update(lv)
+        if ls and pick is None:
+            _, _, pick = send(T, r, [], ls, lv, test)
+        elif ls:
+            stamp(r, T, (), False)
+            later += ls
+    log_near([], near_l)
+    if later and pick:
+        tg(("🧪 ТЕСТ — НЕ ТОРГОВАТЬ\n" if test else "") +
+           f"🟢 Ещё лонг-сигналы свечи {kyiv(T, '%H:%M')} (не трогаем): {', '.join(later)}")
+    return rows, pick, levels
 
 
 def _part(v, need):
@@ -664,10 +701,7 @@ def send(T, rows, shorts, longs, levels, test, extra=False):
     """Выбирает одну монету на сторону, шлёт алерты. Возвращает выбранный шорт (с временем закрытия) и лонг."""
     pick_s = random.choice(shorts) if shorts else None
     pick_l = random.choice(longs) if longs else None
-    for r in rows:
-        r["свеча закрылась (Киев)"] = kyiv(T, "%Y-%m-%d %H:%M")
-        r["выбрана"] = "да" if r["монета"] in (pick_s, pick_l) else "нет"
-        r["проход"] = "дополнительный" if extra else "основной"
+    stamp(rows, T, (pick_s, pick_l), extra)
     late = time.time() - T > LATE_MIN * 60 and not test
     close_at = None
     if pick_s:
@@ -728,9 +762,12 @@ def main():
         short_wl = [s for s, v in funding_now(uni).items() if v < 0]
         prefetch_intervals([uni[s] for s in short_wl])
 
-    # основной проход — только кандидаты
-    rows, shorts, longs, levels = check(uni, T, long_wl, short_wl)
-    pick_s, close_s, pick_l = send(T, rows, shorts, longs, levels, test)
+    # основной проход — только кандидаты. Лонги первыми: у условного ордера важна каждая минута,
+    # шорту (вход по рынку) несколько минут не страшны — на истории вход через 5, 8 и 15 мин одинаков.
+    rows, pick_l, levels = check_longs_fast(uni, T, long_wl, test)
+    r1, shorts, _, _ = check(uni, T, [], short_wl)
+    pick_s, close_s, _ = send(T, r1, shorts, [], {}, test)
+    rows += r1
 
     # страховочный проход — то, что отсеял ранний отбор (только по стороне, где ещё нет сигнала)
     extra_short = [] if pick_s else [s for s in fund_cand if s not in set(short_wl)]

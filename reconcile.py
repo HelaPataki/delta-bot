@@ -111,7 +111,7 @@ def in_day(b, day):
 def long_day(sym, day):
     frames = [k4(sym, day - dt.timedelta(days=k)) for k in (2, 1, 0)]
     if frames[2] is None:
-        return []
+        return None                      # архив за этот день по монете ещё не выложен
     k = pd.concat([f for f in frames if f is not None]).drop_duplicates("open_time").sort_values("open_time").reset_index(drop=True)
     qv, v, tbv = k.quote_volume.to_numpy(), k.volume.to_numpy(), k.taker_buy_volume.to_numpy()
     out = []
@@ -164,9 +164,16 @@ def short_values(sym, T):
 
 
 def daily(day, uni, bot):
+    """Сверка за день. None — архив Binance за этот день ещё выложен не по всем нужным монетам (проверим завтра)."""
     with ThreadPoolExecutor(12) as ex:
-        arch = [x for r in ex.map(lambda s: long_day(s, day), uni) for x in r]
+        res = list(ex.map(lambda s: long_day(s, day), uni))
+    missing = {s for s, r in zip(uni, res) if r is None}
+    arch = [x for r in res if r for x in r]
     bl = in_day(bot[bot["сторона"] == "лонг"], day)
+    bot_missing = (set(bl["монета"]) | set(in_day(bot[bot["сторона"] == "шорт"], day)["монета"])) & missing
+    if bot_missing or len(missing) > 0.05 * len(uni):
+        print("архив за", day, "неполный: нет", len(missing), "монет, из них у бота", sorted(bot_missing), flush=True)
+        return None, len(missing), sorted(bot_missing)
     a_keys = {(a["монета"], kyiv(a["T"])) for a in arch if "примечание" not in a}
     b_keys = {(r["монета"], r["свеча закрылась (Киев)"]) for _, r in bl.iterrows()}
     lines = [f"🔎 Сверка за {day:%d.%m} (архив Binance)"]
@@ -260,7 +267,12 @@ def main():
         if not archive_ready(day):
             print("архив за", day, "ещё не выложен")
             break
-        text, rows = daily(day, uni, bot)
+        res = daily(day, uni, bot)
+        if res[0] is None:                       # архив неполный — этот день проверим при следующем запуске
+            if (today - day).days >= 3:
+                tg(f"⏳ Сверка за {day:%d.%m}: Binance до сих пор не выложил архив по {res[1]} монетам — жду дальше")
+            break
+        text, rows = res
         tg(text)
         write_log(rows)
         st["last_day"] = str(day)
