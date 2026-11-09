@@ -22,6 +22,7 @@ import pandas as pd
 import requests
 
 import history as Hst
+from tradfi import TRADFI
 
 H, H4, MIN = 3600 * 1000, 4 * 3600 * 1000, 60_000
 BOT_START = pd.Timestamp("2026-11-07 12:00", tz="UTC")       # первая свеча, которую бот вёл с журналом (14:00 Киев)
@@ -89,7 +90,7 @@ def archive_ready(day):
 def universe():
     syms = Hst.list_symbols()
     caps = Hst.coingecko_mcaps()
-    return [s for s in syms if Hst.MCAP_MIN <= caps.get(Hst.base_asset(s), 0) <= Hst.MCAP_MAX]
+    return [s for s in syms if Hst.MCAP_MIN <= caps.get(Hst.base_asset(s), 0) <= Hst.MCAP_MAX and s not in TRADFI]
 
 
 def bot_rows():

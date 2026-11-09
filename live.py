@@ -31,6 +31,8 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import requests
 
+from tradfi import TRADFI
+
 # ---------------- настройки стратегии ----------------
 MCAP_MIN, MCAP_MAX = 10e6, 400e6
 MIN_TURNOVER = 50_000
@@ -202,7 +204,7 @@ def universe():
         if not b.endswith("USDT"):
             continue
         cap = caps.get(base_asset(b), 0)
-        ok = MCAP_MIN <= cap <= MCAP_MAX
+        ok = MCAP_MIN <= cap <= MCAP_MAX and b not in TRADFI
         if ok:
             out[s] = b
         listing.append((b, cap, ok))
@@ -219,7 +221,8 @@ def save_universe(listing):
             w.writerow(["монета", "капитализация $M", "в работе", "запуск (Киев)"])
             stamp = dt.datetime.now(KYIV).strftime("%d.%m.%Y %H:%M")
             for b, cap, ok in sorted(set(listing)):
-                w.writerow([b, round(cap / 1e6, 1) if cap else "нет данных", "да" if ok else "нет", stamp])
+                w.writerow([b, round(cap / 1e6, 1) if cap else "нет данных",
+                            "да" if ok else ("нет (TradFi)" if b in TRADFI else "нет"), stamp])
     except Exception as e:  # noqa: BLE001  — список для справки, бот не должен из-за него падать
         log("не удалось сохранить список монет", e)
 
