@@ -62,11 +62,11 @@ def find(sym, cap, btc):
     return out
 
 
-def describe(sym, f, s, e, res, cond_prev):
+def describe(sym, f, s, e, res, cond_prev, main_tk=10, extra=""):
     r = f.iloc
     sig, ent = r[s], r[e]
     L = []
-    L.append(f"## {sym} — {'ПЛЮС' if res[10][0] > 0 else 'МИНУС'} (тейк 10%: {res[10][0] - 0.1:+.2f}% после комиссии)\n")
+    L.append(f"## {sym} — {'ПЛЮС' if res[main_tk][0] > 0 else 'МИНУС'} (тейк {main_tk}%: {res[main_tk][0] - 0.1:+.2f}% после комиссии)\n")
     L.append("### 1. Сигнал — условие стало выполняться\n")
     L.append(f"Сигнальная свеча: {kyiv(sig.open_time)}–{kyiv(sig.open_time + H)[-5:]} по Киеву (часовая), "
              f"закрытие **{sig.close:.6g}**. Капа (оценка) ${sig.mcap / 1e6:.0f}M, оборот свечи ${sig.turnover / 1e3:.0f}K.\n")
@@ -112,6 +112,8 @@ def describe(sym, f, s, e, res, cond_prev):
                  f"(при x2: {2 * (pct - 0.1):+.1f}% ROI; при риске 2%: {(pct - 0.1) / STOP * 2:+.2f}% депозита).")
     mx = f.high.to_numpy()[e + 1:e + 1 + HOLD].max() / px - 1
     mn = f.low.to_numpy()[e + 1:e + 1 + HOLD].min() / px - 1
+    if extra:
+        L.append("\n" + extra)
     L.append(f"\nЗа все 48 ч после входа: максимум {mx * 100:+.1f}%, минимум {mn * 100:+.1f}% от цены входа.\n")
     return "\n".join(L)
 
