@@ -16,6 +16,7 @@
 
 import datetime as dt
 import os
+import re
 import time
 
 import numpy as np
@@ -116,8 +117,9 @@ def main():
     a["kt"] = kyiv(a.t)
 
     # ---------- где движение ----------
-    if os.environ.get("START"):                              # старт задан вручную (Киев)
-        st = int(pd.Timestamp(os.environ["START"], tz=KY).timestamp()) // H * H
+    raw = re.search(r"\d{4}-\d{1,2}-\d{1,2}(?:[ T]\d{1,2}:\d{2})?", os.environ.get("START", ""))
+    if raw:                                                  # старт задан вручную (Киев), лишние слова игнорируются
+        st = int(pd.Timestamp(raw.group(0), tz=KY).timestamp()) // H * H
         s = int(a.index[a.t >= st][0])
         p = int(a.loc[s:].high.idxmax())
     else:                                                    # последнее движение: пик за 7 дней, минимум до него за 5 дней
