@@ -6,6 +6,9 @@ on:
       symbol:
         description: "Монета (например INITUSDT)"
         default: "INITUSDT"
+      start:
+        description: "Старт движения (Киев, например 2026-11-08 12:00). Пусто — найти самому (последние 7 дней)"
+        default: ""
 
 permissions:
   contents: write
@@ -23,6 +26,7 @@ jobs:
       - name: Dissect
         env:
           SYM: ${{ inputs.symbol }}
+          START: ${{ inputs.start }}
           COINALYZE_KEY: ${{ secrets.COINALYZE_KEY }}
         run: python dissect.py
       - name: Save results

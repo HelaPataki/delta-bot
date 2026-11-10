@@ -73,6 +73,7 @@ def main():
     pf = cz("predicted-funding-rate-history")[["t", "c"]].rename(columns={"c": "pfund"})
     ls = cz("long-short-ratio-history")[["t", "r"]].rename(columns={"r": "ls_cz"})
     a = k.merge(oi, on="t", how="left").merge(fu, on="t", how="left").merge(pf, on="t", how="left").merge(ls, on="t", how="left")
+    a["t"] = (a.t.astype("int64") // H * H)
     a = a.sort_values("t").reset_index(drop=True)
     a["usd"] = a.v * a.close
     a["dq"] = (2 * a.bv - a.v) * a.close            # дельта в $
@@ -92,7 +93,9 @@ def main():
     first = (kyiv(FROM).date())
     met = archive_days(f"{Hst.ARCHIVE}/data/futures/um/daily/metrics/{SYM}/{SYM}-metrics-{{d:%Y-%m-%d}}.zip", first)
     if met is not None:
-        met["t"] = pd.to_datetime(met.create_time, utc=True).astype("int64") // 10 ** 9 // H * H
+        ct = pd.to_datetime(met.create_time, utc=True)
+        met["t"] = ((ct - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(seconds=1)).astype("int64") // H * H
+        print("metrics: строк", len(met), "с", kyiv(int(met.t.min())), "по", kyiv(int(met.t.max())))
         met = met.groupby("t").last().reset_index()
         cols = {"count_toptrader_long_short_ratio": "top_acc", "sum_toptrader_long_short_ratio": "top_pos",
                 "count_long_short_ratio": "crowd_acc", "sum_taker_long_short_vol_ratio": "taker"}
@@ -104,16 +107,24 @@ def main():
         sp = sp.iloc[:, [0, 7, 10]]
         sp.columns = ["t", "s_usd", "s_buy"]
         sp["t"] = sp.t.astype(float)
-        sp["t"] = (np.where(sp.t > 1e14, sp.t / 1e6, sp.t / 1e3)).astype("int64")   # мкс или мс -> с
+        sp["t"] = (np.where(sp.t > 1e14, sp.t / 1e6, sp.t / 1e3) // H * H).astype("int64")   # мкс или мс -> с
+        sp["s_usd"] = sp.s_usd.astype(float)
+        sp["s_buy"] = sp.s_buy.astype(float)
+        print("спот: строк", len(sp), "t пример", sp.t.iloc[:2].tolist(), "Coinalyze t пример", a.t.iloc[:2].tolist())
         sp["s_dq"] = 2 * sp.s_buy - sp.s_usd
         a = a.merge(sp[["t", "s_usd", "s_dq"]], on="t", how="left")
     a["kt"] = kyiv(a.t)
 
     # ---------- где движение ----------
-    recent = a[a.t >= NOW - 21 * 86400]
-    p = recent.high.idxmax()
-    pre = a.loc[max(0, p - 240):p]
-    s = pre.low.idxmin()
+    if os.environ.get("START"):                              # старт задан вручную (Киев)
+        st = int(pd.Timestamp(os.environ["START"], tz=KY).timestamp()) // H * H
+        s = int(a.index[a.t >= st][0])
+        p = int(a.loc[s:].high.idxmax())
+    else:                                                    # последнее движение: пик за 7 дней, минимум до него за 5 дней
+        recent = a[a.t >= NOW - 7 * 86400]
+        p = recent.high.idxmax()
+        pre = a.loc[max(0, p - 120):p]
+        s = pre.low.idxmin()
     start_t, peak_t = a.t[s], a.t[p]
     w = a[a.t >= start_t - 30 * 86400].copy()
 
