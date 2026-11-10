@@ -1,0 +1,34 @@
+name: Dissect coin
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbol:
+        description: "Монета (например INITUSDT)"
+        default: "INITUSDT"
+
+permissions:
+  contents: write
+
+jobs:
+  dissect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Dissect
+        env:
+          SYM: ${{ inputs.symbol }}
+          COINALYZE_KEY: ${{ secrets.COINALYZE_KEY }}
+        run: python dissect.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/dissect
+          git commit -m "Dissect ${{ inputs.symbol }}" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
