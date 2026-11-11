@@ -1,0 +1,84 @@
+name: Pump short
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  START: "2024-12-01"
+  DIR: results/pump_short
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Coins and market caps
+        env:
+          MODE: prep
+        run: python pump_short.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}/universe.json
+
+  shard:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}
+      - name: Features (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "8"
+        run: python pump_short.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: ${{ env.DIR }}/parts/*${{ matrix.shard }}.csv.gz
+
+  combine:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: ${{ env.DIR }}/parts
+          merge-multiple: true
+      - name: Summary
+        env:
+          MODE: combine
+        run: python pump_short.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $DIR/pump_short_summary.md $DIR/pump_short_table.csv $DIR/trades.csv.gz
+          git commit -m "Pump short run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
