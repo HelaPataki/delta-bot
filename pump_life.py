@@ -114,7 +114,8 @@ def metrics(sym, days):
         with zipfile.ZipFile(io.BytesIO(r.content)) as z:
             with z.open(z.namelist()[0]) as f:
                 df = pd.read_csv(f)
-        ts = pd.to_datetime(df.create_time, utc=True).astype("int64") // 10 ** 6
+        ts = (pd.to_datetime(df.create_time, utc=True).dt.tz_localize(None).to_numpy()
+              .astype("datetime64[ms]").astype("int64"))          # мс при любой версии pandas
         cols = ["sum_open_interest", "sum_open_interest_value", "count_toptrader_long_short_ratio",
                 "sum_toptrader_long_short_ratio", "count_long_short_ratio", "sum_taker_long_short_vol_ratio"]
         out = pd.DataFrame({"t": ts.astype(float)})
@@ -291,7 +292,7 @@ def coin(sym, cap):
             seen = n - 1 - m
             # глубина отката до перебоя хая
             seg_end = broke_i if broke_i is not None else min(n, m + 1 + AFTER)
-            lows = l[hi + 1:seg_end]
+            lows = l[hi:seg_end]                    # вкл. свечу вершины (фитиль вниз после хая)
             vol_wave = qv[ws:hi + 1].mean()
             prev_wave = waves[wn - 2] if wn > 1 else None
             f_v = qv[ws:hi + 1].sum()
