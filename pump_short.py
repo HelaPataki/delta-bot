@@ -38,8 +38,8 @@ import pump_life as PL
 OUT = os.environ.get("OUT_DIR", "results/pump_short")
 SHARD, NSHARDS = int(os.environ.get("SHARD", "0")), int(os.environ.get("NSHARDS", "1"))
 H = PL.H
-HOR = 240
-TAKES = [10, 15, 20, 30]
+HOR = int(os.environ.get("HOR", "240"))
+TAKES = [int(x) for x in os.environ.get("TAKES", "10,15,20,30").split(",")]
 FEE = 0.1
 TO = pd.Timestamp(os.environ.get("TO", "2100-01-01"), tz="UTC").timestamp() * 1000
 YEARS = []
@@ -172,6 +172,9 @@ def run_shard():
 def prep():
     os.makedirs(OUT, exist_ok=True)
     syms = Hst.list_symbols()
+    only = [x for x in os.environ.get("SYMBOLS", "").split(",") if x]
+    if only:
+        syms = [x for x in syms if x in only]
     try:
         caps = Hst.coingecko_mcaps()
     except Exception as e:

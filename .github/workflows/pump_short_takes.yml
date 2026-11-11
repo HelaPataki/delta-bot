@@ -1,0 +1,42 @@
+name: Pump short far takes 2026
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  START: "2025-11-01"
+  FROM: "2025-12-01"
+  OUT_DIR: results/pump_short_takes
+  TAKES: "20,30,50,60,80"
+  SYMBOLS: "1000PEPEUSDT,ADAUSDT,APTUSDT,ATHUSDT,BEATUSDT,DOGEUSDT,DOTUSDT,DYDXUSDT,ENAUSDT,FETUSDT,FLUIDUSDT,GRASSUSDT,HUSDT,KASUSDT,MELANIAUSDT,MEMEUSDT,MUSDT,ONDOUSDT,OPUSDT,PONSUSDT,RAVEUSDT,RIVERUSDT,SIRENUSDT,STABLEUSDT,SUIUSDT,TAGUSDT,TIAUSDT,TRUMPUSDT,VELVETUSDT,ZETAUSDT"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Universe
+        env:
+          MODE: prep
+        run: python pump_short.py
+      - name: Trades
+        run: python pump_short.py
+      - name: Summary
+        env:
+          MODE: combine
+        run: python pump_short.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/pump_short_takes/trades.csv.gz results/pump_short_takes/pump_short_summary.md
+          git commit -m "Pump short far takes run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
