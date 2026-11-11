@@ -41,6 +41,8 @@ H = PL.H
 HOR = 240
 TAKES = [10, 15, 20, 30]
 FEE = 0.1
+TO = pd.Timestamp(os.environ.get("TO", "2100-01-01"), tz="UTC").timestamp() * 1000
+YEARS = []
 ENTRIES = ["A сразу", "B стоп +10%", "C отскок к середине", "D сутки без хая"]
 
 
@@ -106,6 +108,8 @@ def coin(sym, cap):
     rows = []
     busy = {(e, X): -1 for e in ENTRIES for X in TAKES}
     for ws, hi, m in tops:
+        if t[m] >= TO:
+            continue
         top = h[hi]
         t_top, t_m = t[hi] + H, t[m] + H
         s_v = float(sp_qv.reindex(t[ws:hi + 1]).fillna(0).sum()) if sp_qv is not None else 0.0
@@ -183,7 +187,8 @@ def filters(a):
             "толпа в лонге (L/S≥1,46, капа≥130M)": crowd,
             "толпа в лонге сильно (L/S≥2, капа≥130M)": (a["все L/S"] >= 2) & (a["капа $M"] >= 130),
             "спот + толпа в лонге": spot & crowd,
-            "спот + OI за откат ≤ −11%": spot & (a["OI за откат, %"] <= -11)}
+            "спот + OI за откат ≤ −11%": spot & (a["OI за откат, %"] <= -11),
+            "строгий: L/S≥2, капа≥130M, OI за откат ≤ −4%": (a["все L/S"] >= 2) & (a["капа $M"] >= 130) & (a["OI за откат, %"] <= -4)}
 
 
 def sim_deposit(g, risk_pct=2.0):
@@ -210,6 +215,8 @@ def combine():
     a["год"] = a["время входа"].str[:4]
     a.to_csv(f"{OUT}/trades.csv.gz", index=False)
     months = (pd.to_datetime(a["время входа"]).max() - pd.to_datetime(a["время входа"]).min()).days / 30.4
+    global YEARS
+    YEARS = sorted(a["год"].unique())
     F = filters(a)
     rows = []
     for fname, fm in F.items():
@@ -221,7 +228,7 @@ def combine():
                 r = {"фильтр": fname, "вход": e, "тейк %": X, "сделок": len(g), "в месяц": round(len(g) / months, 1),
                      "винрейт": f"{(g.R > 0).mean() * 100:.0f}%", "стоп ср %": round(g["стоп %"].mean(), 1),
                      "ср pnl %": round(g["pnl %"].mean(), 2), "ср R": round(g.R.mean(), 2)}
-                for y in ("2025", "2026"):
+                for y in YEARS:
                     gy = g[g["год"] == y]
                     r[f"R {y}"] = round(gy.R.mean(), 2) if len(gy) >= 15 else None
                     r[f"n {y}"] = len(gy)
@@ -235,9 +242,12 @@ def combine():
     with open(f"{OUT}/pump_short_summary.md", "w") as f:
         f.write("# Шорт после пампа: входы × выходы × фильтры\n\n" + __doc__.split("\n", 2)[2] + "\n\n")
         f.write("## Лучшие варианты (R положительный в обоих годах, сортировка по худшему году)\n\n")
-        ok = d.dropna(subset=["R 2025", "R 2026"]).copy()
-        ok["хуже год"] = ok[["R 2025", "R 2026"]].min(axis=1)
+        ycols = [f"R {y}" for y in YEARS]
+        ok = d.dropna(subset=ycols).copy()
+        ok["хуже год"] = ok[ycols].min(axis=1)
         f.write(ok[ok["хуже год"] > 0].sort_values("хуже год", ascending=False).head(40).to_markdown(index=False) + "\n\n")
+        for name in ("толпа в лонге сильно (L/S≥2, капа≥130M)", "строгий: L/S≥2, капа≥130M, OI за откат ≤ −4%"):
+            f.write(f"## {name}, вход C\n\n" + d[(d["фильтр"] == name) & (d["вход"] == "C отскок к середине")].to_markdown(index=False) + "\n\n")
         f.write("## Вся таблица\n\n" + d.to_markdown(index=False) + "\n")
     print(open(f"{OUT}/pump_short_summary.md").read()[:8000])
 
