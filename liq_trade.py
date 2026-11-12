@@ -62,7 +62,19 @@ def signals(o):
         "S3 шорт: снизу ≥3%, топы в лонгах 2,5+": (-1, (dn14 >= 3) & (dn14 > up14) & (top >= 2.5)),
         "S4 шорт: снизу ≥3%, топы в лонгах 3,5+": (-1, (dn14 >= 3) & (dn14 > up14) & (top >= 3.5)),
         "S5 шорт: снизу ≥3%, карта 45д, топы 3,5+": (-1, (dn45 >= 3) & (dn45 > up45) & (top >= 3.5)),
-    }
+    } | grid(o)
+
+
+def grid(o):
+    """Сетка лонгов для частоты: порог сверху × порог толпы × карта × кто (топы / все)."""
+    out = {}
+    for mp in ("14д", "45д"):
+        up, dn = o[f"{mp} вверх10 %капы"], o[f"{mp} вниз10 %капы"]
+        for thr in (1, 2, 3):
+            for who, col in (("топы", "L/S топ"), ("все", "L/S все")):
+                for ls in (0.8, 0.9, 1.0, 1.2):
+                    out[f"G лонг: {mp}, сверху ≥{thr}%, {who} L/S<{ls}"] = (+1, (up >= thr) & (up > dn) & (o[col] < ls))
+    return out
 
 
 def coin(sym, cap):
@@ -198,11 +210,19 @@ def combine():
         r["$100 → 2x"] = f"{e2:.0f} ({d2:.0f}%)"
         rows.append(r)
     d = pd.DataFrame(rows)
+    d.to_csv(f"{OUT}/liq_trade_table.csv", index=False)
     w = open(f"{OUT}/liq_trade_summary.md", "w").write
     w("# Сделки: ликвидность относительно капы × толпа\n\n" + __doc__.split("\n", 2)[2] + "\n\n")
     w("В скобках у депозита — максимальная просадка (по закрытым сделкам).\n\n")
-    w(d.to_markdown(index=False) + "\n\n")
-    for sig, g in a[a["тейк/стоп"] == "10/5"].groupby("сигнал"):
+    main = d[~d["сигнал"].str.startswith("G ")]
+    w(main.to_markdown(index=False) + "\n\n")
+    gd = d[d["сигнал"].str.startswith("G ") & (d["в месяц"] >= 8)].copy()
+    ycols = [c for c in gd.columns if c.endswith("сделок / ср.pnl")]
+    if len(gd) and ycols:
+        gd["худший год, ср.pnl"] = gd[ycols].apply(lambda r: min(float(x.split("/")[1]) for x in r if x != "-"), axis=1)
+        w("## Сетка лонгов: варианты с 8+ сделками в месяц (≈2+ в неделю), лучшие по худшему году\n\n"
+          + gd.sort_values("худший год, ср.pnl", ascending=False).head(40).to_markdown(index=False) + "\n\n")
+    for sig, g in a[(a["тейк/стоп"] == "10/5") & ~a["сигнал"].str.startswith("G ")].groupby("сигнал"):
         w(f"## {sig} (тейк 10 / стоп 5): монеты и месяцы\n\n")
         w("Монеты: " + ", ".join(f"{s} {v}" for s, v in g["монета"].value_counts().head(25).items()) + "\n\n")
         w("По месяцам: " + ", ".join(f"{m}: {v}" for m, v in g["месяц"].value_counts().sort_index().items()) + "\n\n")
