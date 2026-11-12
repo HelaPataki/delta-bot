@@ -1,0 +1,88 @@
+name: L3 far takes 2026
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  START: "2025-08-01"
+  FROM: "2026-01-01"
+  ONLY_SIGNALS: "L3"
+  SYMBOLS: "ACEUSDT,AGLDUSDT,AINUSDT,AKEUSDT,ANIMEUSDT,ARCUSDT,ARIAUSDT,ARPAUSDT,ARXUSDT,ATUSDT,AUCTIONUSDT,BANANAS31USDT,BANANAUSDT,BICOUSDT,BIOUSDT,BLESSUSDT,BLURUSDT,BMTUSDT,BTRUSDT,BULLAUSDT,COTIUSDT,CUSDT,DOLOUSDT,DOODUSDT,EDENUSDT,ELSAUSDT,ERAUSDT,ESPUSDT,FIDAUSDT,GIGGLEUSDT,GPSUSDT,GRVTUSDT,GTCUSDT,GUSDT,HEMIUSDT,HOMEUSDT,HUMAUSDT,HYPERUSDT,INITUSDT,IOSTUSDT,JCTUSDT,KATUSDT,KAVAUSDT,KERNELUSDT,LAUSDT,LUMIAUSDT,MAGMAUSDT,MEGAUSDT,MOVRUSDT,MUBARAKUSDT,NAORISUSDT,NILUSDT,NOWUSDT,OGNUSDT,OGUSDT,ONGUSDT,ONUSDT,ORCAUSDT,PHAUSDT,PROMUSDT,REUSDT,SAHARAUSDT,SIGNUSDT,SOLVUSDT,SOMIUSDT,STEEMUSDT,STGUSDT,SYNUSDT,TAKEUSDT,TONUSDT,TRUTHUSDT,TSTUSDT,ZAMAUSDT,ZEREBROUSDT,币安人生USDT,龙虾USDT"
+  OUT_DIR: results/l3_far
+  DIR: results/l3_far
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Coins and market caps
+        env:
+          MODE: prep
+        run: python liq_trade.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}/universe.json
+
+  shard:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}
+      - name: Features (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "8"
+        run: python liq_trade.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: ${{ env.DIR }}/parts/*${{ matrix.shard }}.csv.gz
+
+  combine:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: ${{ env.DIR }}/parts
+          merge-multiple: true
+      - name: Summary
+        env:
+          MODE: combine
+        run: python liq_trade.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $DIR/liq_trade_summary.md $DIR/liq_trade_table.csv $DIR/liq_trade_filters.csv $DIR/trades.csv.gz
+          git commit -m "L3 far takes 2026 run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done

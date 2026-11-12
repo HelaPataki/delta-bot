@@ -84,7 +84,10 @@ EXITS = [("10/10", 10, 10, None, False), ("10/5", 10, 5, None, False), ("15/7.5"
          ("10/10 + БУ после +5", 10, 10, 5, False), ("20/10 + БУ после +5", 20, 10, 5, False),
          ("кластер / стоп 10", "кластер", 10, None, False), ("кластер / стоп 7.5", "кластер", 7.5, None, False),
          ("кластер / стоп 10 + БУ после +5", "кластер", 10, 5, False),
-         ("½ на +5, остаток до кластера, БУ", "кластер", 10, 5, True)]
+         ("½ на +5, остаток до кластера, БУ", "кластер", 10, 5, True),
+         ("25/10", 25, 10, None, False), ("30/10", 30, 10, None, False), ("40/10", 40, 10, None, False),
+         ("50/10", 50, 10, None, False), ("30/15", 30, 15, None, False)]
+ONLY_SIGNALS = [x for x in os.environ.get("ONLY_SIGNALS", "").split(",") if x]
 GRID_EXITS = {"10/10", "кластер / стоп 10", "кластер / стоп 10 + БУ после +5"}
 _btc = {}
 
@@ -146,6 +149,8 @@ def coin(sym, cap):
         btc = btc_regime()
         rows = []
         for name, (side, cond) in signals(o).items():
+            if ONLY_SIGNALS and name[:2] not in ONLY_SIGNALS:
+                continue
             is_grid = name.startswith("G ")
             exits = [e for e in EXITS if (not is_grid or e[0] in GRID_EXITS)] if side > 0 else EXITS[:5]
             cond = cond.fillna(False).to_numpy()

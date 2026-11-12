@@ -175,6 +175,9 @@ def caps_with_fallback():
 def prep():
     os.makedirs(OUT, exist_ok=True)
     syms = [s for s in Hst.list_symbols() if s not in STOCKS]
+    only = [x for x in os.environ.get("SYMBOLS", "").split(",") if x]
+    if only:
+        syms = [s for s in syms if s in only]
     caps = caps_with_fallback()
     uni = {s: caps.get(Hst.base_asset(s)) for s in syms}
     uni = {s: v for s, v in uni.items() if v and 10e6 <= v <= 2e9}
