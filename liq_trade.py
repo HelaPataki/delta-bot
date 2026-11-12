@@ -68,6 +68,8 @@ def coin(sym, cap):
             return []
         if "снимок" in o:
             o = o[o["снимок"].isna()]
+        if sym in LC.STOCKS:
+            return []
         o = o.sort_values("t").reset_index(drop=True)
         k = cached_load(sym, "1h")
         t_open = k.open_time.to_numpy()
@@ -183,7 +185,7 @@ def combine():
              "монет": g["монета"].nunique(), "тейков": f"{(g['итог'] == 'тейк').mean() * 100:.0f}%",
              "стопов": f"{(g['итог'] == 'стоп').mean() * 100:.0f}%", "ср. pnl %": round(g["pnl %"].mean(), 2),
              "ср. R": round((g["pnl %"] / sl).mean(), 2)}
-        for y in (2025, 2026):
+        for y in sorted(a["год"].unique()):
             gy = g[g["год"] == y]
             r[f"{y}: сделок / ср.pnl"] = f"{len(gy)} / {gy['pnl %'].mean():+.2f}" if len(gy) else "-"
         e1, d1 = deposit(g, 1)

@@ -21,6 +21,7 @@ import json
 import math
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 os.environ.setdefault("START", "2024-12-01")
@@ -35,7 +36,8 @@ import pump_life as PL
 OUT = os.environ.get("OUT_DIR", "results/liq_cap")
 SHARD, NSHARDS = int(os.environ.get("SHARD", "0")), int(os.environ.get("NSHARDS", "1"))
 H = PL.H
-FROM = pd.Timestamp("2025-01-01", tz="UTC").timestamp() * 1000
+FROM = pd.Timestamp(os.environ.get("FROM", "2025-01-01"), tz="UTC").timestamp() * 1000
+TO = pd.Timestamp(os.environ.get("TO", "2100-01-01"), tz="UTC").timestamp() * 1000
 WARM = FROM - 30 * 24 * H
 FWD = 168
 SCALE = 13.0
@@ -90,7 +92,7 @@ def coin(sym, cap):
                         arr *= oi / s_
         if np.isfinite(oi):
             prev = oi
-        if ((t[i] + H) % (4 * H)) != 0 or t[i] < FROM or i + FWD >= n:
+        if ((t[i] + H) % (4 * H)) != 0 or t[i] < FROM or t[i] >= TO or i + FWD >= n:
             continue
         px = c[i]
         mcap = cap * px / c_now
@@ -126,10 +128,43 @@ def coin(sym, cap):
     return pd.DataFrame(rows)
 
 
+STOCKS = {"SPYUSDT", "QQQUSDT", "NVDAUSDT", "METAUSDT", "CRCLUSDT", "SPCXUSDT", "TSLAUSDT", "AAPLUSDT", "MSFTUSDT",
+          "AMZNUSDT", "GOOGLUSDT", "MSTRUSDT", "COINUSDT", "HOODUSDT", "PLTRUSDT", "AMDUSDT", "INTCUSDT", "TSMUSDT",
+          "PAXGUSDT", "XAUUSDT", "XAGUSDT", "XAUTUSDT"}
+
+
+def caps_with_fallback():
+    """Капа из CoinGecko; если 0 — монет в обращении × цена; поверх — ручной файл caps_manual.json ({"AGT": 229e6})."""
+    caps = {}
+    for page in range(1, 15):
+        r = None
+        for _ in range(6):
+            r = Hst.get("https://api.coingecko.com/api/v3/coins/markets",
+                        params={"vs_currency": "usd", "order": "market_cap_desc", "per_page": 250, "page": page})
+            if r is not None and r.status_code == 200:
+                break
+            time.sleep(20)
+        if r is None or r.status_code != 200:
+            print(f"CoinGecko page {page} failed", file=sys.stderr)
+            continue
+        for c in r.json():
+            sym = (c.get("symbol") or "").upper()
+            m = c.get("market_cap") or 0
+            if not m and c.get("circulating_supply") and c.get("current_price"):
+                m = c["circulating_supply"] * c["current_price"]
+            if m and m > caps.get(sym, 0):
+                caps[sym] = m
+        time.sleep(7)
+    if os.path.exists("caps_manual.json"):
+        for k, v in json.load(open("caps_manual.json")).items():
+            caps[k.upper().replace("USDT", "")] = float(v)
+    return caps
+
+
 def prep():
     os.makedirs(OUT, exist_ok=True)
-    syms = Hst.list_symbols()
-    caps = Hst.coingecko_mcaps()
+    syms = [s for s in Hst.list_symbols() if s not in STOCKS]
+    caps = caps_with_fallback()
     uni = {s: caps.get(Hst.base_asset(s)) for s in syms}
     uni = {s: v for s, v in uni.items() if v and 10e6 <= v <= 2e9}
     json.dump(uni, open(f"{OUT}/universe.json", "w"))
