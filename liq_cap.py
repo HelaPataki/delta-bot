@@ -38,6 +38,7 @@ SHARD, NSHARDS = int(os.environ.get("SHARD", "0")), int(os.environ.get("NSHARDS"
 H = PL.H
 FROM = pd.Timestamp(os.environ.get("FROM", "2025-01-01"), tz="UTC").timestamp() * 1000
 TO = pd.Timestamp(os.environ.get("TO", "2100-01-01"), tz="UTC").timestamp() * 1000
+OBS_H = int(os.environ.get("OBS_H", "4"))      # как часто проверяем условие: 4 = на закрытии 4h-свечи, 1 = каждый час
 WARM = FROM - 30 * 24 * H
 FWD = 168
 SCALE = 13.0
@@ -94,7 +95,7 @@ def coin(sym, cap):
                         arr *= oi / s_
         if np.isfinite(oi):
             prev = oi
-        if ((t[i] + H) % (4 * H)) != 0 or t[i] < FROM or t[i] >= TO or i + FWD >= n:
+        if ((t[i] + H) % (OBS_H * H)) != 0 or t[i] < FROM or t[i] >= TO or i + FWD >= n:
             continue
         px = c[i]
         mcap = cap * px / c_now
