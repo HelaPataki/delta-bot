@@ -1,0 +1,1665 @@
+{
+"date": "2026-11-12",
+"coins": {
+"NMRUSDT": {
+"cz": "NMRUSDT_PERP.A",
+"cap": 63905149
+},
+"BIGTIMEUSDT": {
+"cz": "BIGTIMEUSDT_PERP.A",
+"cap": 14565067
+},
+"POWRUSDT": {
+"cz": "POWRUSDT_PERP.A",
+"cap": 28023824
+},
+"AGLDUSDT": {
+"cz": "AGLDUSDT_PERP.A",
+"cap": 13837897
+},
+"CYBERUSDT": {
+"cz": "CYBERUSDT_PERP.A",
+"cap": 15065631
+},
+"ARKUSDT": {
+"cz": "ARKUSDT_PERP.A",
+"cap": 30342654
+},
+"WLDUSDT": {
+"cz": "WLDUSDT_PERP.A",
+"cap": 1134302288
+},
+"PENDLEUSDT": {
+"cz": "PENDLEUSDT_PERP.A",
+"cap": 263531696
+},
+"ARKMUSDT": {
+"cz": "ARKMUSDT_PERP.A",
+"cap": 69628398
+},
+"FLUXUSDT": {
+"cz": "FLUXUSDT_PERP.A",
+"cap": 21738181
+},
+"KATUSDT": {
+"cz": "KATUSDT_PERP.A",
+"cap": 10867382
+},
+"HUMAUSDT": {
+"cz": "HUMAUSDT_PERP.A",
+"cap": 13596591
+},
+"GIGGLEUSDT": {
+"cz": "GIGGLEUSDT_PERP.A",
+"cap": 26860590
+},
+"SEIUSDT": {
+"cz": "SEIUSDT_PERP.A",
+"cap": 291073286
+},
+"LAUSDT": {
+"cz": "LAUSDT_PERP.A",
+"cap": 17915219
+},
+"XVGUSDT": {
+"cz": "XVGUSDT_PERP.A",
+"cap": 31244170
+},
+"BNTUSDT": {
+"cz": "BNTUSDT_PERP.A",
+"cap": 25127389
+},
+"COWUSDT": {
+"cz": "COWUSDT_PERP.A",
+"cap": 57075812
+},
+"YGGUSDT": {
+"cz": "YGGUSDT_PERP.A",
+"cap": 18558069
+},
+"DOSUSDT": {
+"cz": "DOSUSDT_PERP.A",
+"cap": 32888543
+},
+"CETUSUSDT": {
+"cz": "CETUSUSDT_PERP.A",
+"cap": 18219720
+},
+"PONSUSDT": {
+"cz": "PONSUSDT_PERP.A",
+"cap": 100947915
+},
+"RPLUSDT": {
+"cz": "RPLUSDT_PERP.A",
+"cap": 30977310
+},
+"MINAUSDT": {
+"cz": "MINAUSDT_PERP.A",
+"cap": 68453374
+},
+"TAUSDT": {
+"cz": "TAUSDT_PERP.A",
+"cap": 19470955
+},
+"PEOPLEUSDT": {
+"cz": "PEOPLEUSDT_PERP.A",
+"cap": 28427437
+},
+"BLESSUSDT": {
+"cz": "BLESSUSDT_PERP.A",
+"cap": 15131192
+},
+"RIFUSDT": {
+"cz": "RIFUSDT_PERP.A",
+"cap": 55775292
+},
+"BANANAUSDT": {
+"cz": "BANANAUSDT_PERP.A",
+"cap": 11037039
+},
+"ASTRUSDT": {
+"cz": "ASTRUSDT_PERP.A",
+"cap": 43224972
+},
+"XVSUSDT": {
+"cz": "XVSUSDT_PERP.A",
+"cap": 44231980
+},
+"MAGICUSDT": {
+"cz": "MAGICUSDT_PERP.A",
+"cap": 27325889
+},
+"TUSDT": {
+"cz": "TUSDT_PERP.A",
+"cap": 48386819
+},
+"ESPUSDT": {
+"cz": "ESPUSDT_PERP.A",
+"cap": 57771526
+},
+"FETUSDT": {
+"cz": "FETUSDT_PERP.A",
+"cap": 341905949
+},
+"CFXUSDT": {
+"cz": "CFXUSDT_PERP.A",
+"cap": 213350228
+},
+"GUSDT": {
+"cz": "GUSDT_PERP.A",
+"cap": 21015882
+},
+"ETHWUSDT": {
+"cz": "ETHWUSDT_PERP.A",
+"cap": 21791143
+},
+"1000SATSUSDT": {
+"cz": "1000SATSUSDT_PERP.A",
+"cap": 17616711
+},
+"1000000MOGUSDT": {
+"cz": "1000000MOGUSDT_PERP.A",
+"cap": 33828031
+},
+"\u54c8\u57fa\u7c73USDT": {
+"cz": "\u54c8\u57fa\u7c73USDT_PERP.A",
+"cap": 16296259
+},
+"MOVRUSDT": {
+"cz": "MOVRUSDT_PERP.A",
+"cap": 12692879
+},
+"STARUSDT": {
+"cz": "STARUSDT_PERP.A",
+"cap": 14837330
+},
+"GENIUSUSDT": {
+"cz": "GENIUSUSDT_PERP.A",
+"cap": 94272978
+},
+"STXUSDT": {
+"cz": "STXUSDT_PERP.A",
+"cap": 533575026
+},
+"CRVUSDT": {
+"cz": "CRVUSDT_PERP.A",
+"cap": 380963072
+},
+"MUSDT": {
+"cz": "MUSDT_PERP.A",
+"cap": 1894149004
+},
+"APEUSDT": {
+"cz": "APEUSDT_PERP.A",
+"cap": 94678581
+},
+"RLCUSDT": {
+"cz": "RLCUSDT_PERP.A",
+"cap": 34236508
+},
+"KAVAUSDT": {
+"cz": "KAVAUSDT_PERP.A",
+"cap": 74277316
+},
+"BRETTUSDT": {
+"cz": "BRETTUSDT_PERP.A",
+"cap": 35684855
+},
+"RSRUSDT": {
+"cz": "RSRUSDT_PERP.A",
+"cap": 92415960
+},
+"MTLUSDT": {
+"cz": "MTLUSDT_PERP.A",
+"cap": 22293654
+},
+"BANDUSDT": {
+"cz": "BANDUSDT_PERP.A",
+"cap": 32141888
+},
+"RENDERUSDT": {
+"cz": "RENDERUSDT_PERP.A",
+"cap": 838579334
+},
+"KSMUSDT": {
+"cz": "KSMUSDT_PERP.A",
+"cap": 58392699
+},
+"WOOUSDT": {
+"cz": "WOOUSDT_PERP.A",
+"cap": 19564435
+},
+"DUSKUSDT": {
+"cz": "DUSKUSDT_PERP.A",
+"cap": 41226460
+},
+"NEIROUSDT": {
+"cz": "NEIROUSDT_PERP.A",
+"cap": 23613377
+},
+"CAKEUSDT": {
+"cz": "CAKEUSDT_PERP.A",
+"cap": 564214347
+},
+"JASMYUSDT": {
+"cz": "JASMYUSDT_PERP.A",
+"cap": 170848302
+},
+"CFGUSDT": {
+"cz": "CFGUSDT_PERP.A",
+"cap": 31184723
+},
+"ALGOUSDT": {
+"cz": "ALGOUSDT_PERP.A",
+"cap": 794074015
+},
+"POPCATUSDT": {
+"cz": "POPCATUSDT_PERP.A",
+"cap": 31116319
+},
+"KNCUSDT": {
+"cz": "KNCUSDT_PERP.A",
+"cap": 21315764
+},
+"ZILUSDT": {
+"cz": "ZILUSDT_PERP.A",
+"cap": 29080042
+},
+"SNXUSDT": {
+"cz": "SNXUSDT_PERP.A",
+"cap": 93517353
+},
+"ENJUSDT": {
+"cz": "ENJUSDT_PERP.A",
+"cap": 43027402
+},
+"ZRXUSDT": {
+"cz": "ZRXUSDT_PERP.A",
+"cap": 73249592
+},
+"OPUSDT": {
+"cz": "OPUSDT_PERP.A",
+"cap": 219666732
+},
+"SKLUSDT": {
+"cz": "SKLUSDT_PERP.A",
+"cap": 20875383
+},
+"TRBUSDT": {
+"cz": "TRBUSDT_PERP.A",
+"cap": 41770642
+},
+"SUNUSDT": {
+"cz": "SUNUSDT_PERP.A",
+"cap": 292220171
+},
+"NEOUSDT": {
+"cz": "NEOUSDT_PERP.A",
+"cap": 124819500
+},
+"ETCUSDT": {
+"cz": "ETCUSDT_PERP.A",
+"cap": 1053168553
+},
+"DASHUSDT": {
+"cz": "DASHUSDT_PERP.A",
+"cap": 532750827
+},
+"ONTUSDT": {
+"cz": "ONTUSDT_PERP.A",
+"cap": 41436108
+},
+"ATOMUSDT": {
+"cz": "ATOMUSDT_PERP.A",
+"cap": 765535454
+},
+"XTZUSDT": {
+"cz": "XTZUSDT_PERP.A",
+"cap": 262393039
+},
+"IOTAUSDT": {
+"cz": "IOTAUSDT_PERP.A",
+"cap": 162805645
+},
+"BATUSDT": {
+"cz": "BATUSDT_PERP.A",
+"cap": 183034983
+},
+"JSTUSDT": {
+"cz": "JSTUSDT_PERP.A",
+"cap": 1173379639
+},
+"VETUSDT": {
+"cz": "VETUSDT_PERP.A",
+"cap": 445388005
+},
+"QTUMUSDT": {
+"cz": "QTUMUSDT_PERP.A",
+"cap": 71772367
+},
+"IOSTUSDT": {
+"cz": "IOSTUSDT_PERP.A",
+"cap": 24037195
+},
+"THETAUSDT": {
+"cz": "THETAUSDT_PERP.A",
+"cap": 139079559
+},
+"GPSUSDT": {
+"cz": "GPSUSDT_PERP.A",
+"cap": 48529071
+},
+"SUSHIUSDT": {
+"cz": "SUSHIUSDT_PERP.A",
+"cap": 49240395
+},
+"COMPUSDT": {
+"cz": "COMPUSDT_PERP.A",
+"cap": 199468808
+},
+"RUNEUSDT": {
+"cz": "RUNEUSDT_PERP.A",
+"cap": 191702507
+},
+"DOTUSDT": {
+"cz": "DOTUSDT_PERP.A",
+"cap": 1415996773
+},
+"BASUSDT": {
+"cz": "BASUSDT_PERP.A",
+"cap": 32935019
+},
+"FILUSDT": {
+"cz": "FILUSDT_PERP.A",
+"cap": 629624847
+},
+"AAVEUSDT": {
+"cz": "AAVEUSDT_PERP.A",
+"cap": 1763277142
+},
+"HOMEUSDT": {
+"cz": "HOMEUSDT_PERP.A",
+"cap": 23119142
+},
+"MONUSDT": {
+"cz": "MONUSDT_PERP.A",
+"cap": 206560312
+},
+"GRTUSDT": {
+"cz": "GRTUSDT_PERP.A",
+"cap": 189585701
+},
+"YFIUSDT": {
+"cz": "YFIUSDT_PERP.A",
+"cap": 66414886
+},
+"1MBABYDOGEUSDT": {
+"cz": "1MBABYDOGEUSDT_PERP.A",
+"cap": 52414892
+},
+"MERLUSDT": {
+"cz": "MERLUSDT_PERP.A",
+"cap": 42330061
+},
+"JCTUSDT": {
+"cz": "JCTUSDT_PERP.A",
+"cap": 27816618
+},
+"MYXUSDT": {
+"cz": "MYXUSDT_PERP.A",
+"cap": 10811020
+},
+"FLOWUSDT": {
+"cz": "FLOWUSDT_PERP.A",
+"cap": 33787588
+},
+"EGLDUSDT": {
+"cz": "EGLDUSDT_PERP.A",
+"cap": 90545455
+},
+"IMXUSDT": {
+"cz": "IMXUSDT_PERP.A",
+"cap": 103792027
+},
+"AZTECUSDT": {
+"cz": "AZTECUSDT_PERP.A",
+"cap": 36635946
+},
+"ROSEUSDT": {
+"cz": "ROSEUSDT_PERP.A",
+"cap": 41610761
+},
+"SPKUSDT": {
+"cz": "SPKUSDT_PERP.A",
+"cap": 54680838
+},
+"LINEAUSDT": {
+"cz": "LINEAUSDT_PERP.A",
+"cap": 50079770
+},
+"CKBUSDT": {
+"cz": "CKBUSDT_PERP.A",
+"cap": 47455737
+},
+"CVXUSDT": {
+"cz": "CVXUSDT_PERP.A",
+"cap": 155409417
+},
+"OGNUSDT": {
+"cz": "OGNUSDT_PERP.A",
+"cap": 16192240
+},
+"XANUSDT": {
+"cz": "XANUSDT_PERP.A",
+"cap": 23987388
+},
+"AXSUSDT": {
+"cz": "AXSUSDT_PERP.A",
+"cap": 138190265
+},
+"SPELLUSDT": {
+"cz": "SPELLUSDT_PERP.A",
+"cap": 11852578
+},
+"MASKUSDT": {
+"cz": "MASKUSDT_PERP.A",
+"cap": 34970132
+},
+"ZENUSDT": {
+"cz": "ZENUSDT_PERP.A",
+"cap": 87391504
+},
+"BMTUSDT": {
+"cz": "BMTUSDT_PERP.A",
+"cap": 15890820
+},
+"LDOUSDT": {
+"cz": "LDOUSDT_PERP.A",
+"cap": 256436895
+},
+"ZKUSDT": {
+"cz": "ZKUSDT_PERP.A",
+"cap": 100215089
+},
+"1INCHUSDT": {
+"cz": "1INCHUSDT_PERP.A",
+"cap": 103629321
+},
+"SYNUSDT": {
+"cz": "SYNUSDT_PERP.A",
+"cap": 26733211
+},
+"1000LUNCUSDT": {
+"cz": "1000LUNCUSDT_PERP.A",
+"cap": 208484618
+},
+"FUSDT": {
+"cz": "FUSDT_PERP.A",
+"cap": 12329322
+},
+"CELRUSDT": {
+"cz": "CELRUSDT_PERP.A",
+"cap": 16139119
+},
+"GMXUSDT": {
+"cz": "GMXUSDT_PERP.A",
+"cap": 78904857
+},
+"1000PEPEUSDT": {
+"cz": "1000PEPEUSDT_PERP.A",
+"cap": 1914778819
+},
+"ANKRUSDT": {
+"cz": "ANKRUSDT_PERP.A",
+"cap": 34567252
+},
+"CHZUSDT": {
+"cz": "CHZUSDT_PERP.A",
+"cap": 113504341
+},
+"ALCHUSDT": {
+"cz": "ALCHUSDT_PERP.A",
+"cap": 32016339
+},
+"LPTUSDT": {
+"cz": "LPTUSDT_PERP.A",
+"cap": 61016602
+},
+"BLURUSDT": {
+"cz": "BLURUSDT_PERP.A",
+"cap": 19104153
+},
+"SANDUSDT": {
+"cz": "SANDUSDT_PERP.A",
+"cap": 122303683
+},
+"RVNUSDT": {
+"cz": "RVNUSDT_PERP.A",
+"cap": 20041810
+},
+"GMTUSDT": {
+"cz": "GMTUSDT_PERP.A",
+"cap": 18513225
+},
+"EDUUSDT": {
+"cz": "EDUUSDT_PERP.A",
+"cap": 38705899
+},
+"SFPUSDT": {
+"cz": "SFPUSDT_PERP.A",
+"cap": 96710354
+},
+"IDUSDT": {
+"cz": "IDUSDT_PERP.A",
+"cap": 38053399
+},
+"TAIKOUSDT": {
+"cz": "TAIKOUSDT_PERP.A",
+"cap": 15560986
+},
+"HOTUSDT": {
+"cz": "HOTUSDT_PERP.A",
+"cap": 69451889
+},
+"ARUSDT": {
+"cz": "ARUSDT_PERP.A",
+"cap": 198654110
+},
+"MANAUSDT": {
+"cz": "MANAUSDT_PERP.A",
+"cap": 135160393
+},
+"ONEUSDT": {
+"cz": "ONEUSDT_PERP.A",
+"cap": 61164946
+},
+"CHRUSDT": {
+"cz": "CHRUSDT_PERP.A",
+"cap": 13521008
+},
+"ARBUSDT": {
+"cz": "ARBUSDT_PERP.A",
+"cap": 1036778153
+},
+"DYDXUSDT": {
+"cz": "DYDXUSDT_PERP.A",
+"cap": 77568206
+},
+"SQDUSDT": {
+"cz": "SQDUSDT_PERP.A",
+"cap": 20268064
+},
+"SSVUSDT": {
+"cz": "SSVUSDT_PERP.A",
+"cap": 31000848
+},
+"FFUSDT": {
+"cz": "FFUSDT_PERP.A",
+"cap": 301619339
+},
+"SPXUSDT": {
+"cz": "SPXUSDT_PERP.A",
+"cap": 319152950
+},
+"COTIUSDT": {
+"cz": "COTIUSDT_PERP.A",
+"cap": 27237467
+},
+"ETHFIUSDT": {
+"cz": "ETHFIUSDT_PERP.A",
+"cap": 626934393
+},
+"REZUSDT": {
+"cz": "REZUSDT_PERP.A",
+"cap": 32425798
+},
+"IOTXUSDT": {
+"cz": "IOTXUSDT_PERP.A",
+"cap": 25622558
+},
+"CTSIUSDT": {
+"cz": "CTSIUSDT_PERP.A",
+"cap": 23237210
+},
+"1000XECUSDT": {
+"cz": "1000XECUSDT_PERP.A",
+"cap": 112233894
+},
+"ENSUSDT": {
+"cz": "ENSUSDT_PERP.A",
+"cap": 184199593
+},
+"LQTYUSDT": {
+"cz": "LQTYUSDT_PERP.A",
+"cap": 16100145
+},
+"IRYSUSDT": {
+"cz": "IRYSUSDT_PERP.A",
+"cap": 31708515
+},
+"ARPAUSDT": {
+"cz": "ARPAUSDT_PERP.A",
+"cap": 15505444
+},
+"TURBOUSDT": {
+"cz": "TURBOUSDT_PERP.A",
+"cap": 46875139
+},
+"JOEUSDT": {
+"cz": "JOEUSDT_PERP.A",
+"cap": 11953890
+},
+"WAXPUSDT": {
+"cz": "WAXPUSDT_PERP.A",
+"cap": 17303903
+},
+"KAITOUSDT": {
+"cz": "KAITOUSDT_PERP.A",
+"cap": 49227031
+},
+"ARXUSDT": {
+"cz": "ARXUSDT_PERP.A",
+"cap": 42148867
+},
+"MEWUSDT": {
+"cz": "MEWUSDT_PERP.A",
+"cap": 29153593
+},
+"LITUSDT": {
+"cz": "LITUSDT_PERP.A",
+"cap": 796425192
+},
+"BTWUSDT": {
+"cz": "BTWUSDT_PERP.A",
+"cap": 1502447090
+},
+"DOGSUSDT": {
+"cz": "DOGSUSDT_PERP.A",
+"cap": 15660034
+},
+"CAPUSDT": {
+"cz": "CAPUSDT_PERP.A",
+"cap": 163416978
+},
+"SENTUSDT": {
+"cz": "SENTUSDT_PERP.A",
+"cap": 117465328
+},
+"DEEPUSDT": {
+"cz": "DEEPUSDT_PERP.A",
+"cap": 33901366
+},
+"CTRUSDT": {
+"cz": "CTRUSDT_PERP.A",
+"cap": 21857519
+},
+"MANTAUSDT": {
+"cz": "MANTAUSDT_PERP.A",
+"cap": 22432654
+},
+"API3USDT": {
+"cz": "API3USDT_PERP.A",
+"cap": 35719827
+},
+"ALLOUSDT": {
+"cz": "ALLOUSDT_PERP.A",
+"cap": 64653548
+},
+"FIDAUSDT": {
+"cz": "FIDAUSDT_PERP.A",
+"cap": 14616043
+},
+"INJUSDT": {
+"cz": "INJUSDT_PERP.A",
+"cap": 740321638
+},
+"EIGENUSDT": {
+"cz": "EIGENUSDT_PERP.A",
+"cap": 159039680
+},
+"WIFUSDT": {
+"cz": "WIFUSDT_PERP.A",
+"cap": 152343146
+},
+"SLPUSDT": {
+"cz": "SLPUSDT_PERP.A",
+"cap": 16435091
+},
+"APTUSDT": {
+"cz": "APTUSDT_PERP.A",
+"cap": 487888367
+},
+"ASTERUSDT": {
+"cz": "ASTERUSDT_PERP.A",
+"cap": 1707554293
+},
+"1000CATUSDT": {
+"cz": "1000CATUSDT_PERP.A",
+"cap": 12242233
+},
+"UMAUSDT": {
+"cz": "UMAUSDT_PERP.A",
+"cap": 27655897
+},
+"CLOUSDT": {
+"cz": "CLOUSDT_PERP.A",
+"cap": 13365309
+},
+"BREVUSDT": {
+"cz": "BREVUSDT_PERP.A",
+"cap": 16218744
+},
+"AEVOUSDT": {
+"cz": "AEVOUSDT_PERP.A",
+"cap": 17076969
+},
+"MUBARAKUSDT": {
+"cz": "MUBARAKUSDT_PERP.A",
+"cap": 34798693
+},
+"ICPUSDT": {
+"cz": "ICPUSDT_PERP.A",
+"cap": 1420764198
+},
+"GRVTUSDT": {
+"cz": "GRVTUSDT_PERP.A",
+"cap": 20932559
+},
+"OUSDT": {
+"cz": "OUSDT_PERP.A",
+"cap": 78615118
+},
+"FRAXUSDT": {
+"cz": "FRAXUSDT_PERP.A",
+"cap": 217057472
+},
+"REUSDT": {
+"cz": "REUSDT_PERP.A",
+"cap": 41934438
+},
+"HYPERUSDT": {
+"cz": "HYPERUSDT_PERP.A",
+"cap": 15515745
+},
+"KASUSDT": {
+"cz": "KASUSDT_PERP.A",
+"cap": 804725833
+},
+"MEMEUSDT": {
+"cz": "MEMEUSDT_PERP.A",
+"cap": 24467273
+},
+"ZESTUSDT": {
+"cz": "ZESTUSDT_PERP.A",
+"cap": 16650534
+},
+"POWERUSDT": {
+"cz": "POWERUSDT_PERP.A",
+"cap": 12189619
+},
+"POLUSDT": {
+"cz": "POLUSDT_PERP.A",
+"cap": 935558289
+},
+"DIAUSDT": {
+"cz": "DIAUSDT_PERP.A",
+"cap": 15137317
+},
+"BICOUSDT": {
+"cz": "BICOUSDT_PERP.A",
+"cap": 13166548
+},
+"ATHUSDT": {
+"cz": "ATHUSDT_PERP.A",
+"cap": 88673924
+},
+"TWTUSDT": {
+"cz": "TWTUSDT_PERP.A",
+"cap": 159103760
+},
+"BSVUSDT": {
+"cz": "BSVUSDT_PERP.A",
+"cap": 317175609
+},
+"POLYXUSDT": {
+"cz": "POLYXUSDT_PERP.A",
+"cap": 39754321
+},
+"GASUSDT": {
+"cz": "GASUSDT_PERP.A",
+"cap": 67225126
+},
+"TIAUSDT": {
+"cz": "TIAUSDT_PERP.A",
+"cap": 427060337
+},
+"AUCTIONUSDT": {
+"cz": "AUCTIONUSDT_PERP.A",
+"cap": 20989164
+},
+"KITEUSDT": {
+"cz": "KITEUSDT_PERP.A",
+"cap": 300941883
+},
+"PORTALUSDT": {
+"cz": "PORTALUSDT_PERP.A",
+"cap": 11169520
+},
+"ZEREBROUSDT": {
+"cz": "ZEREBROUSDT_PERP.A",
+"cap": 23104810
+},
+"ORDIUSDT": {
+"cz": "ORDIUSDT_PERP.A",
+"cap": 66483394
+},
+"STEEMUSDT": {
+"cz": "STEEMUSDT_PERP.A",
+"cap": 25736526
+},
+"CELOUSDT": {
+"cz": "CELOUSDT_PERP.A",
+"cap": 40246413
+},
+"TUTUSDT": {
+"cz": "TUTUSDT_PERP.A",
+"cap": 13089404
+},
+"ACEUSDT": {
+"cz": "ACEUSDT_PERP.A",
+"cap": 13000895
+},
+"CATIUSDT": {
+"cz": "CATIUSDT_PERP.A",
+"cap": 25153134
+},
+"JUPUSDT": {
+"cz": "JUPUSDT_PERP.A",
+"cap": 877676060
+},
+"ALTUSDT": {
+"cz": "ALTUSDT_PERP.A",
+"cap": 39582980
+},
+"XAIUSDT": {
+"cz": "XAIUSDT_PERP.A",
+"cap": 28617253
+},
+"ILVUSDT": {
+"cz": "ILVUSDT_PERP.A",
+"cap": 22594768
+},
+"LSKUSDT": {
+"cz": "LSKUSDT_PERP.A",
+"cap": 45616522
+},
+"KERNELUSDT": {
+"cz": "KERNELUSDT_PERP.A",
+"cap": 13048270
+},
+"ATUSDT": {
+"cz": "ATUSDT_PERP.A",
+"cap": 20588386
+},
+"SUPERUSDT": {
+"cz": "SUPERUSDT_PERP.A",
+"cap": 101848200
+},
+"FLUIDUSDT": {
+"cz": "FLUIDUSDT_PERP.A",
+"cap": 164644665
+},
+"USTCUSDT": {
+"cz": "USTCUSDT_PERP.A",
+"cap": 22930981
+},
+"ONGUSDT": {
+"cz": "ONGUSDT_PERP.A",
+"cap": 30069069
+},
+"JTOUSDT": {
+"cz": "JTOUSDT_PERP.A",
+"cap": 172829277
+},
+"ONDOUSDT": {
+"cz": "ONDOUSDT_PERP.A",
+"cap": 1727160867
+},
+"COLLECTUSDT": {
+"cz": "COLLECTUSDT_PERP.A",
+"cap": 13739503
+},
+"YBUSDT": {
+"cz": "YBUSDT_PERP.A",
+"cap": 14162966
+},
+"GTCUSDT": {
+"cz": "GTCUSDT_PERP.A",
+"cap": 13718168
+},
+"CHIPUSDT": {
+"cz": "CHIPUSDT_PERP.A",
+"cap": 62593190
+},
+"ZETAUSDT": {
+"cz": "ZETAUSDT_PERP.A",
+"cap": 55576265
+},
+"TRUMPUSDT": {
+"cz": "TRUMPUSDT_PERP.A",
+"cap": 311548292
+},
+"STRKUSDT": {
+"cz": "STRKUSDT_PERP.A",
+"cap": 281757384
+},
+"1000BONKUSDT": {
+"cz": "1000BONKUSDT_PERP.A",
+"cap": 237689725
+},
+"PYTHUSDT": {
+"cz": "PYTHUSDT_PERP.A",
+"cap": 523264540
+},
+"GLMUSDT": {
+"cz": "GLMUSDT_PERP.A",
+"cap": 101761820
+},
+"HUSDT": {
+"cz": "HUSDT_PERP.A",
+"cap": 48966365
+},
+"MMTUSDT": {
+"cz": "MMTUSDT_PERP.A",
+"cap": 23623690
+},
+"AXLUSDT": {
+"cz": "AXLUSDT_PERP.A",
+"cap": 44862656
+},
+"WETUSDT": {
+"cz": "WETUSDT_PERP.A",
+"cap": 10516174
+},
+"ICNTUSDT": {
+"cz": "ICNTUSDT_PERP.A",
+"cap": 69961623
+},
+"METISUSDT": {
+"cz": "METISUSDT_PERP.A",
+"cap": 20274845
+},
+"MEGAUSDT": {
+"cz": "MEGAUSDT_PERP.A",
+"cap": 52713790
+},
+"NIGHTUSDT": {
+"cz": "NIGHTUSDT_PERP.A",
+"cap": 751175198
+},
+"BOMEUSDT": {
+"cz": "BOMEUSDT_PERP.A",
+"cap": 39251029
+},
+"SIGNUSDT": {
+"cz": "SIGNUSDT_PERP.A",
+"cap": 26716272
+},
+"MANTRAUSDT": {
+"cz": "MANTRAUSDT_PERP.A",
+"cap": 19776433
+},
+"BILLUSDT": {
+"cz": "BILLUSDT_PERP.A",
+"cap": 10458604
+},
+"IOUSDT": {
+"cz": "IOUSDT_PERP.A",
+"cap": 49346497
+},
+"LISTAUSDT": {
+"cz": "LISTAUSDT_PERP.A",
+"cap": 31783431
+},
+"MAGMAUSDT": {
+"cz": "MAGMAUSDT_PERP.A",
+"cap": 65541233
+},
+"ENAUSDT": {
+"cz": "ENAUSDT_PERP.A",
+"cap": 1897874112
+},
+"AGTUSDT": {
+"cz": "AGTUSDT_PERP.A",
+"cap": 229000000.0
+},
+"SAHARAUSDT": {
+"cz": "SAHARAUSDT_PERP.A",
+"cap": 25434287
+},
+"PUMPUSDT": {
+"cz": "PUMPUSDT_PERP.A",
+"cap": 1563087400
+},
+"AINUSDT": {
+"cz": "AINUSDT_PERP.A",
+"cap": 18962507
+},
+"BULLAUSDT": {
+"cz": "BULLAUSDT_PERP.A",
+"cap": 22182054
+},
+"IDOLUSDT": {
+"cz": "IDOLUSDT_PERP.A",
+"cap": 45427507
+},
+"EDENUSDT": {
+"cz": "EDENUSDT_PERP.A",
+"cap": 18705609
+},
+"USELESSUSDT": {
+"cz": "USELESSUSDT_PERP.A",
+"cap": 130710407
+},
+"AUSDT": {
+"cz": "AUSDT_PERP.A",
+"cap": 121557481
+},
+"DEXEUSDT": {
+"cz": "DEXEUSDT_PERP.A",
+"cap": 43018446
+},
+"TREEUSDT": {
+"cz": "TREEUSDT_PERP.A",
+"cap": 14821547
+},
+"WUSDT": {
+"cz": "WUSDT_PERP.A",
+"cap": 66602829
+},
+"ZROUSDT": {
+"cz": "ZROUSDT_PERP.A",
+"cap": 614588376
+},
+"PNUTUSDT": {
+"cz": "PNUTUSDT_PERP.A",
+"cap": 32208207
+},
+"GOATUSDT": {
+"cz": "GOATUSDT_PERP.A",
+"cap": 12003300
+},
+"GRASSUSDT": {
+"cz": "GRASSUSDT_PERP.A",
+"cap": 322822885
+},
+"B2USDT": {
+"cz": "B2USDT_PERP.A",
+"cap": 17371088
+},
+"TNSRUSDT": {
+"cz": "TNSRUSDT_PERP.A",
+"cap": 18511825
+},
+"BUSDT": {
+"cz": "BUSDT_PERP.A",
+"cap": 109393101
+},
+"USUSDT": {
+"cz": "USUSDT_PERP.A",
+"cap": 11007056
+},
+"CYSUSDT": {
+"cz": "CYSUSDT_PERP.A",
+"cap": 11465176
+},
+"NOTUSDT": {
+"cz": "NOTUSDT_PERP.A",
+"cap": 32252748
+},
+"CARVUSDT": {
+"cz": "CARVUSDT_PERP.A",
+"cap": 19180350
+},
+"BSBUSDT": {
+"cz": "BSBUSDT_PERP.A",
+"cap": 21215019
+},
+"XNYUSDT": {
+"cz": "XNYUSDT_PERP.A",
+"cap": 17580973
+},
+"MOODENGUSDT": {
+"cz": "MOODENGUSDT_PERP.A",
+"cap": 29969193
+},
+"SAFEUSDT": {
+"cz": "SAFEUSDT_PERP.A",
+"cap": 67699223
+},
+"OGUSDT": {
+"cz": "OGUSDT_PERP.A",
+"cap": 10340205
+},
+"MOVEUSDT": {
+"cz": "MOVEUSDT_PERP.A",
+"cap": 26218465
+},
+"C98USDT": {
+"cz": "C98USDT_PERP.A",
+"cap": 11179990
+},
+"FORMUSDT": {
+"cz": "FORMUSDT_PERP.A",
+"cap": 75871674
+},
+"MORPHOUSDT": {
+"cz": "MORPHOUSDT_PERP.A",
+"cap": 1415157503
+},
+"PENGUUSDT": {
+"cz": "PENGUUSDT_PERP.A",
+"cap": 388206659
+},
+"ORCAUSDT": {
+"cz": "ORCAUSDT_PERP.A",
+"cap": 74949663
+},
+"AKTUSDT": {
+"cz": "AKTUSDT_PERP.A",
+"cap": 177706908
+},
+"BANUSDT": {
+"cz": "BANUSDT_PERP.A",
+"cap": 44327412
+},
+"\u9f99\u867eUSDT": {
+"cz": "\u9f99\u867eUSDT_PERP.A",
+"cap": 18114619
+},
+"WCTUSDT": {
+"cz": "WCTUSDT_PERP.A",
+"cap": 13964400
+},
+"AWEUSDT": {
+"cz": "AWEUSDT_PERP.A",
+"cap": 118014926
+},
+"ZORAUSDT": {
+"cz": "ZORAUSDT_PERP.A",
+"cap": 21332357
+},
+"KAIAUSDT": {
+"cz": "KAIAUSDT_PERP.A",
+"cap": 209837816
+},
+"AEROUSDT": {
+"cz": "AEROUSDT_PERP.A",
+"cap": 372046387
+},
+"1000CHEEMSUSDT": {
+"cz": "1000CHEEMSUSDT_PERP.A",
+"cap": 73599617
+},
+"OPGUSDT": {
+"cz": "OPGUSDT_PERP.A",
+"cap": 33384242
+},
+"TAGUSDT": {
+"cz": "TAGUSDT_PERP.A",
+"cap": 69846864
+},
+"OPENUSDT": {
+"cz": "OPENUSDT_PERP.A",
+"cap": 32799907
+},
+"RAVEUSDT": {
+"cz": "RAVEUSDT_PERP.A",
+"cap": 33735102
+},
+"VIRTUALUSDT": {
+"cz": "VIRTUALUSDT_PERP.A",
+"cap": 345814045
+},
+"MEUSDT": {
+"cz": "MEUSDT_PERP.A",
+"cap": 26806121
+},
+"CUSDT": {
+"cz": "CUSDT_PERP.A",
+"cap": 11192099
+},
+"METUSDT": {
+"cz": "METUSDT_PERP.A",
+"cap": 163081227
+},
+"VELVETUSDT": {
+"cz": "VELVETUSDT_PERP.A",
+"cap": 23307687
+},
+"HIVEUSDT": {
+"cz": "HIVEUSDT_PERP.A",
+"cap": 23423719
+},
+"LUMIAUSDT": {
+"cz": "LUMIAUSDT_PERP.A",
+"cap": 18552863
+},
+"AVAUSDT": {
+"cz": "AVAUSDT_PERP.A",
+"cap": 17269327
+},
+"GALAUSDT": {
+"cz": "GALAUSDT_PERP.A",
+"cap": 74738094
+},
+"MOCAUSDT": {
+"cz": "MOCAUSDT_PERP.A",
+"cap": 33344787
+},
+"VANAUSDT": {
+"cz": "VANAUSDT_PERP.A",
+"cap": 21618248
+},
+"USUALUSDT": {
+"cz": "USUALUSDT_PERP.A",
+"cap": 21673039
+},
+"BIOUSDT": {
+"cz": "BIOUSDT_PERP.A",
+"cap": 41374097
+},
+"AIXBTUSDT": {
+"cz": "AIXBTUSDT_PERP.A",
+"cap": 14184808
+},
+"FARTCOINUSDT": {
+"cz": "FARTCOINUSDT_PERP.A",
+"cap": 108380353
+},
+"KMNOUSDT": {
+"cz": "KMNOUSDT_PERP.A",
+"cap": 185880579
+},
+"CGPTUSDT": {
+"cz": "CGPTUSDT_PERP.A",
+"cap": 16182075
+},
+"PROMUSDT": {
+"cz": "PROMUSDT_PERP.A",
+"cap": 91753219
+},
+"PHAUSDT": {
+"cz": "PHAUSDT_PERP.A",
+"cap": 28606441
+},
+"SUSDT": {
+"cz": "SUSDT_PERP.A",
+"cap": 144805110
+},
+"SYRUPUSDT": {
+"cz": "SYRUPUSDT_PERP.A",
+"cap": 144861037
+},
+"INITUSDT": {
+"cz": "INITUSDT_PERP.A",
+"cap": 24483483
+},
+"MELANIAUSDT": {
+"cz": "MELANIAUSDT_PERP.A",
+"cap": 54313013
+},
+"SOLVUSDT": {
+"cz": "SOLVUSDT_PERP.A",
+"cap": 25543856
+},
+"ARCUSDT": {
+"cz": "ARCUSDT_PERP.A",
+"cap": 31189721
+},
+"VTHOUSDT": {
+"cz": "VTHOUSDT_PERP.A",
+"cap": 53531650
+},
+"ANIMEUSDT": {
+"cz": "ANIMEUSDT_PERP.A",
+"cap": 12772869
+},
+"BERAUSDT": {
+"cz": "BERAUSDT_PERP.A",
+"cap": 36471456
+},
+"SECZUSDT": {
+"cz": "SECZUSDT_PERP.A",
+"cap": 41022655
+},
+"REDUSDT": {
+"cz": "REDUSDT_PERP.A",
+"cap": 74473650
+},
+"LAYERUSDT": {
+"cz": "LAYERUSDT_PERP.A",
+"cap": 10369407
+},
+"JELLYJELLYUSDT": {
+"cz": "JELLYJELLYUSDT_PERP.A",
+"cap": 40592240
+},
+"ERAUSDT": {
+"cz": "ERAUSDT_PERP.A",
+"cap": 14413638
+},
+"PIPPINUSDT": {
+"cz": "PIPPINUSDT_PERP.A",
+"cap": 12107066
+},
+"EDGEUSDT": {
+"cz": "EDGEUSDT_PERP.A",
+"cap": 119034282
+},
+"VVVUSDT": {
+"cz": "VVVUSDT_PERP.A",
+"cap": 933512739
+},
+"ALICEUSDT": {
+"cz": "ALICEUSDT_PERP.A",
+"cap": 11632531
+},
+"CLANKERUSDT": {
+"cz": "CLANKERUSDT_PERP.A",
+"cap": 13047745
+},
+"TSTUSDT": {
+"cz": "TSTUSDT_PERP.A",
+"cap": 11135915
+},
+"COAIUSDT": {
+"cz": "COAIUSDT_PERP.A",
+"cap": 37875241
+},
+"BABYUSDT": {
+"cz": "BABYUSDT_PERP.A",
+"cap": 49847860
+},
+"BRUSDT": {
+"cz": "BRUSDT_PERP.A",
+"cap": 131585893
+},
+"NAORISUSDT": {
+"cz": "NAORISUSDT_PERP.A",
+"cap": 16687886
+},
+"PLUMEUSDT": {
+"cz": "PLUMEUSDT_PERP.A",
+"cap": 91446841
+},
+"SIRENUSDT": {
+"cz": "SIRENUSDT_PERP.A",
+"cap": 19872522
+},
+"BANANAS31USDT": {
+"cz": "BANANAS31USDT_PERP.A",
+"cap": 49297049
+},
+"NILUSDT": {
+"cz": "NILUSDT_PERP.A",
+"cap": 30846534
+},
+"BTRUSDT": {
+"cz": "BTRUSDT_PERP.A",
+"cap": 11053766
+},
+"WALUSDT": {
+"cz": "WALUSDT_PERP.A",
+"cap": 71422710
+},
+"BEATUSDT": {
+"cz": "BEATUSDT_PERP.A",
+"cap": 28136367
+},
+"BANKUSDT": {
+"cz": "BANKUSDT_PERP.A",
+"cap": 16937993
+},
+"PROVEUSDT": {
+"cz": "PROVEUSDT_PERP.A",
+"cap": 33966367
+},
+"PUNDIXUSDT": {
+"cz": "PUNDIXUSDT_PERP.A",
+"cap": 21074244
+},
+"CTKUSDT": {
+"cz": "CTKUSDT_PERP.A",
+"cap": 13442841
+},
+"AIOTUSDT": {
+"cz": "AIOTUSDT_PERP.A",
+"cap": 84940878
+},
+"DOLOUSDT": {
+"cz": "DOLOUSDT_PERP.A",
+"cap": 10699150
+},
+"STABLEUSDT": {
+"cz": "STABLEUSDT_PERP.A",
+"cap": 472817801
+},
+"NXPCUSDT": {
+"cz": "NXPCUSDT_PERP.A",
+"cap": 48771577
+},
+"QUSDT": {
+"cz": "QUSDT_PERP.A",
+"cap": 138996127
+},
+"SXTUSDT": {
+"cz": "SXTUSDT_PERP.A",
+"cap": 45127391
+},
+"CTUSDT": {
+"cz": "CTUSDT_PERP.A",
+"cap": 19983232
+},
+"DOODUSDT": {
+"cz": "DOODUSDT_PERP.A",
+"cap": 12051061
+},
+"SKYAIUSDT": {
+"cz": "SKYAIUSDT_PERP.A",
+"cap": 34935630
+},
+"KGENUSDT": {
+"cz": "KGENUSDT_PERP.A",
+"cap": 20043220
+},
+"SOONUSDT": {
+"cz": "SOONUSDT_PERP.A",
+"cap": 80223811
+},
+"FOLKSUSDT": {
+"cz": "FOLKSUSDT_PERP.A",
+"cap": 45387929
+},
+"SPACEUSDT": {
+"cz": "SPACEUSDT_PERP.A",
+"cap": 20307183
+},
+"CVCUSDT": {
+"cz": "CVCUSDT_PERP.A",
+"cap": 19542998
+},
+"ZAMAUSDT": {
+"cz": "ZAMAUSDT_PERP.A",
+"cap": 151642660
+},
+"TRUTHUSDT": {
+"cz": "TRUTHUSDT_PERP.A",
+"cap": 34548271
+},
+"FOGOUSDT": {
+"cz": "FOGOUSDT_PERP.A",
+"cap": 10302223
+},
+"ACUUSDT": {
+"cz": "ACUUSDT_PERP.A",
+"cap": 54481468
+},
+"ELSAUSDT": {
+"cz": "ELSAUSDT_PERP.A",
+"cap": 15134014
+},
+"ZBTUSDT": {
+"cz": "ZBTUSDT_PERP.A",
+"cap": 18748633
+},
+"FLOCKUSDT": {
+"cz": "FLOCKUSDT_PERP.A",
+"cap": 19222399
+},
+"SKYUSDT": {
+"cz": "SKYUSDT_PERP.A",
+"cap": 1364886113
+},
+"SAPIENUSDT": {
+"cz": "SAPIENUSDT_PERP.A",
+"cap": 10496552
+},
+"XPLUSDT": {
+"cz": "XPLUSDT_PERP.A",
+"cap": 237003851
+},
+"LABUSDT": {
+"cz": "LABUSDT_PERP.A",
+"cap": 29583653
+},
+"TOSHIUSDT": {
+"cz": "TOSHIUSDT_PERP.A",
+"cap": 36656950
+},
+"STBLUSDT": {
+"cz": "STBLUSDT_PERP.A",
+"cap": 10511630
+},
+"ARIAUSDT": {
+"cz": "ARIAUSDT_PERP.A",
+"cap": 36692027
+},
+"WLFIUSDT": {
+"cz": "WLFIUSDT_PERP.A",
+"cap": 1497967449
+},
+"TAKEUSDT": {
+"cz": "TAKEUSDT_PERP.A",
+"cap": 24483241
+},
+"AVNTUSDT": {
+"cz": "AVNTUSDT_PERP.A",
+"cap": 31480730
+},
+"RIVERUSDT": {
+"cz": "RIVERUSDT_PERP.A",
+"cap": 29888747
+},
+"HEMIUSDT": {
+"cz": "HEMIUSDT_PERP.A",
+"cap": 17486786
+},
+"XPINUSDT": {
+"cz": "XPINUSDT_PERP.A",
+"cap": 32978891
+},
+"0GUSDT": {
+"cz": "0GUSDT_PERP.A",
+"cap": 93581895
+},
+"SKRUSDT": {
+"cz": "SKRUSDT_PERP.A",
+"cap": 78117687
+},
+"SOMIUSDT": {
+"cz": "SOMIUSDT_PERP.A",
+"cap": 24645669
+},
+"LIGHTUSDT": {
+"cz": "LIGHTUSDT_PERP.A",
+"cap": 10448271
+},
+"BARDUSDT": {
+"cz": "BARDUSDT_PERP.A",
+"cap": 50547230
+},
+"2ZUSDT": {
+"cz": "2ZUSDT_PERP.A",
+"cap": 98943860
+},
+"HOLOUSDT": {
+"cz": "HOLOUSDT_PERP.A",
+"cap": 46328501
+},
+"UBUSDT": {
+"cz": "UBUSDT_PERP.A",
+"cap": 269143338
+},
+"EULUSDT": {
+"cz": "EULUSDT_PERP.A",
+"cap": 21044036
+},
+"MIRAUSDT": {
+"cz": "MIRAUSDT_PERP.A",
+"cap": 12912244
+},
+"AKEUSDT": {
+"cz": "AKEUSDT_PERP.A",
+"cap": 63362538
+},
+"ORDERUSDT": {
+"cz": "ORDERUSDT_PERP.A",
+"cap": 12992103
+},
+"\u5e01\u5b89\u4eba\u751fUSDT": {
+"cz": "\u5e01\u5b89\u4eba\u751fUSDT_PERP.A",
+"cap": 473479552
+},
+"APRUSDT": {
+"cz": "APRUSDT_PERP.A",
+"cap": 14750014
+},
+"PIEVERSEUSDT": {
+"cz": "PIEVERSEUSDT_PERP.A",
+"cap": 443014639
+},
+"ONUSDT": {
+"cz": "ONUSDT_PERP.A",
+"cap": 12188515
+},
+"BIRBUSDT": {
+"cz": "BIRBUSDT_PERP.A",
+"cap": 20986553
+},
+"GWEIUSDT": {
+"cz": "GWEIUSDT_PERP.A",
+"cap": 35362355
+},
+"PRLUSDT": {
+"cz": "PRLUSDT_PERP.A",
+"cap": 12699754
+},
+"MARSCOINUSDT": {
+"cz": "MARSCOINUSDT_PERP.A",
+"cap": 39575337
+},
+"CATUSDT": {
+"cz": "CATUSDT_PERP.A",
+"cap": 12242233
+},
+"EWTUSDT": {
+"cz": "EWTUSDT_PERP.A",
+"cap": 20908910
+},
+"\u725b\u6765USDT": {
+"cz": "\u725b\u6765USDT_PERP.A",
+"cap": 57648871
+}
+}
+}
