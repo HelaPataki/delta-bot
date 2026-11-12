@@ -1,4 +1,4 @@
-name: Narratives: do sector coins follow each other
+name: "Narratives - do sector coins follow each other"
 
 on:
   workflow_dispatch:

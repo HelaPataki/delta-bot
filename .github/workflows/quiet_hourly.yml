@@ -83,6 +83,6 @@ jobs:
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          git add $DIR/liq_trade_summary.md $DIR/liq_trade_table.csv $DIR/liq_trade_filters.csv $DIR/trades.csv.gz
+          for f in liq_trade_summary.md liq_trade_table.csv liq_trade_filters.csv trades.csv.gz; do [ -f "$DIR/$f" ] && git add "$DIR/$f"; done
           git commit -m "Quiet hourly run" || echo "nothing to commit"
           for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done

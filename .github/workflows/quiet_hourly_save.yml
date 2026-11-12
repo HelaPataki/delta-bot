@@ -1,0 +1,50 @@
+name: Quiet hourly - save results from a finished run
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Номер прогона (из адреса страницы прогона)"
+        default: "43275860287"
+      dir:
+        description: "Папка результатов"
+        default: "results/quiet_hourly"
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  EXTRA_MAPS: "1"
+  ONLY_SIGNALS: "Q"
+  OBS_H: "1"
+  DIR: ${{ inputs.dir }}
+  OUT_DIR: ${{ inputs.dir }}
+
+jobs:
+  combine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: ${{ env.DIR }}/parts
+          merge-multiple: true
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Summary
+        env:
+          MODE: combine
+        run: python liq_trade.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          for f in liq_trade_summary.md liq_trade_table.csv liq_trade_filters.csv trades.csv.gz; do [ -f "$DIR/$f" ] && git add "$DIR/$f"; done
+          git commit -m "Quiet hourly results saved" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
