@@ -62,6 +62,15 @@ def main():
                 if len(j) > 48:
                     r["OI: Coinalyze / Binance (медиана)"] = round((j.cz / j.bn).median(), 3)
                     r["OI: совпадение часовых изменений (корр.)"] = round(j.cz.diff().corr(j.bn.diff()), 3)
+                    for agg in ("last", "first", "mean"):
+                        b2 = met.assign(t=(met.t // 1000 // H) * H).groupby("t").oi.agg(agg)
+                        for sh in (-2, -1, 1, 2):
+                            j2 = pd.concat([c, b2.shift(sh)], axis=1, keys=["cz", "bn"]).dropna()
+                            r[f"OI Δ корр.: бинанс {agg}, сдвиг {sh:+d}ч"] = round(j2.cz.diff().corr(j2.bn.diff()), 3)
+                        j2 = pd.concat([c, b2], axis=1, keys=["cz", "bn"]).dropna()
+                        r[f"OI Δ корр.: бинанс {agg}, без сдвига"] = round(j2.cz.diff().corr(j2.bn.diff()), 3)
+                        # доля часов, где знак прироста совпал (для карты важен только прирост)
+                        r[f"OI: знак Δ совпал, {agg}"] = round((np.sign(j2.cz.diff()) == np.sign(j2.bn.diff())).mean(), 3)
         if ls is None:
             r["L/S"] = f"ошибка: {e2}"
         elif len(ls):
