@@ -60,6 +60,7 @@ def coin(sym, cap):
     if met is None or len(met) < 500:
         return None
     OI, OIU = PL.AsOf(met, "oi"), PL.AsOf(met, "oi_usd")
+    LSA, LST = PL.AsOf(met, "glob"), PL.AsOf(met, "top_pos")
     lo_g = math.log(np.nanmin(l[l > 0]) * 0.3)
     G = int((math.log(np.nanmax(h) * 3) - lo_g) / LM.STEP) + 2
     maps = {name: [np.zeros(G), np.zeros(G), 0.5 ** (1 / (hl * 24))] for name, hl in HL.items()}
@@ -97,7 +98,9 @@ def coin(sym, cap):
         hh, ll = h[i + 1:i + 1 + FWD], l[i + 1:i + 1 + FWD]
         row = {"symbol": sym, "t": int((t[i] + H) // 1000), "капа $M": mcap / 1e6,
                "OI$/капа %": OIU.at(t[i] + H, 2 * H) / mcap * 100,
-               "оборот 24ч / капа %": qv[max(0, i - 23):i + 1].sum() / mcap * 100}
+               "оборот 24ч / капа %": qv[max(0, i - 23):i + 1].sum() / mcap * 100,
+               "L/S все": LSA.at(t[i] + H, 2 * H), "L/S топ": LST.at(t[i] + H, 2 * H),
+               "L/S все 24ч назад": LSA.at(t[i] + H - 24 * H, 2 * H)}
         for name, (longs, shorts, _) in maps.items():
             su, lu = shorts * lvl, longs * lvl
             for R in RANGES:
@@ -185,7 +188,34 @@ def combine():
     edges = [0, 0.5, 1, 2, 3, 5, 10, 1e9]
     labs = ["<0,5%", "0,5–1%", "1–2%", "2–3%", "3–5%", "5–10%", "10%+"]
     capb = pd.cut(a["капа $M"], [0, 50, 100, 300, 1000, 1e9], labels=["<$50M", "$50–100M", "$100–300M", "$300M–1B", ">$1B"])
-    for scale, sname in ((1.0, "сырая модель"), (SCALE, f"÷{SCALE:g}, масштаб реальных ликвидаций")):
+    # ---------- ТОЛПА ----------
+    w("# Толпа (соотношение лонгов и шортов, Binance) × ликвидности\n\n"
+      "L/S все = аккаунтов в лонге / аккаунтов в шорте (все трейдеры); L/S топ = позиции топ-трейдеров.\n"
+      "Сначала — толпа сама по себе (без ликвидаций), чтобы отделить её эффект. Потом — вместе с ликвидностью.\n\n")
+    lsb = lambda x: pd.cut(x, [0, 0.8, 1.2, 1.8, 2.5, 1e9], labels=["толпа в шортах (<0,8)", "поровну (0,8–1,2)",
+                                                                    "лонгов больше (1,2–1,8)", "толпа в лонгах (1,8–2,5)",
+                                                                    "сильно в лонгах (2,5+)"], right=False)
+    a["_ls"], a["_lt"] = lsb(a["L/S все"]), lsb(a["L/S топ"])
+    a["_lsd"] = pd.cut(a["L/S все"] - a["L/S все 24ч назад"], [-1e9, -0.2, -0.05, 0.05, 0.2, 1e9],
+                       labels=["лонги резко уходят", "лонги уходят", "без изменений", "лонгов прибавляется", "лонгов резко прибавляется"])
+    for col, name in (("_ls", "все аккаунты"), ("_lt", "топ-трейдеры"), ("_lsd", "изменение L/S всех за 24 ч")):
+        rows = [outcome_row(g, str(k)) for k, g in a.groupby(col, observed=True) if len(g) >= 100]
+        w(f"## Только толпа: {name}\n\n" + pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
+    for hl in ("14д", "45д"):
+        for R in (10, 20):
+            up, dn = a[f"{hl} вверх{R} %капы"], a[f"{hl} вниз{R} %капы"]
+            conds = {"сверху ≥3% капы и сверху > снизу": (up >= 3) & (up > dn),
+                     "сверху 1–3% капы и сверху > снизу": (up >= 1) & (up < 3) & (up > dn),
+                     "снизу ≥3% капы и снизу > сверху": (dn >= 3) & (dn > up),
+                     "снизу 1–3% капы и снизу > сверху": (dn >= 1) & (dn < 3) & (dn > up)}
+            for col, name in (("_ls", "все аккаунты"), ("_lt", "топ-трейдеры")):
+                rows = []
+                for cn, cm in conds.items():
+                    for k, g in a[cm].groupby(col, observed=True):
+                        if len(g) >= 100:
+                            rows.append(outcome_row(g, f"{cn} | {k}"))
+                w(f"## Карта «{hl}», ±{R}%: ликвидность × толпа ({name})\n\n" + pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
+    for scale, sname in ((1.0, "сырая модель (≈ масштаб Coinglass)"),):
         w(f"# Шкала: {sname}\n\n")
         for hl in HL:
             for R in (10, 20):
