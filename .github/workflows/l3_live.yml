@@ -1,0 +1,50 @@
+name: L3 live bot
+
+on:
+  schedule:
+    # каждый час в :25 UTC — вне окон, когда live.py активно ходит в Coinalyze (:55, :18, :01–:15 перед/после 4ч-свечи)
+    - cron: "25 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "test — проверить сейчас (сообщения с пометкой ТЕСТ, журнал не меняется); live — обычный режим"
+        default: "test"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: l3-live-${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'live' }}
+  cancel-in-progress: false
+
+jobs:
+  l3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python live_l3.py
+        env:
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'live' }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+          COINALYZE_KEY: ${{ secrets.COINALYZE_KEY }}
+      - name: Save state
+        if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.mode == 'live') }}
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          for f in l3_state.json l3_signals.csv l3_universe.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "l3: state"
+          for i in 1 2 3 4; do
+            if git pull --rebase -X theirs && git push; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
