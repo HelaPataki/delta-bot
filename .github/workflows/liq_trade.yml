@@ -79,6 +79,6 @@ jobs:
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          git add $DIR/liq_trade_summary.md $DIR/liq_trade_table.csv $DIR/trades.csv.gz
+          git add $DIR/liq_trade_summary.md $DIR/liq_trade_table.csv $DIR/liq_trade_filters.csv $DIR/trades.csv.gz
           git commit -m "Liquidity x crowd trades run" || echo "nothing to commit"
           for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done

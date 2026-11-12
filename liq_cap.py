@@ -102,12 +102,23 @@ def coin(sym, cap):
                "OI$/капа %": OIU.at(t[i] + H, 2 * H) / mcap * 100,
                "оборот 24ч / капа %": qv[max(0, i - 23):i + 1].sum() / mcap * 100,
                "L/S все": LSA.at(t[i] + H, 2 * H), "L/S топ": LST.at(t[i] + H, 2 * H),
-               "L/S все 24ч назад": LSA.at(t[i] + H - 24 * H, 2 * H)}
+               "L/S все 24ч назад": LSA.at(t[i] + H - 24 * H, 2 * H),
+               "OI 24ч %": PL.ratio(OI.at(t[i] + H, 2 * H), OI.at(t[i] + H - 24 * H, 2 * H)) * 100,
+               "цена 24ч %": (c[i] / c[i - 24] - 1) * 100 if i >= 24 else np.nan}
+        W1 = max(1, int(round(0.01 / LM.STEP)))
         for name, (longs, shorts, _) in maps.items():
             su, lu = shorts * lvl, longs * lvl
             for R in RANGES:
                 row[f"{name} вверх{R} %капы"] = su[ip + 1:gi(px * (1 + R / 100)) + 1].sum() / mcap * 100
                 row[f"{name} вниз{R} %капы"] = lu[gi(px * (1 - R / 100)):ip].sum() / mcap * 100
+            # самая толстая полоса 1% шортов сверху (2–20%) и лонгов снизу — уровень «кластера»
+            for side, arr, a0, a1 in (("вверх", su, gi(px * 1.02), gi(px * 1.20)), ("вниз", lu, gi(px * 0.80), gi(px * 0.98))):
+                seg = arr[a0:a1 + 1]
+                if len(seg) >= W1 and seg.sum() > 0:
+                    j = int(np.argmax(np.convolve(seg, np.ones(W1), "valid")))
+                    row[f"{name} кластер {side} %"] = abs(lvl[a0 + j + W1 // 2] / px - 1) * 100
+                else:
+                    row[f"{name} кластер {side} %"] = np.nan
         for d_ in (3, 5, 10):
             iu = np.nonzero(hh >= px * (1 + d_ / 100))[0]
             idn = np.nonzero(ll <= px * (1 - d_ / 100))[0]
