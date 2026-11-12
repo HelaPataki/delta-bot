@@ -9,12 +9,11 @@
 Капа — оценка: текущая капа CoinGecko × цена тогда / цена сейчас.
 
 Монеты: все USDT-перпетуалы Binance с текущей капой $10M–$2B. Период: с 2025-01-01, наблюдение на закрытии 4h-свечи.
-Для каждой стороны:
-  ВВЕРХ: шортовые ликвидации над ценой в пределах 20%; «кластер» — самая толстая полоса шириной 1% (2–20% от цены).
-         Цель: дойдёт ли цена до середины кластера раньше, чем уйдёт на столько же вниз (за 7 дней).
-  ВНИЗ:  то же для лонговых ликвидаций под ценой.
-Если «притяжение» есть — при большой доле кластера от капы цена должна чаще доходить до кластера,
-чем в среднем (когда кластер маленький).
+Как у Анастасии на Coinglass: не одна полка, а ОБЩАЯ сумма ликвидаций выше цены (шорты) и ниже цены (лонги),
+в пределах ±10% и ±20% от цены, в % от капы. Пороги — от 1% капы.
+Три варианта карты по «возрасту» позиций (полураспад 3 / 14 / 45 дней) — похоже на окна Coinglass 7д / 30д / 90–180д.
+Вопрос: если сверху жирнее (≥ X% капы и больше, чем снизу) — чаще ли цена сначала идёт вверх на 5% (10%),
+чем вниз на 5% (10%), за 7 дней? И наоборот.
 """
 
 import datetime as dt
@@ -42,6 +41,10 @@ FWD = 168
 SCALE = 13.0
 
 
+HL = {"3д": 3, "14д": 14, "45д": 45}      # полураспад старых позиций: примерно как окна Coinglass 7 дней / 30 дней / 90–180 дней
+RANGES = [5, 10, 20]                     # сумма ликвидаций от цены до +R% (вверх) и до −R% (вниз)
+
+
 def coin(sym, cap):
     k = Hst.load_klines(sym, "1h")
     if k is None or len(k) < 500:
@@ -49,7 +52,7 @@ def coin(sym, cap):
     o, h, l, c = (k[x].to_numpy() for x in ("open", "high", "low", "close"))
     v, qv, t = k.volume.to_numpy(), k.quote_volume.to_numpy(), k.open_time.to_numpy()
     n, c_now = len(k), k.close.iloc[-1]
-    days, d = set(), pd.Timestamp(max(WARM, t[0]), unit="ms", tz="UTC").date()
+    days, d = set(), pd.Timestamp(max(WARM - 60 * 24 * H, t[0]), unit="ms", tz="UTC").date()
     while d < dt.datetime.now(dt.timezone.utc).date():
         days.add(d)
         d += dt.timedelta(days=1)
@@ -59,29 +62,32 @@ def coin(sym, cap):
     OI, OIU = PL.AsOf(met, "oi"), PL.AsOf(met, "oi_usd")
     lo_g = math.log(np.nanmin(l[l > 0]) * 0.3)
     G = int((math.log(np.nanmax(h) * 3) - lo_g) / LM.STEP) + 2
-    longs, shorts = np.zeros(G), np.zeros(G)
+    maps = {name: [np.zeros(G), np.zeros(G), 0.5 ** (1 / (hl * 24))] for name, hl in HL.items()}
     lvl = np.exp(lo_g + (np.arange(G) + 0.5) * LM.STEP)
     gi = lambda p: min(G - 1, max(0, int((math.log(p) - lo_g) / LM.STEP)))
-    W1 = max(1, int(round(0.01 / LM.STEP)))           # полоса ~1%
     prev, rows = np.nan, []
-    for i in range(int(np.searchsorted(t, WARM)), n):
+    for i in range(int(np.searchsorted(t, WARM - 60 * 24 * H)), n):
         if not (h[i] > 0 and l[i] > 0):
             continue
         oi = OI.at(t[i] + H, 2 * H)
-        longs *= LM.DECAY
-        shorts *= LM.DECAY
-        shorts[:gi(h[i]) + 1] = 0
-        longs[gi(l[i]):] = 0
-        if np.isfinite(oi) and np.isfinite(prev) and oi > prev and v[i] > 0:
-            p = qv[i] / v[i]
-            for L, wgt in LM.LEV.items():
-                longs[gi(p * (1 - 1 / L + LM.MMR))] += (oi - prev) * wgt
-                shorts[gi(p * (1 + 1 / L - LM.MMR))] += (oi - prev) * wgt
-        if np.isfinite(oi) and oi > 0:
-            for arr in (longs, shorts):
-                s = arr.sum()
-                if s > oi:
-                    arr *= oi / s
+        ih, il = gi(h[i]), gi(l[i])
+        add = (oi - prev) if (np.isfinite(oi) and np.isfinite(prev) and oi > prev and v[i] > 0) else 0.0
+        p = qv[i] / v[i] if v[i] > 0 else c[i]
+        for longs, shorts, dec in maps.values():
+            longs *= dec
+            shorts *= dec
+            shorts[:ih + 1] = 0
+            longs[il:] = 0
+            if add > 0:
+                for L, wgt in LM.LEV.items():
+                    longs[gi(p * (1 - 1 / L + LM.MMR))] += add * wgt
+                    shorts[gi(p * (1 + 1 / L - LM.MMR))] += add * wgt
+            if np.isfinite(oi) and oi > 0:
+                for arr in (longs, shorts):
+                    s_ = arr.sum()
+                    if s_ > oi:
+                        arr *= oi / s_
+        if np.isfinite(oi):
             prev = oi
         if ((t[i] + H) % (4 * H)) != 0 or t[i] < FROM or i + FWD >= n:
             continue
@@ -90,32 +96,30 @@ def coin(sym, cap):
         ip = gi(px)
         hh, ll = h[i + 1:i + 1 + FWD], l[i + 1:i + 1 + FWD]
         row = {"symbol": sym, "t": int((t[i] + H) // 1000), "капа $M": mcap / 1e6,
-               "OI$/капа %": OIU.at(t[i] + H, 2 * H) / mcap * 100, "оборот 24ч / капа %": qv[max(0, i - 23):i + 1].sum() / mcap * 100}
-        for side, arr, sign in (("вверх", shorts, 1), ("вниз", longs, -1)):
-            usd = arr * lvl
-            a0, a1 = (gi(px * 1.02), gi(px * 1.20)) if sign > 0 else (gi(px * 0.80), gi(px * 0.98))
-            seg = usd[a0:a1 + 1]
-            tot20 = usd[ip + 1:gi(px * 1.20) + 1].sum() if sign > 0 else usd[gi(px * 0.80):ip].sum()
-            if len(seg) < W1 or seg.sum() <= 0:
-                row.update({f"{side}: ликв20 / капа %": tot20 / mcap * 100, f"{side}: кластер / капа %": 0.0,
-                            f"{side}: до кластера %": np.nan, f"{side}: исход": "нет кластера"})
-                continue
-            band = np.convolve(seg, np.ones(W1), "valid")
-            j = int(np.argmax(band))
-            mid = lvl[a0 + j + W1 // 2]
-            dist = mid / px - 1
-            # дойдёт до кластера раньше, чем уйдёт на столько же в другую сторону
-            if sign > 0:
-                it, io = np.nonzero(hh >= mid)[0], np.nonzero(ll <= px * (1 - dist))[0]
-            else:
-                it, io = np.nonzero(ll <= mid)[0], np.nonzero(hh >= px * (1 - dist))[0]
-            it = it[0] if len(it) else 10 ** 6
-            io = io[0] if len(io) else 10 ** 6
-            res = "к кластеру" if it < io else "от кластера" if io < it else ("никуда" if it == 10 ** 6 else "обе")
-            row.update({f"{side}: ликв20 / капа %": tot20 / mcap * 100, f"{side}: кластер / капа %": band[j] / mcap * 100,
-                        f"{side}: до кластера %": abs(dist) * 100, f"{side}: исход": res,
-                        f"{side}: часов до кластера": it + 1 if it < 10 ** 6 else np.nan})
+               "OI$/капа %": OIU.at(t[i] + H, 2 * H) / mcap * 100,
+               "оборот 24ч / капа %": qv[max(0, i - 23):i + 1].sum() / mcap * 100}
+        for name, (longs, shorts, _) in maps.items():
+            su, lu = shorts * lvl, longs * lvl
+            for R in RANGES:
+                row[f"{name} вверх{R} %капы"] = su[ip + 1:gi(px * (1 + R / 100)) + 1].sum() / mcap * 100
+                row[f"{name} вниз{R} %капы"] = lu[gi(px * (1 - R / 100)):ip].sum() / mcap * 100
+        for d_ in (3, 5, 10):
+            iu = np.nonzero(hh >= px * (1 + d_ / 100))[0]
+            idn = np.nonzero(ll <= px * (1 - d_ / 100))[0]
+            iu = iu[0] if len(iu) else 10 ** 6
+            idn = idn[0] if len(idn) else 10 ** 6
+            row[f"±{d_}%"] = "вверх" if iu < idn else "вниз" if idn < iu else ("никуда" if iu == 10 ** 6 else "обе")
+        row["ret72"] = (c[i + 72] / px - 1) * 100
         rows.append(row)
+    # снимок «сейчас» — для сверки с Coinglass (суммы в $)
+    px, ip = c[-1], gi(c[-1])
+    snap = {"symbol": sym, "t": int((t[-1] + H) // 1000), "снимок": True, "цена": px, "капа $M": cap / 1e6}
+    for name, (longs, shorts, _) in maps.items():
+        su, lu = shorts * lvl, longs * lvl
+        for R in (10, 20, 30, 50):
+            snap[f"{name} вверх{R} $"] = su[ip + 1:gi(px * (1 + R / 100)) + 1].sum()
+            snap[f"{name} вниз{R} $"] = lu[gi(px * (1 - R / 100)):ip].sum()
+    rows.append(snap)
     return pd.DataFrame(rows)
 
 
@@ -147,24 +151,17 @@ def run_shard():
     print(f"часть {SHARD}: {len(parts)} из {len(mine)}")
 
 
-def side_table(a, side, by):
-    g0 = a[a[f"{side}: исход"].isin(["к кластеру", "от кластера", "никуда", "обе"])]
-    rows = []
-    for lab, g in g0.groupby(by, observed=True):
-        if len(g) < 100:
-            continue
-        r = {"группа": str(lab), "наблюдений": len(g),
-             "до кластера, % (медиана)": round(g[f"{side}: до кластера %"].median(), 1),
-             "дошла до кластера первой": f"{(g[f'{side}: исход'] == 'к кластеру').mean() * 100:.0f}%",
-             "ушла в другую сторону": f"{(g[f'{side}: исход'] == 'от кластера').mean() * 100:.0f}%",
-             "никуда за 7 дней": f"{(g[f'{side}: исход'] == 'никуда').mean() * 100:.0f}%"}
-        k, o_ = (g[f"{side}: исход"] == "к кластеру").mean(), (g[f"{side}: исход"] == "от кластера").mean()
-        r["перевес к кластеру, п.п."] = f"{(k - o_) * 100:+.0f}"
-        for y, gy in g.groupby("год"):
-            if len(gy) >= 50:
-                r[str(y)] = f"{((gy[f'{side}: исход'] == 'к кластеру').mean() - (gy[f'{side}: исход'] == 'от кластера').mean()) * 100:+.0f}"
-        rows.append(r)
-    return pd.DataFrame(rows)
+def outcome_row(g, label):
+    r = {"группа": label, "наблюдений": len(g)}
+    for d_ in (5, 10):
+        up, dn = (g[f"±{d_}%"] == "вверх").mean(), (g[f"±{d_}%"] == "вниз").mean()
+        r[f"±{d_}%: вверх"] = f"{up * 100:.0f}%"
+        r[f"±{d_}%: вниз"] = f"{dn * 100:.0f}%"
+        r[f"±{d_}%: перевес вверх, п.п."] = f"{(up - dn) * 100:+.0f}"
+    for y, gy in g.groupby("год"):
+        if len(gy) >= 50:
+            r[f"{y} (±5%)"] = f"{((gy['±5%'] == 'вверх').mean() - (gy['±5%'] == 'вниз').mean()) * 100:+.0f}"
+    return r
 
 
 def combine():
@@ -175,27 +172,57 @@ def combine():
         except pd.errors.EmptyDataError:
             pass
     a = pd.concat(parts, ignore_index=True)
+    snap = a[a.get("снимок", pd.Series(False, index=a.index)).fillna(False).astype(bool)]
+    snap.dropna(axis=1, how="all").to_csv(f"{OUT}/snapshot_now.csv", index=False)
+    a = a[~a.index.isin(snap.index)].copy()
     a["год"] = pd.to_datetime(a.t, unit="s").dt.year
     a.to_csv(f"{OUT}/observations.csv.gz", index=False)
     w = open(f"{OUT}/liq_cap_summary.md", "w").write
-    w("# Ликвидации относительно капитализации: притягивают ли цену\n\n" + __doc__.split("\n", 2)[2] + "\n\n")
-    w(f"Монет: {a.symbol.nunique()}, наблюдений: {len(a)}.\n\n"
-      "«Перевес к кластеру» = (дошла до кластера первой) − (ушла на то же расстояние в другую сторону), в процентных пунктах. "
-      "Если притяжения нет — около 0 (или как в группе с маленьким кластером).\n\n")
+    w("# Сумма ликвидаций выше/ниже цены относительно капы: куда пойдёт цена\n\n" + __doc__.split("\n", 2)[2] + "\n\n")
+    w(f"Монет: {a.symbol.nunique()}, наблюдений (4h-свечей): {len(a)}.\n\n")
+    w("База: " + "; ".join(f"±{d_}%: вверх {(a[f'±{d_}%'] == 'вверх').mean() * 100:.0f}%, вниз {(a[f'±{d_}%'] == 'вниз').mean() * 100:.0f}%"
+                          for d_ in (5, 10)) + ". «Перевес вверх» = вверх − вниз (п.п.); сравнивать с базой.\n\n")
+    edges = [0, 0.5, 1, 2, 3, 5, 10, 1e9]
+    labs = ["<0,5%", "0,5–1%", "1–2%", "2–3%", "3–5%", "5–10%", "10%+"]
     capb = pd.cut(a["капа $M"], [0, 50, 100, 300, 1000, 1e9], labels=["<$50M", "$50–100M", "$100–300M", "$300M–1B", ">$1B"])
-    edges = [0, 0.5, 1, 2, 5, 10, 20, 50, 1e9]
-    labs = ["<0,5%", "0,5–1%", "1–2%", "2–5%", "5–10%", "10–20%", "20–50%", "50%+"]
-    for side, title in (("вверх", "ВВЕРХ: шорты над ценой"), ("вниз", "ВНИЗ: лонги под ценой")):
-        w(f"## {title}\n\n")
-        for col, name in ((f"{side}: кластер / капа %", "самая толстая полоса 1%"), (f"{side}: ликв20 / капа %", "всё в пределах 20%")):
-            b = pd.cut(a[col], edges, labels=labs, right=False)
-            bs = pd.cut(a[col] / SCALE, edges, labels=labs, right=False)
-            w(f"### {name}, доля от капы (сырая модель)\n\n" + side_table(a.assign(_b=b), side, "_b").to_markdown(index=False) + "\n\n")
-            w(f"### {name}, доля от капы (÷{SCALE:g}, в масштабе реальных ликвидаций)\n\n"
-              + side_table(a.assign(_b=bs), side, "_b").to_markdown(index=False) + "\n\n")
-        w("### По размеру капы × толщина кластера (сырая модель, полоса 1%)\n\n")
-        b = pd.cut(a[f"{side}: кластер / капа %"], [0, 1, 5, 20, 1e9], labels=["<1%", "1–5%", "5–20%", "20%+"], right=False)
-        w(side_table(a.assign(_g=capb.astype(str) + " | " + b.astype(str)), side, "_g").to_markdown(index=False) + "\n\n")
+    for scale, sname in ((1.0, "сырая модель"), (SCALE, f"÷{SCALE:g}, масштаб реальных ликвидаций")):
+        w(f"# Шкала: {sname}\n\n")
+        for hl in HL:
+            for R in (10, 20):
+                up, dn = a[f"{hl} вверх{R} %капы"] / scale, a[f"{hl} вниз{R} %капы"] / scale
+                w(f"## Карта «{hl}», сумма в пределах ±{R}% от цены\n\n")
+                rows = []
+                # 1) жирнее сверху: сверху ≥ X% капы и сверху больше, чем снизу
+                for x0, x1, lab in zip(edges[:-1], edges[1:], labs):
+                    m = (up >= x0) & (up < x1) & (up > dn)
+                    if m.sum() >= 100:
+                        rows.append(outcome_row(a[m], f"сверху {lab} капы, сверху > снизу"))
+                for x0, x1, lab in zip(edges[:-1], edges[1:], labs):
+                    m = (dn >= x0) & (dn < x1) & (dn > up)
+                    if m.sum() >= 100:
+                        rows.append(outcome_row(a[m], f"снизу {lab} капы, снизу > сверху"))
+                # 2) насколько сверху жирнее, чем снизу, при сверху ≥ 1% капы
+                ratio = up / dn.where(dn > 0)
+                for r0, r1 in ((1, 1.5), (1.5, 2), (2, 3), (3, 5), (5, 1e9)):
+                    m = (up >= 1) & (ratio >= r0) & (ratio < r1)
+                    if m.sum() >= 100:
+                        rows.append(outcome_row(a[m], f"сверху ≥1% капы, сверху в {r0}–{r1 if r1 < 1e9 else '∞'} раз больше"))
+                    m = (dn >= 1) & (1 / ratio >= r0) & (1 / ratio < r1)
+                    if m.sum() >= 100:
+                        rows.append(outcome_row(a[m], f"снизу ≥1% капы, снизу в {r0}–{r1 if r1 < 1e9 else '∞'} раз больше"))
+                w(pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
+        # по капе: сверху ≥ 1% и в 2+ раза больше
+        hl = "14д"
+        up, dn = a[f"{hl} вверх20 %капы"] / scale, a[f"{hl} вниз20 %капы"] / scale
+        rows = []
+        for cb in capb.cat.categories:
+            m = (capb == cb) & (up >= 1) & (up >= 2 * dn)
+            if m.sum() >= 50:
+                rows.append(outcome_row(a[m], f"{cb}: сверху ≥1% капы и в 2+ раза больше"))
+            m = (capb == cb) & (dn >= 1) & (dn >= 2 * up)
+            if m.sum() >= 50:
+                rows.append(outcome_row(a[m], f"{cb}: снизу ≥1% капы и в 2+ раза больше"))
+        w(f"## По размеру капы (карта «14д», ±20%)\n\n" + pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
     print(open(f"{OUT}/liq_cap_summary.md").read()[:5000])
 
 
