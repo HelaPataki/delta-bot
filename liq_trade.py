@@ -63,7 +63,25 @@ def signals(o):
         "S3 шорт: снизу ≥3%, топы в лонгах 2,5+": (-1, (dn14 >= 3) & (dn14 > up14) & (top >= 2.5)),
         "S4 шорт: снизу ≥3%, топы в лонгах 3,5+": (-1, (dn14 >= 3) & (dn14 > up14) & (top >= 3.5)),
         "S5 шорт: снизу ≥3%, карта 45д, топы 3,5+": (-1, (dn45 >= 3) & (dn45 > up45) & (top >= 3.5)),
-    } | grid(o)
+    } | grid(o) | quiet(o)
+
+
+def quiet(o):
+    """«Тихие» монеты: узкий диапазон за 7 дней, объём ниже нормы, а сверху жирный пласт шортов по долгоживущей карте."""
+    if "90д вверх10 %капы" not in o:
+        return {}
+    calm = (o["диапазон 7д %"] < 15) & (o["объём 3д / норма"] < 1.0)
+    calm_soft = (o["диапазон 7д %"] < 25) & (o["объём 3д / норма"] < 1.2)
+    out = {}
+    for mp in ("90д", "вечн", "45д"):
+        for R in (10, 20):
+            up, dn = o[f"{mp} вверх{R} %капы"], o[f"{mp} вниз{R} %капы"]
+            for thr in (3, 5):
+                base = (up >= thr) & (up > dn)
+                out[f"Q лонг: тихо, {mp} ±{R}%, сверху ≥{thr}%"] = (+1, calm & base)
+                out[f"Q лонг: тихо, {mp} ±{R}%, сверху ≥{thr}%, L/S все<1.2"] = (+1, calm & base & (o["L/S все"] < 1.2))
+                out[f"Q лонг: полутихо, {mp} ±{R}%, сверху ≥{thr}%"] = (+1, calm_soft & base)
+    return out
 
 
 def grid(o):
@@ -88,7 +106,7 @@ EXITS = [("10/10", 10, 10, None, False), ("10/5", 10, 5, None, False), ("15/7.5"
          ("25/10", 25, 10, None, False), ("30/10", 30, 10, None, False), ("40/10", 40, 10, None, False),
          ("50/10", 50, 10, None, False), ("30/15", 30, 15, None, False)]
 ONLY_SIGNALS = [x for x in os.environ.get("ONLY_SIGNALS", "").split(",") if x]
-GRID_EXITS = {"10/10", "кластер / стоп 10", "кластер / стоп 10 + БУ после +5"}
+GRID_EXITS = {"10/10", "кластер / стоп 10", "кластер / стоп 10 + БУ после +5", "20/10", "30/10"}
 _btc = {}
 
 
@@ -149,9 +167,9 @@ def coin(sym, cap):
         btc = btc_regime()
         rows = []
         for name, (side, cond) in signals(o).items():
-            if ONLY_SIGNALS and name[:2] not in ONLY_SIGNALS:
+            if ONLY_SIGNALS and name.split()[0] not in ONLY_SIGNALS:
                 continue
-            is_grid = name.startswith("G ")
+            is_grid = name.startswith("G ") or name.startswith("Q ")
             exits = [e for e in EXITS if (not is_grid or e[0] in GRID_EXITS)] if side > 0 else EXITS[:5]
             cond = cond.fillna(False).to_numpy()
             prev_true_t = -10 ** 18
@@ -290,7 +308,11 @@ def combine():
     w("Выходы: «кластер» = тейк на уровне самой толстой полосы шортовых ликвидаций сверху (не ближе 3%); "
       "«БУ после +5» = после +5% стоп переносится на вход; «½ на +5» = половина закрывается на +5%, остаток идёт "
       "до кластера со стопом в безубытке. В скобках у депозита — максимальная просадка (по закрытым сделкам).\n\n")
-    main = d[~d["сигнал"].str.startswith("G ")]
+    qd = d[d["сигнал"].str.startswith("Q ")]
+    if len(qd):
+        w("## «Тихие» монеты (затишье + жирный пласт шортов сверху), лучшие по худшему году\n\n"
+          + qd.sort_values("худший год, ср.pnl", ascending=False).head(40).to_markdown(index=False) + "\n\n")
+    main = d[~d["сигнал"].str.startswith(("G ", "Q "))]
     w("## Основные сигналы × все выходы\n\n" + main.to_markdown(index=False) + "\n\n")
     gd = d[d["сигнал"].str.startswith("G ") & (d["в месяц"] >= 8)]
     if len(gd):

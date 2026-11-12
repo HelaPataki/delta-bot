@@ -44,6 +44,8 @@ SCALE = 13.0
 
 
 HL = {"3д": 3, "14д": 14, "45д": 45}      # полураспад старых позиций: примерно как окна Coinglass 7 дней / 30 дней / 90–180 дней
+if os.environ.get("EXTRA_MAPS"):            # для «тихих» монет: позиции живут долго (как Coinglass за 180 дней / год)
+    HL.update({"90д": 90, "вечн": None})
 RANGES = [5, 10, 20]                     # сумма ликвидаций от цены до +R% (вверх) и до −R% (вниз)
 
 
@@ -65,7 +67,7 @@ def coin(sym, cap):
     LSA, LST = PL.AsOf(met, "glob"), PL.AsOf(met, "top_pos")
     lo_g = math.log(np.nanmin(l[l > 0]) * 0.3)
     G = int((math.log(np.nanmax(h) * 3) - lo_g) / LM.STEP) + 2
-    maps = {name: [np.zeros(G), np.zeros(G), 0.5 ** (1 / (hl * 24))] for name, hl in HL.items()}
+    maps = {name: [np.zeros(G), np.zeros(G), (0.5 ** (1 / (hl * 24))) if hl else 1.0] for name, hl in HL.items()}
     lvl = np.exp(lo_g + (np.arange(G) + 0.5) * LM.STEP)
     gi = lambda p: min(G - 1, max(0, int((math.log(p) - lo_g) / LM.STEP)))
     prev, rows = np.nan, []
@@ -104,7 +106,10 @@ def coin(sym, cap):
                "L/S все": LSA.at(t[i] + H, 2 * H), "L/S топ": LST.at(t[i] + H, 2 * H),
                "L/S все 24ч назад": LSA.at(t[i] + H - 24 * H, 2 * H),
                "OI 24ч %": PL.ratio(OI.at(t[i] + H, 2 * H), OI.at(t[i] + H - 24 * H, 2 * H)) * 100,
-               "цена 24ч %": (c[i] / c[i - 24] - 1) * 100 if i >= 24 else np.nan}
+               "цена 24ч %": (c[i] / c[i - 24] - 1) * 100 if i >= 24 else np.nan,
+               "диапазон 7д %": (h[max(0, i - 167):i + 1].max() / l[max(0, i - 167):i + 1].min() - 1) * 100,
+               "объём 3д / норма": qv[max(0, i - 71):i + 1].mean() / max(1e-9, np.median(qv[max(0, i - 719):i + 1])),
+               "OI 7д %": PL.ratio(OI.at(t[i] + H, 2 * H), OI.at(t[i] + H - 168 * H, 2 * H)) * 100}
         W1 = max(1, int(round(0.01 / LM.STEP)))
         for name, (longs, shorts, _) in maps.items():
             su, lu = shorts * lvl, longs * lvl
