@@ -223,7 +223,7 @@ def combine():
             if m.sum() >= 50:
                 rows.append(outcome_row(a[m], f"{cb}: снизу ≥1% капы и в 2+ раза больше"))
         w(f"## По размеру капы (карта «14д», ±20%)\n\n" + pd.DataFrame(rows).to_markdown(index=False) + "\n\n")
-    print(open(f"{OUT}/liq_cap_summary.md").read()[:5000])
+    print(open(f"{OUT}/liq_cap_summary.md").read())
 
 
 if __name__ == "__main__":

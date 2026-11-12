@@ -1,2 +1,3 @@
 __pycache__/
 *.pyc
+results/liq_cap/observations.csv.gz
