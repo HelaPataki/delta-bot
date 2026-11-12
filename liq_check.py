@@ -152,7 +152,7 @@ def run_shard():
 # ---------------- сверка ----------------
 def corr(a, b):
     m = np.isfinite(a) & np.isfinite(b)
-    return pd.Series(a[m]).corr(pd.Series(b[m]), method="spearman") if m.sum() >= 20 else np.nan
+    return pd.Series(a[m]).rank().corr(pd.Series(b[m]).rank()) if m.sum() >= 20 else np.nan   # Спирмен без scipy
 
 
 def compare(m, r, label):
