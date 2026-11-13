@@ -29,6 +29,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
       - run: python live_l3.py
         env:
           MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'live' }}

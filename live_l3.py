@@ -420,6 +420,8 @@ def persist(st, msg="l3: state"):
     import subprocess
     files = [f for f in (STATE_FILE, SIGNALS_FILE, UNI_FILE) if os.path.exists(f)]
     sh = lambda *c: subprocess.run(list(c), capture_output=True, text=True)
+    sh("git", "config", "user.name", "delta-bot")
+    sh("git", "config", "user.email", "delta-bot@users.noreply.github.com")
     sh("git", "add", *files)
     if sh("git", "diff", "--cached", "--quiet").returncode == 0:
         return
@@ -430,6 +432,7 @@ def persist(st, msg="l3: state"):
         sh("git", "rebase", "--abort")
         time.sleep(5 * (i + 1))
     log("не удалось отправить состояние в репозиторий")
+    tg("⚠️ L3 бот: не удалось сохранить журнал в репозиторий (сигналы при этом приходят)")
 
 
 def fresh_hits(ser, last_n):
@@ -535,7 +538,7 @@ def full_check(st):
                    and np.isfinite(r["ls"]) and r["ls"] < SHORT_LS)
     log(f"полная проверка: L/S<{PREFILTER_LS} вчера {len(cand)}, L/S<{SCAN_LS} сейчас {len(fin)}, "
         f"сигналов {n}, короткий список: {' '.join(short) or '—'}")
-    persist(st)
+    persist(st, "l3: state (полная проверка)")
     return coins, short, near, len(fin)
 
 
