@@ -250,7 +250,7 @@ def load_coin(sym, czsym, cz_ohlcv, cz_oi, cz_ls):
     return k, met
 
 
-def condition_series(k, met, cap, hours=26):
+def condition_series(k, met, cap, hours=28):
     """Карта «14д» по той же модели, что в тесте (liq_cap.coin): по каждому из последних часов —
     шорты в пределах +10% и лонги в пределах −10% в % капы, L/S всех аккаунтов, цена."""
     if len(k) < 24 * 20 or met is None or len(met) < 100:
@@ -419,8 +419,8 @@ def main():
             continue
         last = ser[-1]
         near.append((s, last))
-        # проверяем последние 2 закрытых часа (на случай, если прошлый запуск GitHub пропустил)
-        for j in (len(ser) - 2, len(ser) - 1):
+        # проверяем последние 4 закрытых часа: GitHub запускает по расписанию с опозданием до часа и иногда пропускает час
+        for j in range(len(ser) - 4, len(ser)):
             if j < 24 or not is_on(ser[j]):
                 continue
             if any(is_on(ser[x]) for x in range(j - 24, j)):
@@ -428,7 +428,7 @@ def main():
             key = f"{s}@{int(ser[j]['t'])}"
             if key in st["sent"]:
                 continue
-            fired.append((s, ser[j], j == len(ser) - 2, key))
+            fired.append((s, ser[j], len(ser) - 1 - j, key))
             break
 
     for s, r, late, key in sorted(fired, key=lambda x: -x[1]["up"]):
@@ -443,7 +443,7 @@ def main():
             head, note = "⚪️", f"Все {SLOTS} слота заняты — по правилам пропускаем (для информации)."
         else:
             head, note = "🟢", f"Слот {len(st['open']) + 1} из {SLOTS}: на сделку ⅓ депозита."
-        lines = [f"{head} L3 ЛОНГ · {s}" + (" (С ОПОЗДАНИЕМ — сигнал прошлого часа)" if late else ""),
+        lines = [f"{head} L3 ЛОНГ · {s}" + (f" (С ОПОЗДАНИЕМ — сигнал {late} ч назад, проверь цену)" if late else ""),
                  f"Свеча закрылась: {kyiv(r['t'])} (Киев)",
                  f"Цена закрытия: {fmt_price(px)} — вход по рынку",
                  f"Тейк +{TAKE:g}%: {fmt_price(tp)}",
