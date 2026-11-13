@@ -1,18 +1,11 @@
 {
- "last_T": 1794585600,
- "orders": [
+ "last_T": 1794600000,
+ "orders": [],
+ "shorts": [],
+ "longs": [
   {
    "sym": "CAPUSDT",
-   "level": 0.10505,
-   "from": 1794585660,
-   "expires": 1794600000
+   "close_at": 1795451280
   }
- ],
- "shorts": [
-  {
-   "sym": "BARDUSDT",
-   "close_at": 1794600432
-  }
- ],
- "longs": []
+ ]
 }
