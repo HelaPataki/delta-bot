@@ -1,0 +1,37 @@
+name: Coin study (download one coin)
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: "Монеты через запятую"
+        default: "MUSDT"
+      start:
+        description: "С какой даты"
+        default: "2025-01-01"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Download
+        env:
+          SYMBOLS: ${{ inputs.symbols }}
+          START: ${{ inputs.start }}
+        run: python coin_study.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/coin_study
+          git commit -m "Coin study data: ${{ inputs.symbols }}" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
