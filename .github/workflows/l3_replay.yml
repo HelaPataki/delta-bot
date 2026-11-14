@@ -1,0 +1,56 @@
+name: L3 live vs archive replay
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python l3_replay.py
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "8"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: results/l3_replay/parts/*${{ matrix.shard }}.csv
+
+  combine:
+    needs: shard
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: results/l3_replay/parts
+          merge-multiple: true
+      - run: python l3_replay.py
+        env:
+          MODE: combine
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add results/l3_replay/l3_replay_summary.md results/l3_replay/l3_replay_rows.csv
+          git commit -m "L3 replay results" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase -X theirs && git push && break; sleep 10; done
