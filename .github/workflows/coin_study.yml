@@ -5,7 +5,7 @@ on:
     inputs:
       symbols:
         description: "Монеты через запятую"
-        default: "MUSDT"
+        default: "MUSDT,BTCUSDT"
       start:
         description: "С какой даты"
         default: "2025-01-01"
