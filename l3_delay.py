@@ -21,7 +21,7 @@ import history as Hst
 OUT = os.environ.get("OUT_DIR", "results/l3_delay")
 SRC = os.environ.get("SRC", "results/l3_hourly/trades.csv.gz,results/l3_hourly_2023/trades.csv.gz").split(",")
 EXIT = os.environ.get("EXIT", "20/10")
-DELAYS = [0, 5, 10, 15, 20, 30, 45, 60]
+DELAYS = [0, 5, 10, 15, 20, 30, 45, 60, 90]
 M5, H = 5 * 60 * 1000, 3600 * 1000
 TP, SL, HOLD, FEE = 0.20, 0.10, 168 * H, 0.1
 
@@ -46,6 +46,8 @@ def one(tr):
     t, o, h, l, c = (k[x].to_numpy() for x in ("open_time", "open", "high", "low", "close"))
     out = {"монета": sym, "вход": t0, "год": tr["год"], "pnl 1h-тест": tr["pnl %"]}
     end = t0 + HOLD
+    i0 = int(np.searchsorted(t, t0))
+    px0 = o[i0] if i0 < len(t) and t[i0] == t0 else np.nan
     for D in DELAYS:
         i = int(np.searchsorted(t, t0 + D * 60 * 1000))
         if i >= len(t) or t[i] != t0 + D * 60 * 1000:
@@ -69,6 +71,28 @@ def one(tr):
             res, ex_t = (c[jj] / px - 1) * 100, t[jj]
         out[f"pnl {D}"] = res - FEE
         out[f"часов {D}"] = (ex_t - t0) / H
+        # вариант Б: тейк и стоп остаются на уровнях от цены закрытия сигнальной свечи
+        if np.isfinite(px0):
+            tp_, sl_ = px0 * (1 + TP), px0 * (1 - SL)
+            r2, e2 = None, None
+            if px <= sl_:
+                r2, e2 = 0.0, t[i]                       # цена уже ниже стопа — не входим
+            elif px >= tp_:
+                r2, e2 = 0.0, t[i]                       # уже выше тейка — не входим
+            j = i
+            while r2 is None and j < len(t) and t[j] < end:
+                if l[j] <= sl_:
+                    r2, e2 = (sl_ / px - 1) * 100, t[j]
+                    break
+                if h[j] >= tp_:
+                    r2, e2 = (tp_ / px - 1) * 100, t[j]
+                    break
+                j += 1
+            if r2 is None:
+                jj = min(int(np.searchsorted(t, end)) - 1, len(t) - 1)
+                r2, e2 = (c[jj] / px - 1) * 100, t[jj]
+            out[f"fix {D}"] = r2 - (FEE if e2 != t[i] or r2 else 0)
+            out[f"fix часов {D}"] = (e2 - t0) / H
     return out
 
 
@@ -111,6 +135,22 @@ def main():
             gy = g[g["год"] == y]
             r[f"{y}: ср. pnl / $100"] = f"{gy[f'pnl {D}'].mean():+.2f} / {sim(gy, D)}"
         T.append(r)
+    F = []
+    for D in DELAYS[1:]:
+        g = df[np.isfinite(df[f"pnl {D}"]) & np.isfinite(df.get(f"fix {D}", np.nan))]
+        if not len(g):
+            continue
+        r = {"опоздание, мин": D, "сделок": len(g),
+             "от своей цены: ср. %": round(g[f"pnl {D}"].mean(), 2),
+             "от своей: винрейт": f"{(g[f'pnl {D}'] > 0).mean() * 100:.0f}%",
+             "уровни от закрытия: ср. %": round(g[f"fix {D}"].mean(), 2),
+             "от закрытия: винрейт": f"{(g[f'fix {D}'] > 0).mean() * 100:.0f}%"}
+        g2 = g.rename(columns={f"fix {D}": "_p", f"fix часов {D}": "_h"})
+        for y in years:
+            gy = g[g["год"] == y]
+            gy2 = g2[g2["год"] == y].rename(columns={"_p": f"pnl X", "_h": "часов X"})
+            r[f"{y}: своя / от закрытия"] = f"{sim(gy, D)} / {sim(gy2, 'X')}"
+        F.append(r)
     md = [__doc__.strip(), "", f"Выход: {EXIT}. Депозит $100, 3 слота по ⅓, без плеча, отдельно по каждому году.", "",
           f"Сверка: тест на часовых свечах дал ср. pnl {df['pnl 1h-тест'].mean():+.2f}% по этим же сделкам.", "",
           pd.DataFrame(T).to_markdown(index=False)]
@@ -123,6 +163,9 @@ def main():
             if len(g) >= 10:
                 B.append({"опоздание, мин": D, "цена ушла от закрытия": f"{lo}…{hi}%", "сделок": len(g),
                           "винрейт": f"{(g[f'pnl {D}'] > 0).mean() * 100:.0f}%", "ср. pnl %": round(g[f"pnl {D}"].mean(), 2)})
+    md += ["", "## Тейк и стоп: от своей цены входа или от цены закрытия сигнальной свечи", "",
+           "От закрытия: уровни +20% / −10% от цены закрытия; если к моменту входа цена уже за стопом или тейком — не входим.", "",
+           pd.DataFrame(F).to_markdown(index=False)]
     md += ["", "## Если за время опоздания цена уже ушла", "", pd.DataFrame(B).to_markdown(index=False)]
     open(f"{OUT}/l3_delay_summary.md", "w").write("\n".join(md) + "\n")
     print("\n".join(md))
