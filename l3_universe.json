@@ -1,885 +1,869 @@
 {
-"date": "2026-11-14",
+"date": "2026-11-15",
 "coins": {
 "NMRUSDT": {
 "cz": "NMRUSDT_PERP.A",
-"cap": 61488574
+"cap": 55508115
 },
 "BIGTIMEUSDT": {
 "cz": "BIGTIMEUSDT_PERP.A",
-"cap": 14309180
+"cap": 12854840
 },
 "POWRUSDT": {
 "cz": "POWRUSDT_PERP.A",
-"cap": 27836171
+"cap": 24823355
 },
 "AGLDUSDT": {
 "cz": "AGLDUSDT_PERP.A",
-"cap": 13554649
+"cap": 12049252
 },
 "CYBERUSDT": {
 "cz": "CYBERUSDT_PERP.A",
-"cap": 14566963
+"cap": 13334320
 },
 "ARKUSDT": {
 "cz": "ARKUSDT_PERP.A",
-"cap": 29851822
+"cap": 27413502
 },
 "WLDUSDT": {
 "cz": "WLDUSDT_PERP.A",
-"cap": 1111980186
+"cap": 966250220
 },
 "PENDLEUSDT": {
 "cz": "PENDLEUSDT_PERP.A",
-"cap": 266173185
+"cap": 237518321
 },
 "ARKMUSDT": {
 "cz": "ARKMUSDT_PERP.A",
-"cap": 69450358
+"cap": 62705323
 },
 "FLUXUSDT": {
 "cz": "FLUXUSDT_PERP.A",
-"cap": 21256589
-},
-"KATUSDT": {
-"cz": "KATUSDT_PERP.A",
-"cap": 11194168
+"cap": 19223568
 },
 "HUMAUSDT": {
 "cz": "HUMAUSDT_PERP.A",
-"cap": 13218664
+"cap": 11640708
 },
 "GIGGLEUSDT": {
 "cz": "GIGGLEUSDT_PERP.A",
-"cap": 25537725
+"cap": 22362786
 },
 "SEIUSDT": {
 "cz": "SEIUSDT_PERP.A",
-"cap": 286987445
+"cap": 254152426
 },
 "LAUSDT": {
 "cz": "LAUSDT_PERP.A",
-"cap": 17455560
+"cap": 15523297
 },
 "XVGUSDT": {
 "cz": "XVGUSDT_PERP.A",
-"cap": 31362293
+"cap": 28374226
 },
 "BNTUSDT": {
 "cz": "BNTUSDT_PERP.A",
-"cap": 24262821
+"cap": 22015509
 },
 "COWUSDT": {
 "cz": "COWUSDT_PERP.A",
-"cap": 56886317
+"cap": 50572492
 },
 "YGGUSDT": {
 "cz": "YGGUSDT_PERP.A",
-"cap": 18403055
+"cap": 16551445
 },
 "DOSUSDT": {
 "cz": "DOSUSDT_PERP.A",
-"cap": 30501777
+"cap": 29883747
 },
 "CETUSUSDT": {
 "cz": "CETUSUSDT_PERP.A",
-"cap": 17616898
+"cap": 15753063
 },
 "PONSUSDT": {
 "cz": "PONSUSDT_PERP.A",
-"cap": 95246566
+"cap": 76303879
 },
 "RPLUSDT": {
 "cz": "RPLUSDT_PERP.A",
-"cap": 30092750
+"cap": 26884388
 },
 "MINAUSDT": {
 "cz": "MINAUSDT_PERP.A",
-"cap": 65627423
+"cap": 57766802
 },
 "TAUSDT": {
 "cz": "TAUSDT_PERP.A",
-"cap": 21159460
+"cap": 21031568
 },
 "PEOPLEUSDT": {
 "cz": "PEOPLEUSDT_PERP.A",
-"cap": 27363994
+"cap": 24535475
 },
 "BLESSUSDT": {
 "cz": "BLESSUSDT_PERP.A",
-"cap": 15392089
+"cap": 16728286
 },
 "RIFUSDT": {
 "cz": "RIFUSDT_PERP.A",
-"cap": 55061798
+"cap": 49438016
 },
 "BANANAUSDT": {
 "cz": "BANANAUSDT_PERP.A",
-"cap": 11022773
+"cap": 10510355
 },
 "ASTRUSDT": {
 "cz": "ASTRUSDT_PERP.A",
-"cap": 42959306
+"cap": 38893943
 },
 "XVSUSDT": {
 "cz": "XVSUSDT_PERP.A",
-"cap": 42611178
+"cap": 38292268
 },
 "MAGICUSDT": {
 "cz": "MAGICUSDT_PERP.A",
-"cap": 25795734
+"cap": 23331514
 },
 "TUSDT": {
 "cz": "TUSDT_PERP.A",
-"cap": 47877065
+"cap": 43590661
 },
 "ESPUSDT": {
 "cz": "ESPUSDT_PERP.A",
-"cap": 55945937
+"cap": 51187467
 },
 "FETUSDT": {
 "cz": "FETUSDT_PERP.A",
-"cap": 340174149
+"cap": 294933642
 },
 "CFXUSDT": {
 "cz": "CFXUSDT_PERP.A",
-"cap": 211150359
+"cap": 173665262
 },
 "GUSDT": {
 "cz": "GUSDT_PERP.A",
-"cap": 20394528
+"cap": 18633978
 },
 "ETHWUSDT": {
 "cz": "ETHWUSDT_PERP.A",
-"cap": 21731542
+"cap": 19180654
 },
 "1000SATSUSDT": {
 "cz": "1000SATSUSDT_PERP.A",
-"cap": 17539400
+"cap": 15540627
 },
 "1000000MOGUSDT": {
 "cz": "1000000MOGUSDT_PERP.A",
-"cap": 32613077
+"cap": 28965155
 },
 "\u54c8\u57fa\u7c73USDT": {
 "cz": "\u54c8\u57fa\u7c73USDT_PERP.A",
-"cap": 15831120
+"cap": 12847562
 },
 "MOVRUSDT": {
 "cz": "MOVRUSDT_PERP.A",
-"cap": 12531100
+"cap": 10953915
 },
 "STARUSDT": {
 "cz": "STARUSDT_PERP.A",
-"cap": 15249460
+"cap": 12789052
 },
 "GENIUSUSDT": {
 "cz": "GENIUSUSDT_PERP.A",
-"cap": 92828648
+"cap": 87412441
 },
 "STXUSDT": {
 "cz": "STXUSDT_PERP.A",
-"cap": 535220496
+"cap": 494212053
 },
 "CRVUSDT": {
 "cz": "CRVUSDT_PERP.A",
-"cap": 364968818
+"cap": 321451862
 },
 "MUSDT": {
 "cz": "MUSDT_PERP.A",
-"cap": 1873099094
+"cap": 1858953261
 },
 "APEUSDT": {
 "cz": "APEUSDT_PERP.A",
-"cap": 92414049
+"cap": 79145511
 },
 "RLCUSDT": {
 "cz": "RLCUSDT_PERP.A",
-"cap": 32141869
+"cap": 29082777
 },
 "KAVAUSDT": {
 "cz": "KAVAUSDT_PERP.A",
-"cap": 73548300
+"cap": 38446544
 },
 "BRETTUSDT": {
 "cz": "BRETTUSDT_PERP.A",
-"cap": 35395981
+"cap": 31625397
 },
 "RSRUSDT": {
 "cz": "RSRUSDT_PERP.A",
-"cap": 89978195
+"cap": 83116179
 },
 "MTLUSDT": {
 "cz": "MTLUSDT_PERP.A",
-"cap": 22005999
+"cap": 20051585
 },
 "BANDUSDT": {
 "cz": "BANDUSDT_PERP.A",
-"cap": 30521215
+"cap": 26916787
 },
 "RENDERUSDT": {
 "cz": "RENDERUSDT_PERP.A",
-"cap": 848981524
+"cap": 751223809
 },
 "KSMUSDT": {
 "cz": "KSMUSDT_PERP.A",
-"cap": 56824824
+"cap": 51325566
 },
 "WOOUSDT": {
 "cz": "WOOUSDT_PERP.A",
-"cap": 19173435
+"cap": 16877813
 },
 "DUSKUSDT": {
 "cz": "DUSKUSDT_PERP.A",
-"cap": 39980075
+"cap": 37747703
 },
 "NEIROUSDT": {
 "cz": "NEIROUSDT_PERP.A",
-"cap": 22919980
+"cap": 19866836
 },
 "CAKEUSDT": {
 "cz": "CAKEUSDT_PERP.A",
-"cap": 585463552
+"cap": 537438425
 },
 "JASMYUSDT": {
 "cz": "JASMYUSDT_PERP.A",
-"cap": 164146385
+"cap": 156057215
 },
 "CFGUSDT": {
 "cz": "CFGUSDT_PERP.A",
-"cap": 30357397
+"cap": 26461803
 },
 "ALGOUSDT": {
 "cz": "ALGOUSDT_PERP.A",
-"cap": 774721822
+"cap": 702251981
 },
 "POPCATUSDT": {
 "cz": "POPCATUSDT_PERP.A",
-"cap": 31530307
+"cap": 27020093
 },
 "KNCUSDT": {
 "cz": "KNCUSDT_PERP.A",
-"cap": 21878802
+"cap": 19683910
 },
 "ZILUSDT": {
 "cz": "ZILUSDT_PERP.A",
-"cap": 28712283
+"cap": 25954101
 },
 "SNXUSDT": {
 "cz": "SNXUSDT_PERP.A",
-"cap": 94028342
+"cap": 83479571
 },
 "ENJUSDT": {
 "cz": "ENJUSDT_PERP.A",
-"cap": 41986471
+"cap": 37844803
 },
 "ZRXUSDT": {
 "cz": "ZRXUSDT_PERP.A",
-"cap": 73080381
+"cap": 66227485
 },
 "OPUSDT": {
 "cz": "OPUSDT_PERP.A",
-"cap": 210342448
+"cap": 183500113
 },
 "SKLUSDT": {
 "cz": "SKLUSDT_PERP.A",
-"cap": 20352928
+"cap": 18514165
 },
 "TRBUSDT": {
 "cz": "TRBUSDT_PERP.A",
-"cap": 40787637
+"cap": 36261556
 },
 "SUNUSDT": {
 "cz": "SUNUSDT_PERP.A",
-"cap": 288647861
+"cap": 282531062
 },
 "NEOUSDT": {
 "cz": "NEOUSDT_PERP.A",
-"cap": 119945578
+"cap": 106262962
 },
 "ETCUSDT": {
 "cz": "ETCUSDT_PERP.A",
-"cap": 1023429933
+"cap": 921685817
 },
 "DASHUSDT": {
 "cz": "DASHUSDT_PERP.A",
-"cap": 528251722
+"cap": 458359872
 },
 "ONTUSDT": {
 "cz": "ONTUSDT_PERP.A",
-"cap": 40603890
+"cap": 36273563
 },
 "ATOMUSDT": {
 "cz": "ATOMUSDT_PERP.A",
-"cap": 738963691
+"cap": 681242464
 },
 "XTZUSDT": {
 "cz": "XTZUSDT_PERP.A",
-"cap": 259038345
+"cap": 232728387
 },
 "IOTAUSDT": {
 "cz": "IOTAUSDT_PERP.A",
-"cap": 163787672
+"cap": 147286357
 },
 "BATUSDT": {
 "cz": "BATUSDT_PERP.A",
-"cap": 160585050
+"cap": 137969629
 },
 "JSTUSDT": {
 "cz": "JSTUSDT_PERP.A",
-"cap": 1158810773
+"cap": 1140529849
 },
 "VETUSDT": {
 "cz": "VETUSDT_PERP.A",
-"cap": 434942837
+"cap": 393384440
 },
 "QTUMUSDT": {
 "cz": "QTUMUSDT_PERP.A",
-"cap": 70178363
+"cap": 68395276
 },
 "IOSTUSDT": {
 "cz": "IOSTUSDT_PERP.A",
-"cap": 22958857
+"cap": 20661138
 },
 "THETAUSDT": {
 "cz": "THETAUSDT_PERP.A",
-"cap": 140869848
+"cap": 128006067
 },
 "GPSUSDT": {
 "cz": "GPSUSDT_PERP.A",
-"cap": 47257859
+"cap": 46453467
 },
 "SUSHIUSDT": {
 "cz": "SUSHIUSDT_PERP.A",
-"cap": 48236067
+"cap": 42907445
 },
 "COMPUSDT": {
 "cz": "COMPUSDT_PERP.A",
-"cap": 193026609
+"cap": 179124204
 },
 "RUNEUSDT": {
 "cz": "RUNEUSDT_PERP.A",
-"cap": 179030240
+"cap": 166485099
 },
 "DOTUSDT": {
 "cz": "DOTUSDT_PERP.A",
-"cap": 1394781102
+"cap": 1204214921
 },
 "BASUSDT": {
 "cz": "BASUSDT_PERP.A",
-"cap": 32254359
+"cap": 29180571
 },
 "FILUSDT": {
 "cz": "FILUSDT_PERP.A",
-"cap": 594707739
+"cap": 516403336
 },
 "AAVEUSDT": {
 "cz": "AAVEUSDT_PERP.A",
-"cap": 1724058678
+"cap": 1537586017
 },
 "HOMEUSDT": {
 "cz": "HOMEUSDT_PERP.A",
-"cap": 22384235
+"cap": 17985151
 },
 "MONUSDT": {
 "cz": "MONUSDT_PERP.A",
-"cap": 198231947
+"cap": 179607010
 },
 "GRTUSDT": {
 "cz": "GRTUSDT_PERP.A",
-"cap": 190040668
+"cap": 175261567
 },
 "YFIUSDT": {
 "cz": "YFIUSDT_PERP.A",
-"cap": 64018559
+"cap": 58724642
 },
 "1MBABYDOGEUSDT": {
 "cz": "1MBABYDOGEUSDT_PERP.A",
-"cap": 50785028
+"cap": 45810590
 },
 "MERLUSDT": {
 "cz": "MERLUSDT_PERP.A",
-"cap": 43749428
+"cap": 44718487
 },
 "JCTUSDT": {
 "cz": "JCTUSDT_PERP.A",
-"cap": 23253554
-},
-"MYXUSDT": {
-"cz": "MYXUSDT_PERP.A",
-"cap": 11113868
+"cap": 24173043
 },
 "FLOWUSDT": {
 "cz": "FLOWUSDT_PERP.A",
-"cap": 33930717
+"cap": 29327902
 },
 "EGLDUSDT": {
 "cz": "EGLDUSDT_PERP.A",
-"cap": 89159641
+"cap": 78845689
 },
 "IMXUSDT": {
 "cz": "IMXUSDT_PERP.A",
-"cap": 94958762
+"cap": 87348212
 },
 "AZTECUSDT": {
 "cz": "AZTECUSDT_PERP.A",
-"cap": 43846182
+"cap": 38561581
 },
 "ROSEUSDT": {
 "cz": "ROSEUSDT_PERP.A",
-"cap": 41931265
+"cap": 36701038
 },
 "SPKUSDT": {
 "cz": "SPKUSDT_PERP.A",
-"cap": 53685402
+"cap": 46732650
 },
 "LINEAUSDT": {
 "cz": "LINEAUSDT_PERP.A",
-"cap": 49296460
+"cap": 43924861
 },
 "CKBUSDT": {
 "cz": "CKBUSDT_PERP.A",
-"cap": 46281979
+"cap": 40545025
 },
 "CVXUSDT": {
 "cz": "CVXUSDT_PERP.A",
-"cap": 148279391
+"cap": 135188806
 },
 "OGNUSDT": {
 "cz": "OGNUSDT_PERP.A",
-"cap": 16072893
+"cap": 14395837
 },
 "XANUSDT": {
 "cz": "XANUSDT_PERP.A",
-"cap": 21530087
+"cap": 19969586
 },
 "AXSUSDT": {
 "cz": "AXSUSDT_PERP.A",
-"cap": 131364873
+"cap": 117235638
 },
 "SPELLUSDT": {
 "cz": "SPELLUSDT_PERP.A",
-"cap": 11550940
+"cap": 10756284
 },
 "MASKUSDT": {
 "cz": "MASKUSDT_PERP.A",
-"cap": 33556087
+"cap": 29803497
 },
 "ZENUSDT": {
 "cz": "ZENUSDT_PERP.A",
-"cap": 82659130
+"cap": 73769957
 },
 "BMTUSDT": {
 "cz": "BMTUSDT_PERP.A",
-"cap": 17658039
+"cap": 15673384
 },
 "LDOUSDT": {
 "cz": "LDOUSDT_PERP.A",
-"cap": 251139641
+"cap": 220414877
 },
 "ZKUSDT": {
 "cz": "ZKUSDT_PERP.A",
-"cap": 100158862
+"cap": 87008874
 },
 "1INCHUSDT": {
 "cz": "1INCHUSDT_PERP.A",
-"cap": 99545779
+"cap": 91379651
 },
 "SYNUSDT": {
 "cz": "SYNUSDT_PERP.A",
-"cap": 25849417
+"cap": 24509212
 },
 "1000LUNCUSDT": {
 "cz": "1000LUNCUSDT_PERP.A",
-"cap": 203342403
+"cap": 186773178
 },
 "FUSDT": {
 "cz": "FUSDT_PERP.A",
-"cap": 12029535
+"cap": 10940614
 },
 "CELRUSDT": {
 "cz": "CELRUSDT_PERP.A",
-"cap": 16774775
+"cap": 15216039
 },
 "GMXUSDT": {
 "cz": "GMXUSDT_PERP.A",
-"cap": 81984124
+"cap": 75911882
 },
 "1000PEPEUSDT": {
 "cz": "1000PEPEUSDT_PERP.A",
-"cap": 1860217511
+"cap": 1633115539
 },
 "ANKRUSDT": {
 "cz": "ANKRUSDT_PERP.A",
-"cap": 34502230
+"cap": 31965458
 },
 "CHZUSDT": {
 "cz": "CHZUSDT_PERP.A",
-"cap": 112963083
+"cap": 102157807
 },
 "ALCHUSDT": {
 "cz": "ALCHUSDT_PERP.A",
-"cap": 31294231
+"cap": 28091786
 },
 "LPTUSDT": {
 "cz": "LPTUSDT_PERP.A",
-"cap": 59552033
+"cap": 53466027
 },
 "BLURUSDT": {
 "cz": "BLURUSDT_PERP.A",
-"cap": 19176026
+"cap": 17388346
 },
 "SANDUSDT": {
 "cz": "SANDUSDT_PERP.A",
-"cap": 117810202
+"cap": 104291398
 },
 "RVNUSDT": {
 "cz": "RVNUSDT_PERP.A",
-"cap": 20222113
+"cap": 17705957
 },
 "GMTUSDT": {
 "cz": "GMTUSDT_PERP.A",
-"cap": 18204467
+"cap": 16342764
 },
 "EDUUSDT": {
 "cz": "EDUUSDT_PERP.A",
-"cap": 38666088
+"cap": 35626945
 },
 "SFPUSDT": {
 "cz": "SFPUSDT_PERP.A",
-"cap": 95242941
+"cap": 84551871
 },
 "IDUSDT": {
 "cz": "IDUSDT_PERP.A",
-"cap": 36993726
+"cap": 32541735
 },
 "TAIKOUSDT": {
 "cz": "TAIKOUSDT_PERP.A",
-"cap": 15460069
+"cap": 13822141
 },
 "HOTUSDT": {
 "cz": "HOTUSDT_PERP.A",
-"cap": 67275438
+"cap": 61085881
 },
 "ARUSDT": {
 "cz": "ARUSDT_PERP.A",
-"cap": 196234879
+"cap": 167958496
 },
 "MANAUSDT": {
 "cz": "MANAUSDT_PERP.A",
-"cap": 129892027
+"cap": 117977967
 },
 "ONEUSDT": {
 "cz": "ONEUSDT_PERP.A",
-"cap": 62184978
+"cap": 61394501
 },
 "CHRUSDT": {
 "cz": "CHRUSDT_PERP.A",
-"cap": 13553313
+"cap": 11992142
 },
 "ARBUSDT": {
 "cz": "ARBUSDT_PERP.A",
-"cap": 993196965
+"cap": 879686708
 },
 "DYDXUSDT": {
 "cz": "DYDXUSDT_PERP.A",
-"cap": 75360578
+"cap": 65305897
 },
 "SQDUSDT": {
 "cz": "SQDUSDT_PERP.A",
-"cap": 21130336
+"cap": 18862372
 },
 "SSVUSDT": {
 "cz": "SSVUSDT_PERP.A",
-"cap": 29332546
+"cap": 26608423
 },
 "FFUSDT": {
 "cz": "FFUSDT_PERP.A",
-"cap": 316334403
+"cap": 324481864
 },
 "SPXUSDT": {
 "cz": "SPXUSDT_PERP.A",
-"cap": 313067481
+"cap": 269567640
 },
 "COTIUSDT": {
 "cz": "COTIUSDT_PERP.A",
-"cap": 26935991
+"cap": 23808481
 },
 "ETHFIUSDT": {
 "cz": "ETHFIUSDT_PERP.A",
-"cap": 559569031
+"cap": 492555185
 },
 "REZUSDT": {
 "cz": "REZUSDT_PERP.A",
-"cap": 29535375
+"cap": 26244970
 },
 "IOTXUSDT": {
 "cz": "IOTXUSDT_PERP.A",
-"cap": 25143294
+"cap": 22765195
 },
 "CTSIUSDT": {
 "cz": "CTSIUSDT_PERP.A",
-"cap": 23126172
+"cap": 20594638
 },
 "1000XECUSDT": {
 "cz": "1000XECUSDT_PERP.A",
-"cap": 109269924
+"cap": 99733303
 },
 "ENSUSDT": {
 "cz": "ENSUSDT_PERP.A",
-"cap": 178604176
+"cap": 160465194
 },
 "LQTYUSDT": {
 "cz": "LQTYUSDT_PERP.A",
-"cap": 15790077
+"cap": 14055026
 },
 "IRYSUSDT": {
 "cz": "IRYSUSDT_PERP.A",
-"cap": 31807151
+"cap": 28512248
 },
 "ARPAUSDT": {
 "cz": "ARPAUSDT_PERP.A",
-"cap": 15375874
+"cap": 13853107
 },
 "TURBOUSDT": {
 "cz": "TURBOUSDT_PERP.A",
-"cap": 45765988
-},
-"JOEUSDT": {
-"cz": "JOEUSDT_PERP.A",
-"cap": 11126570
+"cap": 40186372
 },
 "WAXPUSDT": {
 "cz": "WAXPUSDT_PERP.A",
-"cap": 17093975
+"cap": 15767289
 },
 "KAITOUSDT": {
 "cz": "KAITOUSDT_PERP.A",
-"cap": 48686780
+"cap": 42308723
 },
 "ARXUSDT": {
 "cz": "ARXUSDT_PERP.A",
-"cap": 45963608
+"cap": 41135902
 },
 "MEWUSDT": {
 "cz": "MEWUSDT_PERP.A",
-"cap": 28987097
+"cap": 26018075
 },
 "LITUSDT": {
 "cz": "LITUSDT_PERP.A",
-"cap": 815434593
+"cap": 709519767
 },
 "BTWUSDT": {
 "cz": "BTWUSDT_PERP.A",
-"cap": 1185909008
+"cap": 1080333261
 },
 "DOGSUSDT": {
 "cz": "DOGSUSDT_PERP.A",
-"cap": 15613651
+"cap": 13314797
 },
 "CAPUSDT": {
 "cz": "CAPUSDT_PERP.A",
-"cap": 166008889
+"cap": 171185065
 },
 "SENTUSDT": {
 "cz": "SENTUSDT_PERP.A",
-"cap": 120674387
+"cap": 118325918
 },
 "DEEPUSDT": {
 "cz": "DEEPUSDT_PERP.A",
-"cap": 34597571
+"cap": 30668114
 },
 "CTRUSDT": {
 "cz": "CTRUSDT_PERP.A",
-"cap": 21308705
+"cap": 21525762
 },
 "MANTAUSDT": {
 "cz": "MANTAUSDT_PERP.A",
-"cap": 22346212
+"cap": 19433044
 },
 "API3USDT": {
 "cz": "API3USDT_PERP.A",
-"cap": 35029745
+"cap": 30964425
 },
 "ALLOUSDT": {
 "cz": "ALLOUSDT_PERP.A",
-"cap": 62398461
+"cap": 64591194
 },
 "FIDAUSDT": {
 "cz": "FIDAUSDT_PERP.A",
-"cap": 14687163
+"cap": 13159348
 },
 "INJUSDT": {
 "cz": "INJUSDT_PERP.A",
-"cap": 808641583
+"cap": 679084425
 },
 "EIGENUSDT": {
 "cz": "EIGENUSDT_PERP.A",
-"cap": 155196041
+"cap": 134145116
 },
 "WIFUSDT": {
 "cz": "WIFUSDT_PERP.A",
-"cap": 148194836
+"cap": 129735739
 },
 "SLPUSDT": {
 "cz": "SLPUSDT_PERP.A",
-"cap": 16111367
+"cap": 14537435
 },
 "APTUSDT": {
 "cz": "APTUSDT_PERP.A",
-"cap": 473672239
+"cap": 400004522
 },
 "ASTERUSDT": {
 "cz": "ASTERUSDT_PERP.A",
-"cap": 1654309161
+"cap": 1261998646
 },
 "1000CATUSDT": {
 "cz": "1000CATUSDT_PERP.A",
-"cap": 11720137
+"cap": 10329799
 },
 "UMAUSDT": {
 "cz": "UMAUSDT_PERP.A",
-"cap": 27068164
-},
-"CLOUSDT": {
-"cz": "CLOUSDT_PERP.A",
-"cap": 12063096
+"cap": 24112711
 },
 "BREVUSDT": {
 "cz": "BREVUSDT_PERP.A",
-"cap": 16352624
+"cap": 14611919
 },
 "AEVOUSDT": {
 "cz": "AEVOUSDT_PERP.A",
-"cap": 16743550
+"cap": 15249524
 },
 "MUBARAKUSDT": {
 "cz": "MUBARAKUSDT_PERP.A",
-"cap": 33272363
+"cap": 28604170
 },
 "ICPUSDT": {
 "cz": "ICPUSDT_PERP.A",
-"cap": 1383384682
+"cap": 1206281210
 },
 "GRVTUSDT": {
 "cz": "GRVTUSDT_PERP.A",
-"cap": 20756664
+"cap": 19721205
 },
 "OUSDT": {
 "cz": "OUSDT_PERP.A",
-"cap": 81731100
+"cap": 79745641
 },
 "FRAXUSDT": {
 "cz": "FRAXUSDT_PERP.A",
-"cap": 216863463
+"cap": 216812862
 },
 "REUSDT": {
 "cz": "REUSDT_PERP.A",
-"cap": 39724693
+"cap": 35263514
 },
 "HYPERUSDT": {
 "cz": "HYPERUSDT_PERP.A",
-"cap": 15493172
+"cap": 13679950
 },
 "KASUSDT": {
 "cz": "KASUSDT_PERP.A",
-"cap": 782676336
+"cap": 727560050
 },
 "MEMEUSDT": {
 "cz": "MEMEUSDT_PERP.A",
-"cap": 24312267
+"cap": 21206569
 },
 "ZESTUSDT": {
 "cz": "ZESTUSDT_PERP.A",
-"cap": 17552689
+"cap": 16176230
 },
 "POWERUSDT": {
 "cz": "POWERUSDT_PERP.A",
-"cap": 12509260
+"cap": 10792871
 },
 "POLUSDT": {
 "cz": "POLUSDT_PERP.A",
-"cap": 898873143
+"cap": 835082499
 },
 "DIAUSDT": {
 "cz": "DIAUSDT_PERP.A",
-"cap": 14901955
+"cap": 13729366
 },
 "BICOUSDT": {
 "cz": "BICOUSDT_PERP.A",
-"cap": 12742711
+"cap": 11216660
 },
 "ATHUSDT": {
 "cz": "ATHUSDT_PERP.A",
-"cap": 89104322
+"cap": 79640516
 },
 "TWTUSDT": {
 "cz": "TWTUSDT_PERP.A",
-"cap": 158812520
+"cap": 142150243
 },
 "BSVUSDT": {
 "cz": "BSVUSDT_PERP.A",
-"cap": 306336284
+"cap": 290234700
 },
 "POLYXUSDT": {
 "cz": "POLYXUSDT_PERP.A",
-"cap": 39026526
+"cap": 34827687
 },
 "GASUSDT": {
 "cz": "GASUSDT_PERP.A",
-"cap": 65314880
+"cap": 60729558
 },
 "TIAUSDT": {
 "cz": "TIAUSDT_PERP.A",
-"cap": 374004354
+"cap": 340578573
 },
 "AUCTIONUSDT": {
 "cz": "AUCTIONUSDT_PERP.A",
-"cap": 20644823
+"cap": 19058475
 },
 "KITEUSDT": {
 "cz": "KITEUSDT_PERP.A",
-"cap": 309177665
+"cap": 309951943
 },
 "PORTALUSDT": {
 "cz": "PORTALUSDT_PERP.A",
-"cap": 11005208
+"cap": 10553041
 },
 "ZEREBROUSDT": {
 "cz": "ZEREBROUSDT_PERP.A",
-"cap": 22987498
+"cap": 20520771
 },
 "ORDIUSDT": {
 "cz": "ORDIUSDT_PERP.A",
-"cap": 65922627
+"cap": 56266570
 },
 "STEEMUSDT": {
 "cz": "STEEMUSDT_PERP.A",
-"cap": 25729922
+"cap": 23278265
 },
 "CELOUSDT": {
 "cz": "CELOUSDT_PERP.A",
-"cap": 39973052
+"cap": 35965245
 },
 "TUTUSDT": {
 "cz": "TUTUSDT_PERP.A",
-"cap": 12406847
+"cap": 10829693
 },
 "ACEUSDT": {
 "cz": "ACEUSDT_PERP.A",
-"cap": 12640258
+"cap": 11033017
 },
 "CATIUSDT": {
 "cz": "CATIUSDT_PERP.A",
-"cap": 23899135
+"cap": 21224525
 },
 "JUPUSDT": {
 "cz": "JUPUSDT_PERP.A",
-"cap": 878567786
+"cap": 826682231
 },
 "ALTUSDT": {
 "cz": "ALTUSDT_PERP.A",
-"cap": 38996559
+"cap": 35347402
 },
 "XAIUSDT": {
 "cz": "XAIUSDT_PERP.A",
@@ -887,143 +871,139 @@
 },
 "ILVUSDT": {
 "cz": "ILVUSDT_PERP.A",
-"cap": 21127904
+"cap": 18988418
 },
 "LSKUSDT": {
 "cz": "LSKUSDT_PERP.A",
-"cap": 43630790
+"cap": 40528700
 },
 "KERNELUSDT": {
 "cz": "KERNELUSDT_PERP.A",
-"cap": 12600967
+"cap": 10940103
 },
 "ATUSDT": {
 "cz": "ATUSDT_PERP.A",
-"cap": 21547846
+"cap": 21973582
 },
 "SUPERUSDT": {
 "cz": "SUPERUSDT_PERP.A",
-"cap": 96195781
+"cap": 87004397
 },
 "FLUIDUSDT": {
 "cz": "FLUIDUSDT_PERP.A",
-"cap": 157360637
+"cap": 149591163
 },
 "USTCUSDT": {
 "cz": "USTCUSDT_PERP.A",
-"cap": 22442475
+"cap": 20402329
 },
 "ONGUSDT": {
 "cz": "ONGUSDT_PERP.A",
-"cap": 30121219
+"cap": 26565391
 },
 "JTOUSDT": {
 "cz": "JTOUSDT_PERP.A",
-"cap": 165198199
+"cap": 146085435
 },
 "ONDOUSDT": {
 "cz": "ONDOUSDT_PERP.A",
-"cap": 1646184633
+"cap": 1445787450
 },
 "COLLECTUSDT": {
 "cz": "COLLECTUSDT_PERP.A",
-"cap": 12943801
+"cap": 12783998
 },
 "YBUSDT": {
 "cz": "YBUSDT_PERP.A",
-"cap": 14024725
+"cap": 12557376
 },
 "GTCUSDT": {
 "cz": "GTCUSDT_PERP.A",
-"cap": 12773605
+"cap": 11657751
 },
 "CHIPUSDT": {
 "cz": "CHIPUSDT_PERP.A",
-"cap": 63078345
+"cap": 53365516
 },
 "ZETAUSDT": {
 "cz": "ZETAUSDT_PERP.A",
-"cap": 53614958
+"cap": 47773756
 },
 "TRUMPUSDT": {
 "cz": "TRUMPUSDT_PERP.A",
-"cap": 307316707
+"cap": 263169769
 },
 "STRKUSDT": {
 "cz": "STRKUSDT_PERP.A",
-"cap": 285014026
+"cap": 256002791
 },
 "1000BONKUSDT": {
 "cz": "1000BONKUSDT_PERP.A",
-"cap": 237396731
+"cap": 201856987
 },
 "PYTHUSDT": {
 "cz": "PYTHUSDT_PERP.A",
-"cap": 505256867
+"cap": 428829675
 },
 "GLMUSDT": {
 "cz": "GLMUSDT_PERP.A",
-"cap": 97688173
+"cap": 88945573
 },
 "HUSDT": {
 "cz": "HUSDT_PERP.A",
-"cap": 46241918
+"cap": 35734458
 },
 "MMTUSDT": {
 "cz": "MMTUSDT_PERP.A",
-"cap": 23540414
+"cap": 20005599
 },
 "AXLUSDT": {
 "cz": "AXLUSDT_PERP.A",
-"cap": 45720341
+"cap": 39956339
 },
 "ICNTUSDT": {
 "cz": "ICNTUSDT_PERP.A",
-"cap": 65105815
+"cap": 60390787
 },
 "METISUSDT": {
 "cz": "METISUSDT_PERP.A",
-"cap": 20312174
+"cap": 18797849
 },
 "MEGAUSDT": {
 "cz": "MEGAUSDT_PERP.A",
-"cap": 50930724
+"cap": 50991821
 },
 "NIGHTUSDT": {
 "cz": "NIGHTUSDT_PERP.A",
-"cap": 773170392
+"cap": 779519911
 },
 "BOMEUSDT": {
 "cz": "BOMEUSDT_PERP.A",
-"cap": 39200042
+"cap": 34050416
 },
 "SIGNUSDT": {
 "cz": "SIGNUSDT_PERP.A",
-"cap": 23888743
+"cap": 23788690
 },
 "MANTRAUSDT": {
 "cz": "MANTRAUSDT_PERP.A",
-"cap": 17672146
-},
-"BILLUSDT": {
-"cz": "BILLUSDT_PERP.A",
-"cap": 10952864
+"cap": 15507482
 },
 "IOUSDT": {
 "cz": "IOUSDT_PERP.A",
-"cap": 47544893
+"cap": 40557530
 },
 "LISTAUSDT": {
 "cz": "LISTAUSDT_PERP.A",
-"cap": 31491359
+"cap": 28604109
 },
 "MAGMAUSDT": {
 "cz": "MAGMAUSDT_PERP.A",
-"cap": 61029080
+"cap": 59493664
 },
 "ENAUSDT": {
 "cz": "ENAUSDT_PERP.A",
-"cap": 1807917109
+"cap": 1545006117
 },
 "AGTUSDT": {
 "cz": "AGTUSDT_PERP.A",
@@ -1031,299 +1011,287 @@
 },
 "SAHARAUSDT": {
 "cz": "SAHARAUSDT_PERP.A",
-"cap": 25317684
+"cap": 22960675
 },
 "PUMPUSDT": {
 "cz": "PUMPUSDT_PERP.A",
-"cap": 1580218494
+"cap": 1321767265
 },
 "AINUSDT": {
 "cz": "AINUSDT_PERP.A",
-"cap": 20722111
+"cap": 21024482
 },
 "BULLAUSDT": {
 "cz": "BULLAUSDT_PERP.A",
-"cap": 12526908
+"cap": 10709865
 },
 "IDOLUSDT": {
 "cz": "IDOLUSDT_PERP.A",
-"cap": 46183636
+"cap": 38105926
 },
 "EDENUSDT": {
 "cz": "EDENUSDT_PERP.A",
-"cap": 18650437
+"cap": 17183821
 },
 "USELESSUSDT": {
 "cz": "USELESSUSDT_PERP.A",
-"cap": 124257420
+"cap": 97943736
 },
 "AUSDT": {
 "cz": "AUSDT_PERP.A",
-"cap": 118382488
+"cap": 106740284
 },
 "DEXEUSDT": {
 "cz": "DEXEUSDT_PERP.A",
-"cap": 43197123
+"cap": 38007374
 },
 "TREEUSDT": {
 "cz": "TREEUSDT_PERP.A",
-"cap": 14273875
+"cap": 14705934
 },
 "WUSDT": {
 "cz": "WUSDT_PERP.A",
-"cap": 66563979
+"cap": 59254187
 },
 "ZROUSDT": {
 "cz": "ZROUSDT_PERP.A",
-"cap": 629548316
+"cap": 558952019
 },
 "PNUTUSDT": {
 "cz": "PNUTUSDT_PERP.A",
-"cap": 31841128
+"cap": 28297329
 },
 "GOATUSDT": {
 "cz": "GOATUSDT_PERP.A",
-"cap": 11946905
+"cap": 10752784
 },
 "GRASSUSDT": {
 "cz": "GRASSUSDT_PERP.A",
-"cap": 303158279
+"cap": 279830455
 },
 "B2USDT": {
 "cz": "B2USDT_PERP.A",
-"cap": 17147435
+"cap": 16266414
 },
 "TNSRUSDT": {
 "cz": "TNSRUSDT_PERP.A",
-"cap": 18252818
+"cap": 16270966
 },
 "BUSDT": {
 "cz": "BUSDT_PERP.A",
-"cap": 104766530
+"cap": 94070094
 },
 "USUSDT": {
 "cz": "USUSDT_PERP.A",
-"cap": 11592051
-},
-"CYSUSDT": {
-"cz": "CYSUSDT_PERP.A",
-"cap": 11789119
+"cap": 10072802
 },
 "NOTUSDT": {
 "cz": "NOTUSDT_PERP.A",
-"cap": 32885853
+"cap": 28585067
 },
 "CARVUSDT": {
 "cz": "CARVUSDT_PERP.A",
-"cap": 18725793
+"cap": 16604769
 },
 "BSBUSDT": {
 "cz": "BSBUSDT_PERP.A",
-"cap": 20871019
+"cap": 17913984
 },
 "XNYUSDT": {
 "cz": "XNYUSDT_PERP.A",
-"cap": 17905858
+"cap": 15669014
 },
 "MOODENGUSDT": {
 "cz": "MOODENGUSDT_PERP.A",
-"cap": 29580597
+"cap": 26425778
 },
 "SAFEUSDT": {
 "cz": "SAFEUSDT_PERP.A",
-"cap": 64079338
-},
-"OGUSDT": {
-"cz": "OGUSDT_PERP.A",
-"cap": 10203309
+"cap": 57545644
 },
 "MOVEUSDT": {
 "cz": "MOVEUSDT_PERP.A",
-"cap": 25721848
-},
-"C98USDT": {
-"cz": "C98USDT_PERP.A",
-"cap": 11357791
+"cap": 23112872
 },
 "FORMUSDT": {
 "cz": "FORMUSDT_PERP.A",
-"cap": 75960518
+"cap": 65726121
 },
 "MORPHOUSDT": {
 "cz": "MORPHOUSDT_PERP.A",
-"cap": 1366163233
+"cap": 1226228254
 },
 "PENGUUSDT": {
 "cz": "PENGUUSDT_PERP.A",
-"cap": 382216946
+"cap": 305424834
 },
 "ORCAUSDT": {
 "cz": "ORCAUSDT_PERP.A",
-"cap": 74613910
+"cap": 69121894
 },
 "AKTUSDT": {
 "cz": "AKTUSDT_PERP.A",
-"cap": 162027884
+"cap": 139559451
 },
 "BANUSDT": {
 "cz": "BANUSDT_PERP.A",
-"cap": 42870478
+"cap": 37882108
 },
 "\u9f99\u867eUSDT": {
 "cz": "\u9f99\u867eUSDT_PERP.A",
-"cap": 16962775
+"cap": 13766105
 },
 "WCTUSDT": {
 "cz": "WCTUSDT_PERP.A",
-"cap": 14093077
+"cap": 12641743
 },
 "AWEUSDT": {
 "cz": "AWEUSDT_PERP.A",
-"cap": 116731805
+"cap": 105442345
 },
 "ZORAUSDT": {
 "cz": "ZORAUSDT_PERP.A",
-"cap": 21616356
+"cap": 19583237
 },
 "KAIAUSDT": {
 "cz": "KAIAUSDT_PERP.A",
-"cap": 199347263
+"cap": 182858712
 },
 "AEROUSDT": {
 "cz": "AEROUSDT_PERP.A",
-"cap": 338125725
+"cap": 308956557
 },
 "1000CHEEMSUSDT": {
 "cz": "1000CHEEMSUSDT_PERP.A",
-"cap": 72364478
+"cap": 64372512
 },
 "OPGUSDT": {
 "cz": "OPGUSDT_PERP.A",
-"cap": 33454799
+"cap": 32491530
 },
 "TAGUSDT": {
 "cz": "TAGUSDT_PERP.A",
-"cap": 67962533
+"cap": 58497490
 },
 "OPENUSDT": {
 "cz": "OPENUSDT_PERP.A",
-"cap": 33397149
+"cap": 29543965
 },
 "RAVEUSDT": {
 "cz": "RAVEUSDT_PERP.A",
-"cap": 31639452
+"cap": 27912329
 },
 "VIRTUALUSDT": {
 "cz": "VIRTUALUSDT_PERP.A",
-"cap": 336924064
+"cap": 284948237
 },
 "MEUSDT": {
 "cz": "MEUSDT_PERP.A",
-"cap": 26483356
+"cap": 23693962
 },
 "CUSDT": {
 "cz": "CUSDT_PERP.A",
-"cap": 11319789
+"cap": 10170521
 },
 "METUSDT": {
 "cz": "METUSDT_PERP.A",
-"cap": 162893364
+"cap": 145900050
 },
 "VELVETUSDT": {
 "cz": "VELVETUSDT_PERP.A",
-"cap": 24478692
+"cap": 22026164
 },
 "HIVEUSDT": {
 "cz": "HIVEUSDT_PERP.A",
-"cap": 23325018
+"cap": 21128011
 },
 "LUMIAUSDT": {
 "cz": "LUMIAUSDT_PERP.A",
-"cap": 18930540
+"cap": 18362175
 },
 "AVAUSDT": {
 "cz": "AVAUSDT_PERP.A",
-"cap": 16509580
+"cap": 15173020
 },
 "GALAUSDT": {
 "cz": "GALAUSDT_PERP.A",
-"cap": 75501498
+"cap": 67258623
 },
 "MOCAUSDT": {
 "cz": "MOCAUSDT_PERP.A",
-"cap": 33025788
+"cap": 29457675
 },
 "VANAUSDT": {
 "cz": "VANAUSDT_PERP.A",
-"cap": 21680282
+"cap": 19315385
 },
 "USUALUSDT": {
 "cz": "USUALUSDT_PERP.A",
-"cap": 21821939
+"cap": 20707946
 },
 "BIOUSDT": {
 "cz": "BIOUSDT_PERP.A",
-"cap": 40342332
+"cap": 34996574
 },
 "AIXBTUSDT": {
 "cz": "AIXBTUSDT_PERP.A",
-"cap": 14204389
+"cap": 12771990
 },
 "FARTCOINUSDT": {
 "cz": "FARTCOINUSDT_PERP.A",
-"cap": 106709964
+"cap": 89652537
 },
 "KMNOUSDT": {
 "cz": "KMNOUSDT_PERP.A",
-"cap": 181901590
+"cap": 169006579
 },
 "CGPTUSDT": {
 "cz": "CGPTUSDT_PERP.A",
-"cap": 15800717
+"cap": 13988460
 },
 "PROMUSDT": {
 "cz": "PROMUSDT_PERP.A",
-"cap": 92097639
+"cap": 90922078
 },
 "PHAUSDT": {
 "cz": "PHAUSDT_PERP.A",
-"cap": 27532228
+"cap": 24737091
 },
 "SUSDT": {
 "cz": "SUSDT_PERP.A",
-"cap": 145509101
+"cap": 127873300
 },
 "SYRUPUSDT": {
 "cz": "SYRUPUSDT_PERP.A",
-"cap": 132009054
+"cap": 114637831
 },
 "INITUSDT": {
 "cz": "INITUSDT_PERP.A",
-"cap": 24765169
+"cap": 22392529
 },
 "MELANIAUSDT": {
 "cz": "MELANIAUSDT_PERP.A",
-"cap": 52270371
+"cap": 45385736
 },
 "SOLVUSDT": {
 "cz": "SOLVUSDT_PERP.A",
-"cap": 25495351
+"cap": 25665306
 },
 "ARCUSDT": {
 "cz": "ARCUSDT_PERP.A",
-"cap": 29435495
+"cap": 26633871
 },
 "VTHOUSDT": {
 "cz": "VTHOUSDT_PERP.A",
-"cap": 51547354
+"cap": 46949860
 },
 "ANIMEUSDT": {
 "cz": "ANIMEUSDT_PERP.A",
-"cap": 12384296
+"cap": 11287100
 },
 "BERAUSDT": {
 "cz": "BERAUSDT_PERP.A",
-"cap": 46417348
+"cap": 34027588
 },
 "SECZUSDT": {
 "cz": "SECZUSDT_PERP.A",
@@ -1331,331 +1299,307 @@
 },
 "REDUSDT": {
 "cz": "REDUSDT_PERP.A",
-"cap": 70659482
-},
-"LAYERUSDT": {
-"cz": "LAYERUSDT_PERP.A",
-"cap": 10187408
+"cap": 62126676
 },
 "JELLYJELLYUSDT": {
 "cz": "JELLYJELLYUSDT_PERP.A",
-"cap": 39656979
+"cap": 40624112
 },
 "ERAUSDT": {
 "cz": "ERAUSDT_PERP.A",
-"cap": 12996560
+"cap": 12085931
 },
 "PIPPINUSDT": {
 "cz": "PIPPINUSDT_PERP.A",
-"cap": 12250972
+"cap": 10950294
 },
 "EDGEUSDT": {
 "cz": "EDGEUSDT_PERP.A",
-"cap": 115195510
+"cap": 98080762
 },
 "VVVUSDT": {
 "cz": "VVVUSDT_PERP.A",
-"cap": 927982764
+"cap": 842932613
 },
 "ALICEUSDT": {
 "cz": "ALICEUSDT_PERP.A",
-"cap": 11538448
+"cap": 10347932
 },
 "CLANKERUSDT": {
 "cz": "CLANKERUSDT_PERP.A",
-"cap": 12172681
-},
-"TSTUSDT": {
-"cz": "TSTUSDT_PERP.A",
-"cap": 11121438
+"cap": 11264869
 },
 "COAIUSDT": {
 "cz": "COAIUSDT_PERP.A",
-"cap": 37037655
+"cap": 32577951
 },
 "BABYUSDT": {
 "cz": "BABYUSDT_PERP.A",
-"cap": 48407040
+"cap": 43643647
 },
 "BRUSDT": {
 "cz": "BRUSDT_PERP.A",
-"cap": 130686302
+"cap": 126926233
 },
 "NAORISUSDT": {
 "cz": "NAORISUSDT_PERP.A",
-"cap": 14653394
+"cap": 14705810
 },
 "PLUMEUSDT": {
 "cz": "PLUMEUSDT_PERP.A",
-"cap": 94481516
+"cap": 83149099
 },
 "SIRENUSDT": {
 "cz": "SIRENUSDT_PERP.A",
-"cap": 19841347
+"cap": 23692784
 },
 "BANANAS31USDT": {
 "cz": "BANANAS31USDT_PERP.A",
-"cap": 38179004
+"cap": 41511897
 },
 "NILUSDT": {
 "cz": "NILUSDT_PERP.A",
-"cap": 30356015
+"cap": 27710829
 },
 "BTRUSDT": {
 "cz": "BTRUSDT_PERP.A",
-"cap": 10842925
+"cap": 10486000
 },
 "WALUSDT": {
 "cz": "WALUSDT_PERP.A",
-"cap": 70775105
+"cap": 62713955
 },
 "BEATUSDT": {
 "cz": "BEATUSDT_PERP.A",
-"cap": 29599571
+"cap": 28601120
 },
 "BANKUSDT": {
 "cz": "BANKUSDT_PERP.A",
-"cap": 16575566
+"cap": 14773058
 },
 "PROVEUSDT": {
 "cz": "PROVEUSDT_PERP.A",
-"cap": 31001082
+"cap": 27515149
 },
 "PUNDIXUSDT": {
 "cz": "PUNDIXUSDT_PERP.A",
-"cap": 20277379
+"cap": 18498494
 },
 "CTKUSDT": {
 "cz": "CTKUSDT_PERP.A",
-"cap": 13788962
+"cap": 12425804
 },
 "AIOTUSDT": {
 "cz": "AIOTUSDT_PERP.A",
-"cap": 83218213
-},
-"DOLOUSDT": {
-"cz": "DOLOUSDT_PERP.A",
-"cap": 10580429
+"cap": 82938363
 },
 "STABLEUSDT": {
 "cz": "STABLEUSDT_PERP.A",
-"cap": 466322715
+"cap": 440306403
 },
 "NXPCUSDT": {
 "cz": "NXPCUSDT_PERP.A",
-"cap": 49789434
+"cap": 43206639
 },
 "QUSDT": {
 "cz": "QUSDT_PERP.A",
-"cap": 140861152
+"cap": 123647318
 },
 "SXTUSDT": {
 "cz": "SXTUSDT_PERP.A",
-"cap": 43226163
+"cap": 38696414
+},
+"SOPHUSDT": {
+"cz": "SOPHUSDT_PERP.A",
+"cap": 11103377
 },
 "CTUSDT": {
 "cz": "CTUSDT_PERP.A",
-"cap": 20981405
+"cap": 19854166
 },
 "DOODUSDT": {
 "cz": "DOODUSDT_PERP.A",
-"cap": 12186914
+"cap": 11106902
 },
 "SKYAIUSDT": {
 "cz": "SKYAIUSDT_PERP.A",
-"cap": 37025903
+"cap": 34921139
 },
 "KGENUSDT": {
 "cz": "KGENUSDT_PERP.A",
-"cap": 21007355
+"cap": 19971628
 },
 "SOONUSDT": {
 "cz": "SOONUSDT_PERP.A",
-"cap": 79628969
+"cap": 72945524
 },
 "FOLKSUSDT": {
 "cz": "FOLKSUSDT_PERP.A",
-"cap": 40779865
+"cap": 39862049
 },
 "SPACEUSDT": {
 "cz": "SPACEUSDT_PERP.A",
-"cap": 20189979
+"cap": 17750794
 },
 "CVCUSDT": {
 "cz": "CVCUSDT_PERP.A",
-"cap": 19038847
+"cap": 17267825
 },
 "ZAMAUSDT": {
 "cz": "ZAMAUSDT_PERP.A",
-"cap": 147309685
+"cap": 135936318
 },
 "TRUTHUSDT": {
 "cz": "TRUTHUSDT_PERP.A",
-"cap": 33572479
-},
-"FOGOUSDT": {
-"cz": "FOGOUSDT_PERP.A",
-"cap": 10696519
+"cap": 33670210
 },
 "ACUUSDT": {
 "cz": "ACUUSDT_PERP.A",
-"cap": 56265256
+"cap": 51345722
 },
 "ELSAUSDT": {
 "cz": "ELSAUSDT_PERP.A",
-"cap": 15345777
+"cap": 13282079
 },
 "ZBTUSDT": {
 "cz": "ZBTUSDT_PERP.A",
-"cap": 18529870
+"cap": 16548983
 },
 "FLOCKUSDT": {
 "cz": "FLOCKUSDT_PERP.A",
-"cap": 18075379
+"cap": 15455450
 },
 "SKYUSDT": {
 "cz": "SKYUSDT_PERP.A",
-"cap": 1332458385
-},
-"SAPIENUSDT": {
-"cz": "SAPIENUSDT_PERP.A",
-"cap": 10288481
+"cap": 1212062586
 },
 "XPLUSDT": {
 "cz": "XPLUSDT_PERP.A",
-"cap": 237356864
+"cap": 207165003
 },
 "LABUSDT": {
 "cz": "LABUSDT_PERP.A",
-"cap": 29514486
+"cap": 24514412
 },
 "TOSHIUSDT": {
 "cz": "TOSHIUSDT_PERP.A",
-"cap": 35387056
-},
-"STBLUSDT": {
-"cz": "STBLUSDT_PERP.A",
-"cap": 10664139
+"cap": 31852649
 },
 "ARIAUSDT": {
 "cz": "ARIAUSDT_PERP.A",
-"cap": 35564932
+"cap": 37774867
 },
 "WLFIUSDT": {
 "cz": "WLFIUSDT_PERP.A",
-"cap": 1496935663
+"cap": 1471305335
 },
 "TAKEUSDT": {
 "cz": "TAKEUSDT_PERP.A",
-"cap": 24518081
+"cap": 23230297
 },
 "AVNTUSDT": {
 "cz": "AVNTUSDT_PERP.A",
-"cap": 31814298
+"cap": 27143897
 },
 "RIVERUSDT": {
 "cz": "RIVERUSDT_PERP.A",
-"cap": 29744899
+"cap": 25483867
 },
 "HEMIUSDT": {
 "cz": "HEMIUSDT_PERP.A",
-"cap": 16963691
+"cap": 15509300
 },
 "XPINUSDT": {
 "cz": "XPINUSDT_PERP.A",
-"cap": 31634723
+"cap": 31619683
 },
 "0GUSDT": {
 "cz": "0GUSDT_PERP.A",
-"cap": 97390828
+"cap": 85962988
 },
 "SKRUSDT": {
 "cz": "SKRUSDT_PERP.A",
-"cap": 71435092
+"cap": 65316343
 },
 "SOMIUSDT": {
 "cz": "SOMIUSDT_PERP.A",
-"cap": 24932061
-},
-"LIGHTUSDT": {
-"cz": "LIGHTUSDT_PERP.A",
-"cap": 10403977
+"cap": 22749495
 },
 "BARDUSDT": {
 "cz": "BARDUSDT_PERP.A",
-"cap": 54941752
+"cap": 45367115
 },
 "2ZUSDT": {
 "cz": "2ZUSDT_PERP.A",
-"cap": 96659324
+"cap": 84639220
 },
 "HOLOUSDT": {
 "cz": "HOLOUSDT_PERP.A",
-"cap": 44363887
+"cap": 38029777
 },
 "UBUSDT": {
 "cz": "UBUSDT_PERP.A",
-"cap": 266017332
+"cap": 252457036
 },
 "EULUSDT": {
 "cz": "EULUSDT_PERP.A",
-"cap": 21302845
+"cap": 18623474
 },
 "MIRAUSDT": {
 "cz": "MIRAUSDT_PERP.A",
-"cap": 12741579
+"cap": 11487209
 },
 "AKEUSDT": {
 "cz": "AKEUSDT_PERP.A",
-"cap": 267577946
+"cap": 277180045
 },
 "ORDERUSDT": {
 "cz": "ORDERUSDT_PERP.A",
-"cap": 13205380
+"cap": 11744998
 },
 "\u5e01\u5b89\u4eba\u751fUSDT": {
 "cz": "\u5e01\u5b89\u4eba\u751fUSDT_PERP.A",
-"cap": 470989463
+"cap": 442123517
 },
 "APRUSDT": {
 "cz": "APRUSDT_PERP.A",
-"cap": 15154452
+"cap": 13702847
 },
 "PIEVERSEUSDT": {
 "cz": "PIEVERSEUSDT_PERP.A",
-"cap": 451036015
+"cap": 497392436
 },
 "ONUSDT": {
 "cz": "ONUSDT_PERP.A",
-"cap": 12632926
+"cap": 12331373
 },
 "BIRBUSDT": {
 "cz": "BIRBUSDT_PERP.A",
-"cap": 20724259
+"cap": 17072609
 },
 "GWEIUSDT": {
 "cz": "GWEIUSDT_PERP.A",
-"cap": 34443136
+"cap": 30297440
 },
 "PRLUSDT": {
 "cz": "PRLUSDT_PERP.A",
-"cap": 13150993
+"cap": 11939165
 },
 "MARSCOINUSDT": {
 "cz": "MARSCOINUSDT_PERP.A",
-"cap": 39865713
+"cap": 35114686
 },
 "CATUSDT": {
 "cz": "CATUSDT_PERP.A",
-"cap": 11720137
+"cap": 10329799
 },
 "EWTUSDT": {
 "cz": "EWTUSDT_PERP.A",
-"cap": 21262721
+"cap": 19843941
 },
 "\u725b\u6765USDT": {
 "cz": "\u725b\u6765USDT_PERP.A",
-"cap": 62122183
+"cap": 48264710
 }
 }
 }
