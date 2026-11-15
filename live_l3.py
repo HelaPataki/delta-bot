@@ -52,7 +52,7 @@ CAP_MIN, CAP_MAX = 10e6, 2e9
 UP_MIN, LS_MAX, PREFILTER_LS = 3.0, 0.8, 1.0
 TAKE, STOP, HOLD_H, SLOTS = 20.0, 10.0, 168, 3
 HL_DAYS = 14
-CALLS_PER_MIN = int(os.environ.get("CZ_PER_MIN", "20"))      # половина лимита ключа — вторая половина у live.py
+CALLS_PER_MIN = int(os.environ.get("CZ_PER_MIN", "25"))      # половина лимита ключа — вторая половина у live.py
 
 STATE_FILE, SIGNALS_FILE, UNI_FILE = "l3_state.json", "l3_signals.csv", "l3_universe.json"
 
@@ -399,8 +399,8 @@ def follow(st, coins):
 
 
 # ---------------- главный проход ----------------
-SHORT_UP, SHORT_LS = 2.0, 0.9      # короткий список для быстрой проверки — с запасом к правилам (3% и 0,8)
-SCAN_LS = 0.9                      # полная проверка считает карту по монетам с L/S < 0,9 (сигнал всё равно только < 0,8)
+SHORT_UP, SHORT_LS, SHORT_MAX = 1.5, 1.0, 15   # короткий список: с большим запасом к правилам (3% и 0,8), до 15 монет
+SCAN_LS = 1.0                      # полная проверка считает карту по монетам с L/S < 1,0 (сигнал всё равно только < 0,8)
 PUSH = os.environ.get("PUSH_STATE") == "1"
 
 
@@ -534,8 +534,8 @@ def full_check(st):
             near.append((s, ser[-1]))
             hits += [(s, r) for r in fresh_hits(ser, 4)]
     n = send_signals(st, coins, hits, "страховка")
-    short = sorted(s for s, r in near if np.isfinite(r["up"]) and r["up"] >= SHORT_UP
-                   and np.isfinite(r["ls"]) and r["ls"] < SHORT_LS)
+    short = [s for s, r in sorted(near, key=lambda x: -(x[1]["up"] if np.isfinite(x[1]["up"]) else -1))
+             if np.isfinite(r["up"]) and r["up"] >= SHORT_UP and np.isfinite(r["ls"]) and r["ls"] < SHORT_LS][:SHORT_MAX]
     log(f"полная проверка: L/S<{PREFILTER_LS} вчера {len(cand)}, L/S<{SCAN_LS} сейчас {len(fin)}, "
         f"сигналов {n}, короткий список: {' '.join(short) or '—'}")
     persist(st, "l3: state (полная проверка)")
@@ -593,18 +593,15 @@ def main():
         tg("\n".join(txt))
         return
     started = time.time()
-    run_for = float(os.environ.get("RUN_HOURS", "5.6")) * 3600
-    while True:
-        now = time.time()
-        close = (int(now // 3600) + 1) * 3600                 # ближайшее закрытие часовой свечи
-        sleep_until(close - 22 * 60)                           # полная проверка в :38
-        coins, short, _, _ = full_check(st)
-        four = (close // 3600) % 4 == 0                        # в этот час закрывается и 4h-свеча — уступаем дельта-боту
-        at = close + (8 if four else 3) * 60
+    run_for = float(os.environ.get("RUN_HOURS", "5.0")) * 3600
+    coins, short, _, _ = full_check(st)                      # при старте: страховка и короткий список
+    while time.time() - started < run_for:
+        close = (int(time.time() // 3600) + 1) * 3600         # ближайшее закрытие часовой свечи
+        four = (close // 3600) % 4 == 0                        # закрывается и 4h-свеча: дельта-бот работает :00–:15
+        at = close + (17 if four else 3) * 60
         sleep_until(at)
-        fast_check(st, coins, short, close * 1000, deadline=at + 12 * 60)
-        if time.time() - started > run_for:
-            break
+        fast_check(st, coins, short, close * 1000, deadline=at + 8 * 60)   # короткий список
+        coins, short, _, _ = full_check(st)                    # сразу за ней — все монеты (страховка)
     persist(st)
 
 
