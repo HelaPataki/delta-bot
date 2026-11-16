@@ -1,4 +1,4 @@
-name: Capitulation 3 (more signals: softer, coins, shorts, slots)
+name: "Capitulation 3 (more signals - softer, coins, shorts, slots)"
 
 on:
   workflow_dispatch:
