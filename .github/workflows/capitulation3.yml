@@ -1,0 +1,84 @@
+name: Capitulation 3 (more signals: softer, coins, shorts, slots)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  START: "2020-12-01"
+  DIR: results/capitulation3
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Coin list (incl. delisted)
+        env:
+          MODE: prep
+        run: python capitulation3.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}/universe.json
+
+  shard:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}
+      - name: 1h candles (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "16"
+        run: python capitulation3.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: ${{ env.DIR }}/parts/k${{ matrix.shard }}.npz
+
+  combine:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: ${{ env.DIR }}/parts
+          merge-multiple: true
+      - name: Events and trades
+        env:
+          MODE: combine
+        run: python capitulation3.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $DIR/capitulation3_summary.md $DIR/market_events.csv.gz $DIR/coin_events.csv.gz
+          git commit -m "Capitulation 3 run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
