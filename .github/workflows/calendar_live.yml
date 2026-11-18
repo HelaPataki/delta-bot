@@ -30,7 +30,7 @@ jobs:
       - run: python calendar_live.py
         env:
           MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'live' }}
-          OBSERVE: "1"
+          OBSERVE: "0"
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
           COINALYZE_KEY: ${{ secrets.COINALYZE_KEY }}
