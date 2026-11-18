@@ -36,6 +36,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 import live as L          # Telegram, Coinalyze с учётом лимита, общие мелочи
+from tradfi import TRADFI
 
 # ---------------- правила ----------------
 LEV = 2
@@ -113,6 +114,23 @@ def turnover_24h(cs, at):
     return sum((b["o"] + b["h"] + b["l"] + b["c"]) / 4 * (b.get("v") or 0) for b in bars), len(bars)
 
 
+def looks_tradfi(sym, cs, at):
+    """Акции/фонды/сырьё: список TRADFI или объём в выходные в 4+ раза ниже, чем в будни (у крипты — в 1–2,5)."""
+    if sym in TRADFI:
+        return True
+    if not cs:
+        return False
+    bars = L.history("ohlcv-history", [cs], "daily", at - 29 * DAY, at).get(cs, [])
+    wd, we = [], []
+    for b in bars:
+        qv = (b["o"] + b["h"] + b["l"] + b["c"]) / 4 * (b.get("v") or 0)
+        (we if dt.datetime.fromtimestamp(b["t"], dt.timezone.utc).weekday() >= 5 else wd).append(qv)
+    if len(wd) < 8 or len(we) < 3:
+        return False
+    a, b = sum(wd) / len(wd), sum(we) / len(we)
+    return b <= 0 or a / b >= 4
+
+
 def price_now(cs):
     now = int(time.time())
     b = L.history("ohlcv-history", [cs], "1min", now - 600, now).get(cs, [])
@@ -175,6 +193,8 @@ def update_listings(st, mk):
     added = 0
     for s, t in reg.items():
         if not t or now - t > OLD_DAYS * DAY:
+            continue
+        if s in TRADFI:
             continue
         entry, night = listing_entry(t)
         pid = f"L:{s}:{t}"
@@ -336,6 +356,10 @@ def do_entry(st, p, mk, now):
     late = ""
     if now - p["entry"] > 15 * 60:
         late = f"⚠️ С ОПОЗДАНИЕМ: вход был в {kyiv(p['entry'], '%H:%M')}"
+    if p["kind"] == "листинг" and looks_tradfi(p["sym"], cs, int(now)):
+        tg(f"⚪️ {p['sym']}: это не крипта (акция / фонд / сырьё) — шорт листинга не берём")
+        journal("отмена", p, note="TradFi")
+        return
     if p["kind"] == "листинг":
         turn, n = turnover_24h(cs, p["entry"]) if cs else (0, 0)
         if n < 20 or turn < LIST_TURN:
@@ -414,6 +438,8 @@ def digest(st, mk, now):
         when = kyiv(p["entry"], "%d.%m в %H:%M")
         if p["kind"] == "листинг":
             cs = mk.get(p["sym"])
+            if looks_tradfi(p["sym"], cs, int(time.time())):
+                continue
             turn, _ = turnover_24h(cs, int(time.time())) if cs else (0, 0)
             ok = "✅" if turn >= LIST_TURN else "⚠️ пока мало"
             note = " (листинг ночью → утром)" if p.get("night") else ""
