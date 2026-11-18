@@ -373,7 +373,7 @@ def short_text(sym, others, T, test, close_at=None, note=""):
               f"4️⃣ Закрыть до: {kyiv(close_at or T + (SHORT_HOLD_H * 60 + ENTRY_DELAY_MIN) * 60)}",
               "━━━━━━━━━━━━━━",
               f"Плечо: {LEV}x | Весь свободный слот",
-              "Оба слота заняты — пропустить"]
+              "Все 4 слота заняты — пропустить"]
     if others:
         lines.append(f"Другие монеты свечи (не трогаем): {', '.join(others)}")
     return "\n".join(lines)
@@ -393,7 +393,7 @@ def long_text(sym, level, tick, others, T, test, note=""):
               "5️⃣ Держать до 10 дней (бот напомнит)",
               "━━━━━━━━━━━━━━",
               f"Плечо: {LEV}x | Весь свободный слот",
-              "Оба слота заняты — пропустить"]
+              "Все 4 слота заняты — пропустить"]
     if others:
         lines.append(f"Другие монеты свечи (не трогаем): {', '.join(others)}")
     return "\n".join(lines)

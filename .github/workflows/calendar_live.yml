@@ -1,0 +1,51 @@
+name: Calendar live bot (listings + unlocks)
+
+on:
+  schedule:
+    # каждый час в :40 — бот берёт события ближайшего часа и ждёт их точного времени; сводка в 20:00 по Киеву
+    - cron: "40 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "test — обновить календарь и прислать список ближайших входов (ТЕСТ); live — обычный режим"
+        default: "test"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: calendar-${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'live' }}
+  cancel-in-progress: false
+
+jobs:
+  calendar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests numpy
+      - run: python calendar_live.py
+        env:
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'live' }}
+          OBSERVE: "1"
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+          COINALYZE_KEY: ${{ secrets.COINALYZE_KEY }}
+      - name: Save state
+        if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.mode != 'test') }}
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          for f in calendar_state.json calendar_signals.csv; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "calendar: state"
+          for i in 1 2 3 4; do
+            if git pull --rebase -X theirs && git push; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
