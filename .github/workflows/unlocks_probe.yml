@@ -1,0 +1,50 @@
+name: Unlocks probe (DefiLlama open code)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Probe
+        run: |
+          mkdir -p results/unlocks_probe
+          OUT=results/unlocks_probe/probe.txt
+          {
+          echo "=== clone"
+          git clone --depth 1 https://github.com/DefiLlama/emissions-adapters ea 2>&1 | tail -2
+          echo "=== top"; ls ea
+          echo "=== package.json"; cat ea/package.json
+          echo "=== README"; head -80 ea/README.md
+          echo "=== protocols count"; ls ea/protocols | wc -l
+          echo "=== protocols sample"; ls ea/protocols | head -60
+          echo "=== utils"; ls -R ea/utils | head -80
+          echo "=== types"; ls ea/types 2>/dev/null; head -120 ea/types/adapters.ts 2>/dev/null
+          for p in arbitrum aptos sui optimism; do echo "=== protocol $p"; cat ea/protocols/$p.ts 2>/dev/null | head -80; done
+          echo "=== grep manualCliff"; grep -rl "manualCliff" ea/protocols | wc -l
+          echo "=== files using onchain/async"; grep -rlE "await|calendar|queryDune|getBlock|call\(" ea/protocols | wc -l
+          echo "=== npm install"
+          cd ea && (npm ci || npm install) 2>&1 | tail -5
+          echo "=== try test arbitrum"
+          timeout 300 npm test -- arbitrum 2>&1 | tail -60 || true
+          timeout 300 npx ts-node utils/test.ts protocols/arbitrum.ts 2>&1 | tail -60 || true
+          cd ..
+          echo "=== endpoints"
+          for u in https://api.llama.fi/emissions https://defillama-datasets.llama.fi/emissionsProtocolsList https://defillama-datasets.llama.fi/emissions/arbitrum https://api.llama.fi/emission/arbitrum; do
+            echo "--- $u"; curl -s -m 30 -o /tmp/r -w "%{http_code} %{size_download}\n" "$u"; head -c 600 /tmp/r; echo
+          done
+          } > $OUT 2>&1
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $OUT
+          git commit -m "Unlocks probe" || echo "nothing"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
