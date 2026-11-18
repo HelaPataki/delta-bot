@@ -14,4 +14,16 @@ TSLL NVDL MSTU MUU SNXX SKUU STXX MVLL CSOPSAMSUNG2L CSOPSKHYNIX2L
 SAMSUNG SAMSUNGEM SKHYNIX SKHY HYUNDAI LGELECTRONICS NAVER HANMI TENCENT MEITUAN KUAISHOU HK0625 HK0700 HK0992 HK1810
 OPENAI ANTHROPIC
 XAU XAG XPD XPT NATGAS COPPER CL BZ USDBRL
+CEG IBKR EQT STM SMR EIDO ABBV BAC EWZS
 """.split()}
+
+# Новые акции/фонды, которые бот «Календарь» находит сам (объём в выходные в 4+ раза ниже, чем в будни):
+# tradfi_auto.json пополняется автоматически и действует для всех ботов.
+try:
+    import json as _json
+    import os as _os
+    _p = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "tradfi_auto.json")
+    if _os.path.exists(_p):
+        TRADFI |= set(_json.load(open(_p)))
+except Exception:  # noqa: BLE001
+    pass

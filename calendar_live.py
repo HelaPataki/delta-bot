@@ -170,6 +170,35 @@ def listing_entry(listed):
     return base, False
 
 
+AUTO_FILE = "tradfi_auto.json"
+
+
+def detect_tradfi(st, mk):
+    """Раз в день: свежие листинги (до 120 дней), похожие на акции/фонды, — в tradfi_auto.json (для всех ботов)."""
+    try:
+        auto = set(json.load(open(AUTO_FILE)))
+    except Exception:  # noqa: BLE001
+        auto = set()
+    now = int(time.time())
+    checked = st.setdefault("tradfi_checked", {})
+    new = []
+    for s, t in st["registry"].items():
+        if not t or now - t > 120 * DAY or now - t < 10 * DAY or s in TRADFI or s in auto:
+            continue
+        if now - checked.get(s, 0) < 7 * DAY:
+            continue
+        checked[s] = now
+        if looks_tradfi(s, mk.get(s), now):
+            auto.add(s)
+            new.append(s)
+    if new:
+        TRADFI.update(new)
+        with open(AUTO_FILE, "w") as f:
+            json.dump(sorted(auto), f, indent=0)
+        log("найдены акции/фонды:", new)
+    st["planned"] = [p for p in st["planned"] if p["sym"] not in TRADFI]
+
+
 def update_listings(st, mk):
     reg = st.setdefault("registry", {})
     todo = [s for s in mk if s not in reg]
@@ -484,6 +513,7 @@ def save_state(st):
 
 def main():
     st = load_state()
+    st["planned"] = [p for p in st["planned"] if p["sym"] not in TRADFI]
     mk = markets()
     st["_mk"] = mk
     now = time.time()
@@ -491,6 +521,7 @@ def main():
     log(f"монет Binance в Coinalyze: {len(mk)}")
     if MODE == "test" or (st["last_daily"] != today.date().isoformat() and today.hour >= DIGEST_HOUR - 2):
         update_listings(st, mk)
+        detect_tradfi(st, mk)
         update_unlocks(st, mk)
         st["last_daily"] = today.date().isoformat()
     if MODE == "test":

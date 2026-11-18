@@ -39,7 +39,7 @@ jobs:
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          for f in calendar_state.json calendar_signals.csv; do
+          for f in calendar_state.json calendar_signals.csv tradfi_auto.json; do
             if [ -f "$f" ]; then git add "$f"; fi
           done
           if git diff --cached --quiet; then exit 0; fi
