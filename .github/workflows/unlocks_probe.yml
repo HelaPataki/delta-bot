@@ -16,7 +16,9 @@ jobs:
         with:
           node-version: "20"
       - name: Probe
+        shell: bash {0}
         run: |
+          set +e
           mkdir -p results/unlocks_probe
           OUT=results/unlocks_probe/probe.txt
           {
@@ -43,6 +45,11 @@ jobs:
             echo "--- $u"; curl -s -m 30 -o /tmp/r -w "%{http_code} %{size_download}\n" "$u"; head -c 600 /tmp/r; echo
           done
           } > $OUT 2>&1
+          echo "probe done, $(wc -l < $OUT) lines"
+      - name: Save
+        if: always()
+        run: |
+          OUT=results/unlocks_probe/probe.txt
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
           git add $OUT
