@@ -1,0 +1,85 @@
+name: "Cycle trades — chosen calendar short variants for simulation"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DIR: results/cycle_trades
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Coin list
+        env:
+          MODE: prep
+        run: python cycle_trades.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universe
+          path: |
+            ${{ env.DIR }}/ev.csv
+            ${{ env.DIR }}/syms.csv
+
+  shard:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: universe
+          path: ${{ env.DIR }}
+      - name: Signals and trades (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "4"
+        run: python cycle_trades.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: ${{ env.DIR }}/parts/*${{ matrix.shard }}.csv.gz
+
+  combine:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: ${{ env.DIR }}/parts
+          merge-multiple: true
+      - name: Summary
+        env:
+          MODE: combine
+        run: python cycle_trades.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $DIR/cycle_trades_summary.md $DIR/trades.csv.gz
+          git commit -m "Cycle trades run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
