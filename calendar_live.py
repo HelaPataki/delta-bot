@@ -409,6 +409,11 @@ def do_entry(st, p, mk, now):
                                                    else f"{p['size']}% {p['date']}"))
 
 
+def tag(p):
+    """Первая строка сообщений о сделке: монета, какая стратегия и когда вход — чтобы не перепутать слоты."""
+    return f"{p['sym']} · шорт {'листинга' if p['kind'] == 'листинг' else 'разблокировки'} от {kyiv(p['entry'], '%d.%m %H:%M')}"
+
+
 def close(st, p, why, res, price=None):
     st["open"] = [x for x in st["open"] if x["id"] != p["id"]]
     journal(why, p, price or "", res)
@@ -430,20 +435,20 @@ def monitor(st, mk, now):
             stop_lvl = e if p["be"] else e * (1 + stop_pct / 100)
             if b["h"] >= stop_lvl:
                 if p["be"]:
-                    tg(f"⚪️ {p['sym']}: цена вернулась к входу — сработал стоп в безубытке (≈0%)\nСлот свободен.")
+                    tg(f"⚪️ {tag(p)}\nЦена вернулась к входу — сработал стоп в безубытке (≈0%)\nСлот свободен.")
                     close(st, p, "безубыток", 0.0, stop_lvl)
                 else:
-                    tg(f"🛑 {p['sym']}: сработал стоп (ROI −{stop_pct * LEV:.0f}%)\nПроверь, что позиция закрыта. Слот свободен.")
+                    tg(f"🛑 {tag(p)}\nСработал стоп (ROI −{stop_pct * LEV:.0f}%)\nПроверь, что позиция закрыта. Слот свободен.")
                     close(st, p, "стоп", -stop_pct, stop_lvl)
                 break
             if b["l"] <= e * (1 - take_pct / 100):
-                tg(f"🎯 {p['sym']}: тейк взят (ROI +{take_pct * LEV:.0f}%)\nПроверь, что позиция закрыта. Слот свободен.")
+                tg(f"🎯 {tag(p)}\nТейк взят (ROI +{take_pct * LEV:.0f}%)\nПроверь, что позиция закрыта. Слот свободен.")
                 close(st, p, "тейк", take_pct, e * (1 - take_pct / 100))
                 break
             if p["kind"] == "листинг" and not p["be"] and b["l"] <= e * (1 - LIST_BE / 100):
                 p["be"] = True
                 if not p["be_sent"]:
-                    tg(f"🔁 {p['sym']}: цена ушла на −{LIST_BE:g}% (ROI +{LIST_BE * LEV:.0f}%)\n"
+                    tg(f"🔁 {tag(p)}\nЦена ушла на −{LIST_BE:g}% (ROI +{LIST_BE * LEV:.0f}%)\n"
                        f"👉 Перенеси стоп-лосс на цену входа {e:g}\nТейк оставь на месте.")
                     p["be_sent"] = True
                     journal("стоп на вход", p, e)
@@ -453,7 +458,7 @@ def do_exit(st, p):
     cs = st.get("_mk", {}).get(p["sym"])
     price = price_now(cs) if cs else None
     res = (1 - price / p["price"]) * 100 if price and p.get("price") else ""
-    tg(f"⏰🔴 {p['sym']}: время вышло ({'14 дней' if p['kind'] == 'листинг' else 'день после разблокировки'})\n"
+    tg(f"⏰🔴 {tag(p)}\nВремя вышло ({'14 дней' if p['kind'] == 'листинг' else 'день после разблокировки'})\n"
        f"👉 Закрой ШОРТ по рынку, если ещё открыт" + (f"\nСейчас {res:+.1f}% цены (ROI {res * LEV:+.0f}%)"
                                                      if res != "" else ""))
     close(st, p, "время", res, price)
