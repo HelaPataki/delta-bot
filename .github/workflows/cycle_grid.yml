@@ -1,4 +1,4 @@
-name: Cycle grid — unlock Blogger long setup (history) listing shorts: stop, take, time
+name: "Cycle grid — unlock and listing shorts (stop, take, time)"
 
 on:
   workflow_dispatch:
