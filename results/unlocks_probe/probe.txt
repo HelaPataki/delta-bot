@@ -1,0 +1,76 @@
+=== clone
+Cloning into 'ea'...
+fatal: could not read Username for 'https://github.com': No such device or address
+=== top
+ls: cannot access 'ea': No such file or directory
+=== package.json
+cat: ea/package.json: No such file or directory
+=== README
+head: cannot open 'ea/README.md' for reading: No such file or directory
+=== protocols count
+ls: cannot access 'ea/protocols': No such file or directory
+0
+=== protocols sample
+ls: cannot access 'ea/protocols': No such file or directory
+=== utils
+ls: cannot access 'ea/utils': No such file or directory
+=== types
+=== protocol arbitrum
+=== protocol aptos
+=== protocol sui
+=== protocol optimism
+=== grep manualCliff
+grep: ea/protocols: No such file or directory
+0
+=== files using onchain/async
+grep: ea/protocols: No such file or directory
+0
+=== npm install
+/home/runner/work/_temp/95de24bd-e908-4cd1-9c46-72cc5786b41c.sh: line 18: cd: ea: No such file or directory
+=== try test arbitrum
+npm error code ENOENT
+npm error syscall open
+npm error path /home/runner/work/delta-bot/delta-bot/package.json
+npm error errno -2
+npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/home/runner/work/delta-bot/delta-bot/package.json'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-11-18T09_44_15_514Z-debug-0.log
+npm warn exec The following package was not found and will be installed: ts-node@10.9.2
+node:internal/modules/cjs/loader:1210
+  throw err;
+  ^
+
+Error: Cannot find module './test.ts'
+Require stack:
+- /home/runner/work/delta-bot/delta-bot/utils/imaginaryUncacheableRequireResolveScript
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+    at Function.resolve (node:internal/modules/helpers:193:19)
+    at requireResolveNonCached (/home/runner/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/dist/bin.js:549:16)
+    at getProjectSearchDir (/home/runner/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/dist/bin.js:519:40)
+    at phase3 (/home/runner/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/dist/bin.js:267:27)
+    at bootstrap (/home/runner/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/dist/bin.js:47:30)
+    at main (/home/runner/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/dist/bin.js:33:12)
+    at Object.<anonymous> (/home/runner/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/dist/bin.js:579:5)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/home/runner/work/delta-bot/delta-bot/utils/imaginaryUncacheableRequireResolveScript'
+  ]
+}
+
+Node.js v20.20.2
+=== endpoints
+--- https://api.llama.fi/emissions
+402 66
+Upgrade to the paid API plan at https://defillama.com/subscription
+--- https://defillama-datasets.llama.fi/emissionsProtocolsList
+200 4399
+["kinetiq","bouncebit","pheasant-network","immutablex","infrared-finance","aster","aptos","ant","holdstation","manta-pacific","eigencloud","lido","looksrare","aero","data-network","gmx","sign","pike","maha.xyz","legacy-network","re","safe","babylon-protocol","omni-network","mercury","balancer","abracadabra","golem-network","quai-network","hop-protocol","arbitrum-foundation","murasaki","ethena","kwenta","etherex","humanity","moonbeam","flare","morpho","moonwell","jade","saucerswap","fluid","melania-meme","internet-computer","humidifi","near-protocol","solana","xdc-network","dune-protocol","jone
+--- https://defillama-datasets.llama.fi/emissions/arbitrum
+200 821667
+{"documentedData":{"data":[{"label":"Airdrop","data":[{"timestamp":1679529600,"unlocked":0,"rawEmission":0,"burned":0},{"timestamp":1679616000,"unlocked":1162000000,"rawEmission":1162000000,"burned":0},{"timestamp":1679702400,"unlocked":1162000000,"rawEmission":1162000000,"burned":0},{"timestamp":1679788800,"unlocked":1162000000,"rawEmission":1162000000,"burned":0},{"timestamp":1679875200,"unlocked":1162000000,"rawEmission":1162000000,"burned":0},{"timestamp":1679961600,"unlocked":1162000000,"rawEmission":1162000000,"burned":0},{"timestamp":1680048000,"unlocked":1162000000,"rawEmission":116200
+--- https://api.llama.fi/emission/arbitrum
+402 66
+Upgrade to the paid API plan at https://defillama.com/subscription
