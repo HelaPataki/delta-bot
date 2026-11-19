@@ -756,7 +756,13 @@
   "TEAMUSDT": 1788343200,
   "MDBUSDT": 1788343200,
   "ZSUSDT": 1788343200,
-  "GTLBUSDT": 1788343200
+  "GTLBUSDT": 1788343200,
+  "SOXXUSDT": 1794992400,
+  "IGVUSDT": 1794992400,
+  "ARTYUSDT": 1794992400,
+  "IBITUSDT": 1794992400,
+  "CCJUSDT": 1794992400,
+  "ETNUSDT": 1794992400
  },
  "planned": [
   {
@@ -892,6 +898,63 @@
    "date": "2026-12-28",
    "size": 3.2,
    "protocol": "resolv"
+  },
+  {
+   "id": "L:SOXXUSDT:1794992400",
+   "kind": "листинг",
+   "sym": "SOXXUSDT",
+   "entry": 1797584400,
+   "listed": 1794992400,
+   "night": false
+  },
+  {
+   "id": "L:IGVUSDT:1794992400",
+   "kind": "листинг",
+   "sym": "IGVUSDT",
+   "entry": 1797584400,
+   "listed": 1794992400,
+   "night": false
+  },
+  {
+   "id": "L:ARTYUSDT:1794992400",
+   "kind": "листинг",
+   "sym": "ARTYUSDT",
+   "entry": 1797584400,
+   "listed": 1794992400,
+   "night": false
+  },
+  {
+   "id": "L:IBITUSDT:1794992400",
+   "kind": "листинг",
+   "sym": "IBITUSDT",
+   "entry": 1797584400,
+   "listed": 1794992400,
+   "night": false
+  },
+  {
+   "id": "L:CCJUSDT:1794992400",
+   "kind": "листинг",
+   "sym": "CCJUSDT",
+   "entry": 1797584400,
+   "listed": 1794992400,
+   "night": false
+  },
+  {
+   "id": "L:ETNUSDT:1794992400",
+   "kind": "листинг",
+   "sym": "ETNUSDT",
+   "entry": 1797584400,
+   "listed": 1794992400,
+   "night": false
+  },
+  {
+   "id": "U:ONDOUSDT:2027-01-18",
+   "kind": "разблокировка",
+   "sym": "ONDOUSDT",
+   "entry": 1799816400,
+   "date": "2027-01-18",
+   "size": 5.3,
+   "protocol": "ondo-finance"
   }
  ],
  "open": [
@@ -908,7 +971,7 @@
    "opened": 1795064400.0001292,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795096800
+   "checked_to": 1795100400
   }
  ],
  "done": [
@@ -917,7 +980,7 @@
  "headsup": [
   "U:MONUSDT:2026-11-25"
  ],
- "last_daily": "2026-11-18",
+ "last_daily": "2026-11-19",
  "last_digest": "2026-11-18",
  "reminded": [],
  "tradfi_checked": {
