@@ -351,7 +351,7 @@ def entry_text(p, price, late=""):
     if p["kind"] == "листинг":
         stop, take = LIST_STOP, LIST_TAKE
         why = f"Листинг {kyiv(p['listed'], '%d.%m %H:%M')} → 30-й день"
-        hold = f"4️⃣ После −8% (ROI +{LIST_BE * LEV:.0f}%) — стоп на вход (бот напомнит)\n" \
+        hold = f"4️⃣ После −{LIST_BE:g}% цены — стоп на вход (бот напомнит)\n" \
                f"5️⃣ Закрыть до: {kyiv(p['entry'] + LIST_HOLD_D * DAY)}"
     else:
         stop, take = UNL_STOP, UNL_TAKE
@@ -359,8 +359,10 @@ def entry_text(p, price, late=""):
         hold = f"4️⃣ Закрыть до: {kyiv(p['exit'])}"
     lines = [f"🔴🔴🔴 ШОРТ 🔴🔴🔴 {p['kind'].upper()}", p["sym"]] + ([late] if late else []) + [
         why, "━━━━━━━━━━━━━━", "1️⃣ Рыночный → Продать/Шорт 🔴",
-        f"2️⃣ Стоп-лосс ROI:   {roi(stop)}", f"3️⃣ Тейк-профит ROI: {roi(take)}", hold, "━━━━━━━━━━━━━━",
-        f"Цена сейчас: {price:g}" if price else "Цена: нет данных",
+        f"2️⃣ Стоп: цена +{stop:g}%" + (f" → {price * (1 + stop / 100):.4g}" if price else ""),
+        f"3️⃣ Тейк: цена −{take:g}%" + (f" → {price * (1 - take / 100):.4g}" if price else ""),
+        hold, "━━━━━━━━━━━━━━",
+        (f"Цена сейчас: {price:g} (вошла по другой — считай от своей)") if price else "Цена: нет данных",
         f"Плечо: {LEV}x | Один свободный слот (¼ депозита)", "Все 4 слота заняты — пропустить"]
     return "\n".join(lines)
 

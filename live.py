@@ -368,8 +368,8 @@ def short_text(sym, others, T, test, close_at=None, note=""):
     lines = ["🧪 ТЕСТ — НЕ ТОРГОВАТЬ 🧪"] if test else []
     lines += ["🔴🔴🔴 ШОРТ 🔴🔴🔴", sym] + ([note.strip()] if note else []) + ["━━━━━━━━━━━━━━",
               "1️⃣ Рыночный → Продать/Шорт 🔴",
-              f"2️⃣ Стоп-лосс ROI:   {roi_sl:.1f} %",
-              f"3️⃣ Тейк-профит ROI: {roi_tp:.1f} %",
+              f"2️⃣ Стоп: цена +{STOP:g}% от входа",
+              f"3️⃣ Тейк: цена −{SHORT_TAKE:.2f}% от входа",
               f"4️⃣ Закрыть до: {kyiv(close_at or T + (SHORT_HOLD_H * 60 + ENTRY_DELAY_MIN) * 60)}",
               "━━━━━━━━━━━━━━",
               f"Плечо: {LEV}x | Весь свободный слот",
