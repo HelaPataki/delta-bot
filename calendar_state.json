@@ -971,17 +971,18 @@
    "opened": 1795064400.0001292,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795100400
+   "checked_to": 1795107600
   }
  ],
  "done": [
   "U:HUSDT:2026-11-24"
  ],
  "headsup": [
-  "U:MONUSDT:2026-11-25"
+  "U:MONUSDT:2026-11-25",
+  "U:RESOLVUSDT:2026-11-27"
  ],
  "last_daily": "2026-11-19",
- "last_digest": "2026-11-18",
+ "last_digest": "2026-11-19",
  "reminded": [],
  "tradfi_checked": {
   "DOSUSDT": 1795030628,
