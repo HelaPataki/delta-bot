@@ -792,15 +792,6 @@
    "protocol": "gunz"
   },
   {
-   "id": "U:MONUSDT:2026-11-25",
-   "kind": "разблокировка",
-   "sym": "MONUSDT",
-   "entry": 1795150800,
-   "date": "2026-11-25",
-   "size": 30.4,
-   "protocol": "monad"
-  },
-  {
    "id": "U:LISTAUSDT:2026-12-21",
    "kind": "разблокировка",
    "sym": "LISTAUSDT",
@@ -971,11 +962,26 @@
    "opened": 1795064400.0001292,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795140000
+   "checked_to": 1795147200
+  },
+  {
+   "id": "U:MONUSDT:2026-11-25",
+   "kind": "разблокировка",
+   "sym": "MONUSDT",
+   "entry": 1795150800,
+   "date": "2026-11-25",
+   "size": 30.4,
+   "protocol": "monad",
+   "exit": 1795669200,
+   "price": 0.01309,
+   "opened": 1795150800.0001264,
+   "be": false,
+   "be_sent": false
   }
  ],
  "done": [
-  "U:HUSDT:2026-11-24"
+  "U:HUSDT:2026-11-24",
+  "U:MONUSDT:2026-11-25"
  ],
  "headsup": [
   "U:MONUSDT:2026-11-25",
