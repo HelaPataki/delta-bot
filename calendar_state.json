@@ -950,21 +950,6 @@
  ],
  "open": [
   {
-   "id": "U:HUSDT:2026-11-24",
-   "kind": "разблокировка",
-   "sym": "HUSDT",
-   "entry": 1795064400,
-   "date": "2026-11-24",
-   "size": 4.4,
-   "protocol": "humanity",
-   "exit": 1795582800,
-   "price": 0.01539,
-   "opened": 1795064400.0001292,
-   "be": false,
-   "be_sent": false,
-   "checked_to": 1795150800
-  },
-  {
    "id": "U:MONUSDT:2026-11-25",
    "kind": "разблокировка",
    "sym": "MONUSDT",
@@ -977,7 +962,7 @@
    "opened": 1795150800.0001264,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795150800
+   "checked_to": 1795154400
   }
  ],
  "done": [
