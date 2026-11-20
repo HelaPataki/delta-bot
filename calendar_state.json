@@ -962,7 +962,7 @@
    "opened": 1795064400.0001292,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795147200
+   "checked_to": 1795150800
   },
   {
    "id": "U:MONUSDT:2026-11-25",
@@ -976,7 +976,8 @@
    "price": 0.01309,
    "opened": 1795150800.0001264,
    "be": false,
-   "be_sent": false
+   "be_sent": false,
+   "checked_to": 1795150800
   }
  ],
  "done": [
