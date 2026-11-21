@@ -762,7 +762,10 @@
   "ARTYUSDT": 1794992400,
   "IBITUSDT": 1794992400,
   "CCJUSDT": 1794992400,
-  "ETNUSDT": 1794992400
+  "ETNUSDT": 1794992400,
+  "JNJUSDT": 1795165200,
+  "AMDLUSDT": 1795165200,
+  "NIOUSDT": 1795165200
  },
  "planned": [
   {
@@ -946,6 +949,39 @@
    "date": "2027-01-18",
    "size": 5.3,
    "protocol": "ondo-finance"
+  },
+  {
+   "id": "L:JNJUSDT:1795165200",
+   "kind": "листинг",
+   "sym": "JNJUSDT",
+   "entry": 1797757200,
+   "listed": 1795165200,
+   "night": false
+  },
+  {
+   "id": "L:AMDLUSDT:1795165200",
+   "kind": "листинг",
+   "sym": "AMDLUSDT",
+   "entry": 1797757200,
+   "listed": 1795165200,
+   "night": false
+  },
+  {
+   "id": "L:NIOUSDT:1795165200",
+   "kind": "листинг",
+   "sym": "NIOUSDT",
+   "entry": 1797757200,
+   "listed": 1795165200,
+   "night": false
+  },
+  {
+   "id": "U:ZROUSDT:2027-01-20",
+   "kind": "разблокировка",
+   "sym": "ZROUSDT",
+   "entry": 1799989200,
+   "date": "2027-01-20",
+   "size": 3.3,
+   "protocol": "layerzero"
   }
  ],
  "open": [
@@ -962,7 +998,7 @@
    "opened": 1795150800.0001264,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795269600
+   "checked_to": 1795273200
   }
  ],
  "done": [
@@ -973,7 +1009,7 @@
   "U:MONUSDT:2026-11-25",
   "U:RESOLVUSDT:2026-11-27"
  ],
- "last_daily": "2026-11-20",
+ "last_daily": "2026-11-21",
  "last_digest": "2026-11-20",
  "reminded": [],
  "tradfi_checked": {
