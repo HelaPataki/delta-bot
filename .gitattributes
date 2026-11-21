@@ -1,0 +1,6 @@
+# Журналы ботов: если два запуска дописали строки одновременно, сохраняем строки обоих (а не одного)
+live_signals.csv merge=union
+l3_signals.csv merge=union
+calendar_signals.csv merge=union
+reconcile_log.csv merge=union
+l3_reconcile_log.csv merge=union
