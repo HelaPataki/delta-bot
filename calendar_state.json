@@ -998,7 +998,7 @@
    "opened": 1795150800.0001264,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795273200
+   "checked_to": 1795280400
   }
  ],
  "done": [
@@ -1010,7 +1010,7 @@
   "U:RESOLVUSDT:2026-11-27"
  ],
  "last_daily": "2026-11-21",
- "last_digest": "2026-11-20",
+ "last_digest": "2026-11-21",
  "reminded": [],
  "tradfi_checked": {
   "DOSUSDT": 1795030628,
