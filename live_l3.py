@@ -11,7 +11,7 @@ L3 ЛОНГ, проверка каждый час (по закрытию час�
     за своими сделками — занятость слотов проверяешь сама).
 
 Данные: история до вчера — архив Binance (как в тесте), последние часы — Coinalyze (общий ключ с live.py, поэтому
-бот бережливый): сначала по вчерашнему архиву отбираются монеты с L/S < 1,0, и только по ним идёт запрос в Coinalyze.
+бот бережливый): сначала по вчерашнему архиву отбираются монеты с L/S < 1,3, и только по ним идёт запрос в Coinalyze.
 MODE=test — сообщения с пометкой ТЕСТ, состояние не сохраняется, в конце — кто ближе всего к сигналу.
 """
 
@@ -50,7 +50,7 @@ KYIV = ZoneInfo("Europe/Kyiv")
 H = 3600 * 1000
 
 CAP_MIN, CAP_MAX = 10e6, 2e9
-UP_MIN, LS_MAX, PREFILTER_LS = 3.0, 0.8, 1.0
+UP_MIN, LS_MAX, PREFILTER_LS = 3.0, 0.8, 1.3
 TAKE, STOP, HOLD_H = 20.0, 10.0, 168
 SLOTS = 4                         # общие слоты всех стратегий; бот видит только свои сделки L3
 HL_DAYS = 14
@@ -264,11 +264,13 @@ def load_coin(sym, czsym, cz_ohlcv, cz_oi, cz_ls):
     k = k[k.open_time + H <= now_ms].sort_values("open_time").reset_index(drop=True)     # только закрытые свечи
 
     mlast = met.t.max() if len(met) else -1
-    # значение бара Coinalyze t — это конец часа (совпадает по знаку изменений с архивом в 99% часов)
-    oi = {b["t"]: b["c"] for b in cz_oi.get(czsym, [])}
-    ls = {b["t"]: b.get("r") for b in cz_ls.get(czsym, [])}
-    rows = [{"t": (t + 3300) * 1000.0, "oi": oi.get(t, np.nan), "glob": ls.get(t, np.nan)}
-            for t in sorted(set(oi) | set(ls)) if (t + 3300) * 1000 > mlast]
+    # OI: значение бара Coinalyze t — конец часа (сверено с архивом).
+    # L/S: значение бара t — это L/S на НАЧАЛО часа (сверка l3_diag 21.11: L/S Coinalyze отставал от архива ровно на час),
+    # поэтому L/S на закрытии свечи T берём из бара, который начинается в T. Если его ещё нет — берётся прошлый (как раньше).
+    rows = [{"t": (b["t"] + 3300) * 1000.0, "oi": b["c"], "glob": np.nan}
+            for b in cz_oi.get(czsym, []) if (b["t"] + 3300) * 1000 > mlast]
+    rows += [{"t": b["t"] * 1000.0, "oi": np.nan, "glob": b.get("r") if b.get("r") is not None else np.nan}
+             for b in cz_ls.get(czsym, []) if b["t"] * 1000 > mlast]
     if rows:
         met = pd.concat([met, pd.DataFrame(rows)], ignore_index=True)
     met = met.sort_values("t").reset_index(drop=True)
@@ -511,7 +513,7 @@ def full_check(st):
     cz_ls = cz_history("long-short-ratio-history", [coins[s]["cz"] for s in cand], "1hour", now - 30 * 3600, now)
     fin = []
     for s in cand:
-        h_ = [b for b in cz_ls.get(coins[s]["cz"], []) if b["t"] * 1000 + H <= now * 1000]
+        h_ = cz_ls.get(coins[s]["cz"], [])                 # последний бар = L/S на начало текущего часа (самый свежий)
         if h_ and h_[-1].get("r") is not None and h_[-1]["r"] < SCAN_LS:
             fin.append(s)
     czf = [coins[s]["cz"] for s in fin]
@@ -554,10 +556,13 @@ def fast_check(st, coins, short, close_ms, deadline):
         oi = cz_history("open-interest-history", list(czs), "1hour", now - 3 * 86400, now, convert_to_usd="false")
         ls = cz_history("long-short-ratio-history", list(czs), "1hour", now - 30 * 3600, now)
         ready = [c for c in czs if all(any(b["t"] == want for b in d.get(c, [])) for d in (oh, oi, ls))]
-        if len(ready) == len(czs) or time.time() > deadline:
+        fresh_ls = [c for c in ready if any(b["t"] == want + 3600 for b in ls.get(c, []))]   # L/S на момент закрытия
+        if len(fresh_ls) == len(czs) or time.time() > deadline:
             break
-        log(f"Coinalyze ещё не отдал закрытый час по {len(czs) - len(ready)} монетам — жду")
+        log(f"Coinalyze ещё не отдал закрытый час / свежий L/S по {len(czs) - len(fresh_ls)} монетам — жду")
         time.sleep(60)
+    if len(fresh_ls) < len(ready):
+        log(f"свежего L/S нет по {len(ready) - len(fresh_ls)} монетам — для них L/S на час старше")
     hits = []
     for c in ready:
         s = czs[c]
