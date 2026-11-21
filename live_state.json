@@ -1,11 +1,7 @@
 {
- "last_T": 1795248000,
+ "last_T": 1795262400,
  "orders": [],
  "shorts": [
-  {
-   "sym": "CYBERUSDT",
-   "close_at": 1795262894
-  },
   {
    "sym": "ENSOUSDT",
    "close_at": 1795320740
