@@ -1,12 +1,7 @@
 {
- "last_T": 1795305600,
+ "last_T": 1795320000,
  "orders": [],
- "shorts": [
-  {
-   "sym": "ENSOUSDT",
-   "close_at": 1795320740
-  }
- ],
+ "shorts": [],
  "longs": [
   {
    "sym": "CAPUSDT",
