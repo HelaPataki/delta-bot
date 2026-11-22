@@ -876,15 +876,6 @@
    "protocol": "sign"
   },
   {
-   "id": "U:RESOLVUSDT:2026-11-27",
-   "kind": "разблокировка",
-   "sym": "RESOLVUSDT",
-   "entry": 1795323600,
-   "date": "2026-11-27",
-   "size": 3.3,
-   "protocol": "resolv"
-  },
-  {
    "id": "U:RESOLVUSDT:2026-12-28",
    "kind": "разблокировка",
    "sym": "RESOLVUSDT",
@@ -998,12 +989,27 @@
    "opened": 1795150800.0001264,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795312800
+   "checked_to": 1795320000
+  },
+  {
+   "id": "U:RESOLVUSDT:2026-11-27",
+   "kind": "разблокировка",
+   "sym": "RESOLVUSDT",
+   "entry": 1795323600,
+   "date": "2026-11-27",
+   "size": 3.3,
+   "protocol": "resolv",
+   "exit": 1795842000,
+   "price": 0.01385,
+   "opened": 1795323600.0001774,
+   "be": false,
+   "be_sent": false
   }
  ],
  "done": [
   "U:HUSDT:2026-11-24",
-  "U:MONUSDT:2026-11-25"
+  "U:MONUSDT:2026-11-25",
+  "U:RESOLVUSDT:2026-11-27"
  ],
  "headsup": [
   "U:MONUSDT:2026-11-25",
