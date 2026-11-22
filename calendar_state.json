@@ -989,7 +989,7 @@
    "opened": 1795150800.0001264,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795348800
+   "checked_to": 1795352400
   },
   {
    "id": "U:RESOLVUSDT:2026-11-27",
@@ -1004,7 +1004,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795348800
+   "checked_to": 1795352400
   }
  ],
  "done": [
