@@ -989,7 +989,7 @@
    "opened": 1795150800.0001264,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795320000
+   "checked_to": 1795323600
   },
   {
    "id": "U:RESOLVUSDT:2026-11-27",
@@ -1003,7 +1003,8 @@
    "price": 0.01385,
    "opened": 1795323600.0001774,
    "be": false,
-   "be_sent": false
+   "be_sent": false,
+   "checked_to": 1795323600
   }
  ],
  "done": [
