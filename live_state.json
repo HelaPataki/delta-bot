@@ -1,11 +1,6 @@
 {
- "last_T": 1795435200,
+ "last_T": 1795449600,
  "orders": [],
  "shorts": [],
- "longs": [
-  {
-   "sym": "CAPUSDT",
-   "close_at": 1795451280
-  }
- ]
+ "longs": []
 }
