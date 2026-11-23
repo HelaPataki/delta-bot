@@ -2,6 +2,11 @@ name: L3 diagnostics (bot vs archive)
 
 on:
   workflow_dispatch:
+    inputs:
+      cases:
+        description: "Случаи: МОНЕТА|ГГГГ-ММ-ДД ЧЧ:ММ (Киев)|пометка; ... (пусто — прежний список)"
+        required: false
+        default: "EVAAUSDT|2026-11-22 14:00|пропущен; CYBERUSDT|2026-11-22 04:00|пропущен; CYBERUSDT|2026-11-21 23:00|лишний; BERAUSDT|2026-11-22 15:00|лишний"
 
 permissions:
   contents: write
@@ -20,6 +25,7 @@ jobs:
         env:
           COINALYZE_KEY: ${{ secrets.COINALYZE_KEY }}
           CZ_PER_MIN: "10"
+          CASES: ${{ inputs.cases }}
       - name: Save results
         if: ${{ !cancelled() }}
         run: |

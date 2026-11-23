@@ -40,6 +40,10 @@ CASES = [  # (монета, свеча закрылась по Киеву, чт�
     ("BMTUSDT", "2026-11-20 09:00", "лишний (бот на час позже)"),
     ("EVAAUSDT", "2026-11-20 15:00", "лишний"),
 ]
+if os.environ.get("CASES"):   # «МОНЕТА|ГГГГ-ММ-ДД ЧЧ:ММ|пометка; ...» — свои случаи из запуска вручную
+    CASES = [tuple(x.strip() for x in c.split("|")) + ("",) * (3 - len(c.split("|")))
+             for c in os.environ["CASES"].split(";") if c.strip()]
+    CASES = [c[:3] for c in CASES]
 BEFORE, AFTER = 4, 1           # сколько часов показать до и после свечи сигнала
 
 
@@ -67,10 +71,11 @@ def bot_like(k_full, met_full, czsym, d0, end, oh, oi, ls, ls_from_archive):
         k = pd.concat([k, pd.DataFrame(tail)], ignore_index=True)
     k = k.sort_values("open_time").reset_index(drop=True)
     mlast = met.t.max() if len(met) else -1
-    o_ = {b_["t"]: b_["c"] for b_ in oi.get(czsym, [])}
-    l_ = {b_["t"]: b_.get("r") for b_ in ls.get(czsym, [])}
-    rows = [{"t": (t + 3300) * 1000.0, "oi": o_.get(t, np.nan), "glob": l_.get(t, np.nan)}
-            for t in sorted(set(o_) | set(l_)) if mlast < (t + 3300) * 1000 <= end]
+    # как сейчас в боте (с 21.11): OI бара t — на конец часа, L/S бара t — на начало часа
+    rows = [{"t": (b_["t"] + 3300) * 1000.0, "oi": b_["c"], "glob": np.nan}
+            for b_ in oi.get(czsym, []) if mlast < (b_["t"] + 3300) * 1000 <= end]
+    rows += [{"t": b_["t"] * 1000.0, "oi": np.nan, "glob": b_.get("r") if b_.get("r") is not None else np.nan}
+             for b_ in ls.get(czsym, []) if mlast < b_["t"] * 1000 <= end]
     if rows:
         met = pd.concat([met, pd.DataFrame(rows)], ignore_index=True)
     met = met.sort_values("t").reset_index(drop=True)
