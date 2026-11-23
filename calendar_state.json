@@ -989,7 +989,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795442400
+   "checked_to": 1795453200
   }
  ],
  "done": [
@@ -1000,10 +1000,11 @@
  "headsup": [
   "U:MONUSDT:2026-11-25",
   "U:RESOLVUSDT:2026-11-27",
-  "U:GUNUSDT:2026-11-30"
+  "U:GUNUSDT:2026-11-30",
+  "U:EIGENUSDT:2026-12-01"
  ],
- "last_daily": "2026-11-22",
- "last_digest": "2026-11-22",
+ "last_daily": "2026-11-23",
+ "last_digest": "2026-11-23",
  "reminded": [],
  "tradfi_checked": {
   "DOSUSDT": 1795030628,
