@@ -965,6 +965,15 @@
    "date": "2027-01-20",
    "size": 3.3,
    "protocol": "layerzero"
+  },
+  {
+   "id": "U:APRUSDT:2027-01-23",
+   "kind": "разблокировка",
+   "sym": "APRUSDT",
+   "entry": 1800248400,
+   "date": "2027-01-23",
+   "size": 5.0,
+   "protocol": "apriori"
   }
  ],
  "open": [
@@ -981,7 +990,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795528800
+   "checked_to": 1795532400
   }
  ],
  "done": [
@@ -996,7 +1005,7 @@
   "U:GUNUSDT:2026-11-30",
   "U:EIGENUSDT:2026-12-01"
  ],
- "last_daily": "2026-11-23",
+ "last_daily": "2026-11-24",
  "last_digest": "2026-11-23",
  "reminded": [
   "L:PREDICTUSDT:1792915200"
