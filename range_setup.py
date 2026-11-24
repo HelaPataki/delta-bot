@@ -110,6 +110,7 @@ def combine():
     ev["период"] = np.where(pd.to_datetime(ev.t, unit="ms").dt.year <= 2024, "21–24", "25–26")
     ev["выход_t"] = ev.t + (ev["дней"] * 24 * H).round().astype("int64")
     ev.to_csv(f"{OUT}/trades.csv.gz", index=False)
+    ev[ev.фильтр == "с топами"].to_csv(f"{OUT}/trades_tops.csv.gz", index=False)   # для общей симуляции (combo4.py)
     keys = ["фильтр", "вход", "держать", "стоп", "тейк"]
     rows = []
     for key, g in ev.groupby(keys):

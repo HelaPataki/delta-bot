@@ -78,6 +78,6 @@ jobs:
         run: |
           git config user.name "delta-bot"
           git config user.email "delta-bot@users.noreply.github.com"
-          git add $DIR/range_setup_summary.md
+          git add $DIR/range_setup_summary.md $DIR/trades_tops.csv.gz
           git commit -m "Range setup run" || echo "nothing to commit"
           for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
