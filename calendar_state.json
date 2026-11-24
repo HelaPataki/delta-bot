@@ -769,14 +769,6 @@
  },
  "planned": [
   {
-   "id": "L:PREDICTUSDT:1792915200",
-   "kind": "листинг",
-   "sym": "PREDICTUSDT",
-   "entry": 1795507200,
-   "listed": 1792915200,
-   "night": false
-  },
-  {
    "id": "U:GUNUSDT:2026-11-30",
    "kind": "разблокировка",
    "sym": "GUNUSDT",
@@ -989,13 +981,14 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795496400
+   "checked_to": 1795503600
   }
  ],
  "done": [
   "U:HUSDT:2026-11-24",
   "U:MONUSDT:2026-11-25",
-  "U:RESOLVUSDT:2026-11-27"
+  "U:RESOLVUSDT:2026-11-27",
+  "L:PREDICTUSDT:1792915200"
  ],
  "headsup": [
   "U:MONUSDT:2026-11-25",
@@ -1005,7 +998,9 @@
  ],
  "last_daily": "2026-11-23",
  "last_digest": "2026-11-23",
- "reminded": [],
+ "reminded": [
+  "L:PREDICTUSDT:1792915200"
+ ],
  "tradfi_checked": {
   "DOSUSDT": 1795030628,
   "PONSUSDT": 1795030628,
