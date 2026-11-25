@@ -769,15 +769,6 @@
  },
  "planned": [
   {
-   "id": "U:GUNUSDT:2026-11-30",
-   "kind": "разблокировка",
-   "sym": "GUNUSDT",
-   "entry": 1795582800,
-   "date": "2026-11-30",
-   "size": 4.8,
-   "protocol": "gunz"
-  },
-  {
    "id": "U:GUNUSDT:2026-12-31",
    "kind": "разблокировка",
    "sym": "GUNUSDT",
@@ -990,14 +981,29 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795572000
+   "checked_to": 1795579200
+  },
+  {
+   "id": "U:GUNUSDT:2026-11-30",
+   "kind": "разблокировка",
+   "sym": "GUNUSDT",
+   "entry": 1795582800,
+   "date": "2026-11-30",
+   "size": 4.8,
+   "protocol": "gunz",
+   "exit": 1796101200,
+   "price": 0.001329,
+   "opened": 1795582800.5686455,
+   "be": false,
+   "be_sent": false
   }
  ],
  "done": [
   "U:HUSDT:2026-11-24",
   "U:MONUSDT:2026-11-25",
   "U:RESOLVUSDT:2026-11-27",
-  "L:PREDICTUSDT:1792915200"
+  "L:PREDICTUSDT:1792915200",
+  "U:GUNUSDT:2026-11-30"
  ],
  "headsup": [
   "U:MONUSDT:2026-11-25",
