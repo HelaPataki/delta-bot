@@ -1,6 +1,11 @@
 {
- "last_T": 1795564800,
+ "last_T": 1795579200,
  "orders": [],
- "shorts": [],
+ "shorts": [
+  {
+   "sym": "BIGTIMEUSDT",
+   "close_at": 1795666156
+  }
+ ],
  "longs": []
 }
