@@ -990,7 +990,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795629600
+   "checked_to": 1795633200
   },
   {
    "id": "U:GUNUSDT:2026-11-30",
@@ -1005,7 +1005,7 @@
    "opened": 1795582800.5686455,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795629600
+   "checked_to": 1795633200
   }
  ],
  "done": [
