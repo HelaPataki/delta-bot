@@ -965,6 +965,15 @@
    "date": "2027-01-23",
    "size": 5.0,
    "protocol": "apriori"
+  },
+  {
+   "id": "U:HUSDT:2027-01-24",
+   "kind": "разблокировка",
+   "sym": "HUSDT",
+   "entry": 1800334800,
+   "date": "2027-01-24",
+   "size": 3.9,
+   "protocol": "humanity"
   }
  ],
  "open": [
@@ -981,7 +990,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795615200
+   "checked_to": 1795618800
   },
   {
    "id": "U:GUNUSDT:2026-11-30",
@@ -996,7 +1005,7 @@
    "opened": 1795582800.5686455,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795615200
+   "checked_to": 1795618800
   }
  ],
  "done": [
@@ -1012,7 +1021,7 @@
   "U:GUNUSDT:2026-11-30",
   "U:EIGENUSDT:2026-12-01"
  ],
- "last_daily": "2026-11-24",
+ "last_daily": "2026-11-25",
  "last_digest": "2026-11-24",
  "reminded": [
   "L:PREDICTUSDT:1792915200"
