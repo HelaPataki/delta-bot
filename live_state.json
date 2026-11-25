@@ -1,10 +1,14 @@
 {
- "last_T": 1795579200,
+ "last_T": 1795593600,
  "orders": [],
  "shorts": [
   {
    "sym": "BIGTIMEUSDT",
    "close_at": 1795666156
+  },
+  {
+   "sym": "WAXPUSDT",
+   "close_at": 1795680432
   }
  ],
  "longs": []
