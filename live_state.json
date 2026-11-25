@@ -1,5 +1,5 @@
 {
- "last_T": 1795593600,
+ "last_T": 1795608000,
  "orders": [],
  "shorts": [
   {
@@ -9,6 +9,10 @@
   {
    "sym": "WAXPUSDT",
    "close_at": 1795680432
+  },
+  {
+   "sym": "MOODENGUSDT",
+   "close_at": 1795694956
   }
  ],
  "longs": []
