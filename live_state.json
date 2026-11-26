@@ -1,11 +1,6 @@
 {
- "last_T": 1795680000,
+ "last_T": 1795694400,
  "orders": [],
- "shorts": [
-  {
-   "sym": "MOODENGUSDT",
-   "close_at": 1795694956
-  }
- ],
+ "shorts": [],
  "longs": []
 }
