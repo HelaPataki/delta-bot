@@ -51,11 +51,11 @@ H = pd.Timedelta(hours=1)
 
 
 # ---------------- данные ----------------
-def yahoo(interval, period):
+def yahoo(interval, period, ticker="GC=F", adjust=False):
     import yfinance as yf
     for i in range(4):
         try:
-            df = yf.Ticker("GC=F").history(period=period, interval=interval, auto_adjust=False)
+            df = yf.Ticker(ticker).history(period=period, interval=interval, auto_adjust=adjust)
             if len(df):
                 break
         except Exception as e:  # noqa: BLE001
@@ -239,8 +239,9 @@ def table(rows):
         return df.to_string(index=False)
 
 
-def analyse(df, bar, label, rules, roll=False, delta=False):
+def analyse(df, bar, label, rules, roll=False, delta=False, roll_fn=None):
     """rules: список (название, ratio, mult). Возвращает текст раздела и список сигналов."""
+    roll_flag_ = roll_fn or roll_flag
     o = outcomes(df, bar)
     lines = [f"## {label}",
              f"Свечей: {len(df)}, период {df.index[0]:%Y-%m-%d} — {df.index[-1]:%Y-%m-%d}. "
@@ -255,7 +256,7 @@ def analyse(df, bar, label, rules, roll=False, delta=False):
         idx = pick(df, ratio, mult)
         s = o.loc[idx]
         if roll:
-            rf = roll_flag(s.index)
+            rf = roll_flag_(s.index)
             rows.append(stats(s[~rf], f"{name} x{mult} (без перехода контракта)"))
             rows.append(stats(s[rf], f"{name} x{mult} — окно перехода контракта"))
             s_use = s[~rf]
@@ -276,7 +277,7 @@ def analyse(df, bar, label, rules, roll=False, delta=False):
                 "объём/норма": round(float(ratio.loc[t]), 1),
                 "тело %": r.body_pct,
                 "дельта %": float(df.delta_pct.loc[t]) if "delta_pct" in df else None,
-                "переход контракта": bool(roll_flag(pd.DatetimeIndex([t]))[0]) if roll else None,
+                "переход контракта": bool(roll_flag_(pd.DatetimeIndex([t]))[0]) if roll else None,
                 "макс.рост 10д %": round(r.up_max, 2), "макс.падение 10д %": round(r.dn_max, 2),
                 "±3% первым": {1: "вверх", -1: "вниз", 0: "нет", 2: "обе в одной свече"}.get(r.first3),
                 "день ±3%": round(r.day3, 1) if r.day3 == r.day3 else None,

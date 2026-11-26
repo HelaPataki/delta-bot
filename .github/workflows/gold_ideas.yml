@@ -1,0 +1,29 @@
+name: Gold ideas — news, session breakout, trend, index volume
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DIR: results/gold_ideas
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt yfinance
+      - name: Gold ideas
+        run: python gold_ideas.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $DIR
+          git commit -m "Gold ideas run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
