@@ -832,15 +832,6 @@
    "protocol": "carv"
   },
   {
-   "id": "U:EIGENUSDT:2026-12-01",
-   "kind": "разблокировка",
-   "sym": "EIGENUSDT",
-   "entry": 1795669200,
-   "date": "2026-12-01",
-   "size": 3.9,
-   "protocol": "eigencloud"
-  },
-  {
    "id": "U:EIGENUSDT:2027-01-01",
    "kind": "разблокировка",
    "sym": "EIGENUSDT",
@@ -990,7 +981,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795658400
+   "checked_to": 1795665600
   },
   {
    "id": "U:GUNUSDT:2026-11-30",
@@ -1005,7 +996,21 @@
    "opened": 1795582800.5686455,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795658400
+   "checked_to": 1795665600
+  },
+  {
+   "id": "U:EIGENUSDT:2026-12-01",
+   "kind": "разблокировка",
+   "sym": "EIGENUSDT",
+   "entry": 1795669200,
+   "date": "2026-12-01",
+   "size": 3.9,
+   "protocol": "eigencloud",
+   "exit": 1796187600,
+   "price": 0.11,
+   "opened": 1795669200.0001776,
+   "be": false,
+   "be_sent": false
   }
  ],
  "done": [
@@ -1013,7 +1018,8 @@
   "U:MONUSDT:2026-11-25",
   "U:RESOLVUSDT:2026-11-27",
   "L:PREDICTUSDT:1792915200",
-  "U:GUNUSDT:2026-11-30"
+  "U:GUNUSDT:2026-11-30",
+  "U:EIGENUSDT:2026-12-01"
  ],
  "headsup": [
   "U:MONUSDT:2026-11-25",
