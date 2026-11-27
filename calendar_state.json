@@ -981,7 +981,7 @@
    "opened": 1795323600.0001774,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795791600
+   "checked_to": 1795798800
   },
   {
    "id": "U:GUNUSDT:2026-11-30",
@@ -996,7 +996,7 @@
    "opened": 1795582800.5686455,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795791600
+   "checked_to": 1795798800
   },
   {
    "id": "U:EIGENUSDT:2026-12-01",
@@ -1011,7 +1011,7 @@
    "opened": 1795669200.0001776,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795791600
+   "checked_to": 1795798800
   }
  ],
  "done": [
@@ -1029,7 +1029,7 @@
   "U:EIGENUSDT:2026-12-01"
  ],
  "last_daily": "2026-11-27",
- "last_digest": "2026-11-26",
+ "last_digest": "2026-11-27",
  "reminded": [
   "L:PREDICTUSDT:1792915200"
  ],
