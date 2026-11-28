@@ -1,0 +1,62 @@
+name: "Volume x5 4h candle - what happens in 20 days (2021-2026)"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DIR: results/vol_after
+  START: "2021-01-01"
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Signals (part ${{ matrix.shard }})
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARDS: "6"
+        run: python vol_after.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: part${{ matrix.shard }}
+          path: ${{ env.DIR }}/parts/*.csv.gz
+
+  combine:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part*
+          path: ${{ env.DIR }}/parts
+          merge-multiple: true
+      - name: Summary
+        env:
+          MODE: combine
+        run: python vol_after.py
+      - name: Save results
+        run: |
+          git config user.name "delta-bot"
+          git config user.email "delta-bot@users.noreply.github.com"
+          git add $DIR/vol_after_summary.md $DIR/signals.csv.gz
+          git commit -m "Volume x5 aftermath run" || echo "nothing to commit"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 10; done
