@@ -981,7 +981,7 @@
    "opened": 1795582800.5686455,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795838400
+   "checked_to": 1795842000
   },
   {
    "id": "U:EIGENUSDT:2026-12-01",
@@ -996,7 +996,7 @@
    "opened": 1795669200.0001776,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795838400
+   "checked_to": 1795842000
   }
  ],
  "done": [
