@@ -969,21 +969,6 @@
  ],
  "open": [
   {
-   "id": "U:RESOLVUSDT:2026-11-27",
-   "kind": "разблокировка",
-   "sym": "RESOLVUSDT",
-   "entry": 1795323600,
-   "date": "2026-11-27",
-   "size": 3.3,
-   "protocol": "resolv",
-   "exit": 1795842000,
-   "price": 0.01385,
-   "opened": 1795323600.0001774,
-   "be": false,
-   "be_sent": false,
-   "checked_to": 1795831200
-  },
-  {
    "id": "U:GUNUSDT:2026-11-30",
    "kind": "разблокировка",
    "sym": "GUNUSDT",
@@ -996,7 +981,7 @@
    "opened": 1795582800.5686455,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795831200
+   "checked_to": 1795838400
   },
   {
    "id": "U:EIGENUSDT:2026-12-01",
@@ -1011,7 +996,7 @@
    "opened": 1795669200.0001776,
    "be": false,
    "be_sent": false,
-   "checked_to": 1795831200
+   "checked_to": 1795838400
   }
  ],
  "done": [
